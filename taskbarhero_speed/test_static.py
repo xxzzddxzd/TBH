@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "taskbarhero_speed" / "winhttp_proxy.c"
 INI = ROOT / "TaskBarHeroSpeed.ini"
 PKG_README = ROOT / "taskbarhero_speed" / "package" / "README.txt"
+INJECTOR = ROOT / "taskbarhero_speed" / "injector.c"
+PACKAGE_SCRIPT = ROOT / "taskbarhero_speed" / "package_windows.sh"
 
 
 def require(condition, message):
@@ -21,6 +23,8 @@ def main():
     src = SRC.read_text(encoding="utf-8")
     ini = INI.read_text(encoding="utf-8")
     readme = PKG_README.read_text(encoding="utf-8")
+    injector = INJECTOR.read_text(encoding="utf-8")
+    package_script = PACKAGE_SCRIPT.read_text(encoding="utf-8")
     failures = 0
 
     expectations = [
@@ -36,9 +40,17 @@ def main():
         ("target_game_version=1.00.21", ini),
         ("plugin_version=", ini),
         ("plugin_subversion=", ini),
+        ("plugin_subversion=2", ini),
         ("exp_multiplier=", ini),
         ("cube_exp_multiplier=", ini),
+        ("auto_portal_locked=", ini),
+        ("auto_portal_stage_key=", ini),
+        ("versions\\\\%s\\\\%s", injector),
+        ("select_versioned_dll", injector),
+        ("versions.json", package_script),
+        ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TaskBarHeroSpeed", readme),
+        ("versions\\<游戏版本>\\TaskBarHeroSpeed.dll", readme),
     ]
     for needle, haystack in expectations:
         failures += require(needle in haystack, f"missing {needle}")

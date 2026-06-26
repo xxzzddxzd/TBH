@@ -5,8 +5,8 @@
 
 #define TBHS_SUPPORTED_GAME_VERSION "1.00.21"
 #define TBHS_PLUGIN_VERSION "0.4.0"
-#define TBHS_PLUGIN_SUBVERSION "1"
-#define TBHS_PLUGIN_DISPLAY_VERSION "0.4.0.1"
+#define TBHS_PLUGIN_SUBVERSION "2"
+#define TBHS_PLUGIN_DISPLAY_VERSION "0.4.0.2"
 #define SPEED_DEFAULT 5.0f
 #define EXP_MULTIPLIER_DEFAULT 1.0f
 #define CUBE_EXP_MULTIPLIER_DEFAULT 10.0f
@@ -1282,6 +1282,20 @@ static void load_config(void)
                 v <= AUTO_PORTAL_INTERVAL_MAX_MS) {
                 g_auto_portal_interval_ms = (DWORD)v;
             }
+        } else if (lstrcmpiA(line, "auto_portal_locked") == 0) {
+            g_auto_restart_locked = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "auto_portal_stage_key") == 0) {
+            g_auto_restart_stage_key = parse_int_local(eq);
+        } else if (lstrcmpiA(line, "auto_portal_enter_key") == 0) {
+            g_auto_restart_enter_key = parse_int_local(eq);
+        } else if (lstrcmpiA(line, "auto_portal_act") == 0) {
+            g_auto_restart_act = parse_int_local(eq);
+        } else if (lstrcmpiA(line, "auto_portal_difficulty") == 0) {
+            g_auto_restart_difficulty = parse_int_local(eq);
+        } else if (lstrcmpiA(line, "auto_portal_stage_type") == 0) {
+            g_auto_restart_stage_type = parse_int_local(eq);
+        } else if (lstrcmpiA(line, "auto_portal_stage_no") == 0) {
+            g_auto_restart_stage_no = parse_int_local(eq);
         } else if (lstrcmpiA(line, "direct_boss") == 0) {
             g_direct_boss_enabled = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "actboss_boss") == 0) {
@@ -1316,6 +1330,9 @@ static void load_config(void)
     set_speed_value(g_speed);
     g_exp_multiplier = clamp_exp_multiplier(g_exp_multiplier);
     g_cube_exp_multiplier = clamp_exp_multiplier(g_cube_exp_multiplier);
+    if (g_auto_restart_locked && g_auto_restart_stage_key <= 0) {
+        g_auto_restart_locked = 0;
+    }
     g_force_box_reward_select_config_enabled = g_force_box_reward_select_enabled;
     g_keep_boxdata_after_select_config_enabled = g_keep_boxdata_after_select_enabled;
     if (g_force_drop_roll_rate_enabled) {
@@ -1381,7 +1398,15 @@ static void save_config(void)
 
     append_int_line(buf, sizeof(buf), "auto_portal", g_auto_portal_enabled);
     append_int_line(buf, sizeof(buf), "auto_portal_interval_ms", (int)g_auto_portal_interval_ms);
-    append_int_line(buf, sizeof(buf), "direct_boss", g_direct_boss_enabled);
+    append_int_line(buf, sizeof(buf), "auto_portal_locked", g_auto_restart_locked);
+    append_int_line(buf, sizeof(buf), "auto_portal_stage_key", g_auto_restart_stage_key);
+    append_int_line(buf, sizeof(buf), "auto_portal_enter_key", g_auto_restart_enter_key);
+    append_int_line(buf, sizeof(buf), "auto_portal_act", g_auto_restart_act);
+    append_int_line(buf, sizeof(buf), "auto_portal_difficulty", g_auto_restart_difficulty);
+    append_int_line(buf, sizeof(buf), "auto_portal_stage_type", g_auto_restart_stage_type);
+    append_int_line(buf, sizeof(buf), "auto_portal_stage_no", g_auto_restart_stage_no);
+    append_int_line(buf, sizeof(buf), "direct_boss",
+                    g_auto_switch_enabled ? g_auto_switch_primary_boss_enabled : g_direct_boss_enabled);
     append_int_line(buf, sizeof(buf), "actboss_boss", g_actboss_boss_enabled);
     append_int_line(buf, sizeof(buf), "auto_switch", g_auto_switch_enabled);
     append_int_line(buf, sizeof(buf), "free_actboss_enter", g_free_actboss_enter_enabled);
@@ -3894,6 +3919,7 @@ static int lock_auto_restart_stage_from_current(void)
     append_overlay_event("LOCKED %d-%d diff=%d key=%d",
                          act, display_stage_no_from_key(stage_key, stage_no),
                          difficulty, stage_key);
+    save_config();
     return 1;
 }
 
@@ -3922,6 +3948,7 @@ static void unlock_auto_restart_stage(void)
     } else {
         append_overlay_event("UNLOCKED");
     }
+    save_config();
 }
 
 static void process_auto_restart_request_from_game_thread(void)

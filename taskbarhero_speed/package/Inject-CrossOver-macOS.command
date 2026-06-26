@@ -4,9 +4,6 @@ set -u
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 WINE_BIN="${CROSSOVER_WINE:-/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine}"
 BOTTLES_ROOT="${CROSSOVER_BOTTLES_DIR:-$HOME/Library/Application Support/CrossOver/Bottles}"
-LIVE_DIR="${TASKBARHERO_LIVE_DIR:-$SCRIPT_DIR/live}"
-STAMP="$(date +%Y%m%d%H%M%S)"
-LIVE_DLL="$LIVE_DIR/TaskBarHeroSpeedLive_$STAMP.dll"
 
 FOUND_PID=""
 FOUND_LINE=""
@@ -95,7 +92,7 @@ find_game_exe_in_bottles() {
 echo "TaskBarHero speed patch - CrossOver/macOS"
 echo
 echo "1. Make sure TaskBarHero is already running in CrossOver."
-echo "2. This will discover the running game process and inject TaskBarHeroSpeed.dll."
+echo "2. This will discover the running game process and inject the matching plugin version."
 echo
 
 if [ ! -x "$WINE_BIN" ]; then
@@ -114,8 +111,8 @@ if [ ! -f "$SCRIPT_DIR/TaskBarHeroSpeedInject.exe" ]; then
   exit 1
 fi
 
-if [ ! -f "$SCRIPT_DIR/TaskBarHeroSpeed.dll" ]; then
-  echo "Missing TaskBarHeroSpeed.dll in:"
+if [ ! -d "$SCRIPT_DIR/versions" ] && [ ! -f "$SCRIPT_DIR/TaskBarHeroSpeed.dll" ]; then
+  echo "Missing versions/ and fallback TaskBarHeroSpeed.dll in:"
   echo "  $SCRIPT_DIR"
   pause_if_interactive
   exit 1
@@ -143,20 +140,7 @@ if [ -z "$CX_BOTTLE_EFFECTIVE" ]; then
   exit 3
 fi
 
-mkdir -p "$LIVE_DIR"
-cp "$SCRIPT_DIR/TaskBarHeroSpeed.dll" "$LIVE_DLL"
-
-if [ -f "$SCRIPT_DIR/TaskBarHeroSpeed.ini" ]; then
-  cp "$SCRIPT_DIR/TaskBarHeroSpeed.ini" "$LIVE_DIR/TaskBarHeroSpeed.ini"
-fi
-
-if [ -f "$SCRIPT_DIR/TaskBarHeroChestStats.txt" ] &&
-   [ ! -f "$LIVE_DIR/TaskBarHeroChestStats.txt" ]; then
-  cp "$SCRIPT_DIR/TaskBarHeroChestStats.txt" "$LIVE_DIR/TaskBarHeroChestStats.txt"
-fi
-
 WIN_EXE="$(to_wine_z_path "$SCRIPT_DIR/TaskBarHeroSpeedInject.exe")"
-WIN_DLL="$(to_wine_z_path "$LIVE_DLL")"
 
 echo "Found TaskBarHero.exe pid=$FOUND_PID"
 echo "CrossOver bottle: $CX_BOTTLE_EFFECTIVE"
@@ -172,7 +156,7 @@ set -- "$WINE_BIN" --bottle "$CX_BOTTLE_EFFECTIVE"
 if [ -n "$GAME_WIN_DIR_EFFECTIVE" ]; then
   set -- "$@" --workdir "$GAME_WIN_DIR_EFFECTIVE"
 fi
-set -- "$@" --cx-app "$WIN_EXE" "$WIN_DLL"
+set -- "$@" --cx-app "$WIN_EXE"
 
 "$@"
 STATUS=$?

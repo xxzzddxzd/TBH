@@ -45,8 +45,10 @@ cd /Users/xuzhengda/Documents/workspace/tbh
 TaskBarHeroSpeedInject.exe
 ```
 
-The injector looks for `TaskBarHero.exe` and loads `TaskBarHeroSpeed.dll` from
-the same directory as the injector.
+The injector looks for `TaskBarHero.exe`, reads the game's `Version.txt`, then
+loads `versions/<game-version>/TaskBarHeroSpeed.dll` when present. If no
+versioned DLL exists it falls back to `TaskBarHeroSpeed.dll` beside the
+injector for local development.
 
 For hot reload, pass a unique copied DLL path to the injector. The bundled
 scripts do this automatically because Windows will not unload the old DLL from

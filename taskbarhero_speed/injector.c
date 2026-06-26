@@ -1,9 +1,13 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tlhelp32.h>
+#include <stdarg.h>
 
 #define TARGET_PROCESS "TaskBarHero.exe"
 #define TARGET_DLL "TaskBarHeroSpeed.dll"
+#ifndef PROCESS_QUERY_LIMITED_INFORMATION
+#define PROCESS_QUERY_LIMITED_INFORMATION 0x1000
+#endif
 
 static char g_base_dir[MAX_PATH];
 static char g_log_path[MAX_PATH];
@@ -69,10 +73,10 @@ static void init_paths(char *dll_path)
     wsprintfA(dll_path, "%s\\%s", g_base_dir, TARGET_DLL);
 }
 
-static void read_optional_dll_arg(char *dll_path)
+static int read_optional_dll_arg(char *dll_path)
 {
     char *cmd = GetCommandLineA();
-    if (!cmd || !*cmd) return;
+    if (!cmd || !*cmd) return 0;
 
     if (*cmd == '"') {
         cmd++;
@@ -83,7 +87,7 @@ static void read_optional_dll_arg(char *dll_path)
     }
 
     while (*cmd == ' ' || *cmd == '\t') cmd++;
-    if (!*cmd) return;
+    if (!*cmd) return 0;
 
     char *out = dll_path;
     int remaining = MAX_PATH - 1;
@@ -100,6 +104,7 @@ static void read_optional_dll_arg(char *dll_path)
         }
     }
     *out = 0;
+    return dll_path[0] != 0;
 }
 
 static DWORD find_process_id(const char *exe_name)
@@ -128,6 +133,158 @@ static DWORD find_process_id(const char *exe_name)
 
     CloseHandle(snap);
     return 0;
+}
+
+static int file_exists(const char *path)
+{
+    DWORD attr = GetFileAttributesA(path);
+    return attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+static int get_process_image_path(DWORD pid, char *path, DWORD path_size)
+{
+    DWORD size = path_size;
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+                                 FALSE,
+                                 pid);
+    if (!process) {
+        log_line("OpenProcess query(%lu) failed, error=%lu", pid, GetLastError());
+        return 0;
+    }
+    path[0] = 0;
+    if (!QueryFullProcessImageNameA(process, 0, path, &size)) {
+        log_line("QueryFullProcessImageNameA failed, error=%lu", GetLastError());
+        CloseHandle(process);
+        return 0;
+    }
+    path[path_size - 1] = 0;
+    CloseHandle(process);
+    return path[0] != 0;
+}
+
+static void dirname_from_path(char *path)
+{
+    char *slash = find_last_char(path, '\\', '/');
+    if (slash) {
+        *slash = 0;
+    } else {
+        lstrcpyA(path, ".");
+    }
+}
+
+static int read_first_line_file(const char *path, char *out, int out_size)
+{
+    HANDLE file;
+    DWORD read = 0;
+    int i;
+
+    if (!out || out_size <= 0) return 0;
+    out[0] = 0;
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) return 0;
+    if (!ReadFile(file, out, (DWORD)out_size - 1, &read, NULL)) read = 0;
+    CloseHandle(file);
+    out[read] = 0;
+    for (i = 0; out[i]; i++) {
+        if (out[i] == '\r' || out[i] == '\n') {
+            out[i] = 0;
+            break;
+        }
+    }
+    while (out[0] == ' ' || out[0] == '\t') {
+        char *src = out + 1;
+        char *dst = out;
+        while ((*dst++ = *src++)) {}
+    }
+    for (i = lstrlenA(out); i > 0; i--) {
+        if (out[i - 1] != ' ' && out[i - 1] != '\t') break;
+        out[i - 1] = 0;
+    }
+    return out[0] != 0;
+}
+
+static void sanitize_filename_component(const char *src, char *dst, int dst_size)
+{
+    int out = 0;
+    int i;
+
+    if (dst_size <= 0) return;
+    for (i = 0; src && src[i] && out < dst_size - 1; i++) {
+        char c = src[i];
+        if ((c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') ||
+            c == '.' || c == '_' || c == '-') {
+            dst[out++] = c;
+        } else {
+            dst[out++] = '_';
+        }
+    }
+    if (!out) dst[out++] = 'u';
+    dst[out] = 0;
+}
+
+static int select_versioned_dll(DWORD pid, char *dll_path)
+{
+    char exe_path[MAX_PATH];
+    char game_dir[MAX_PATH];
+    char version_path[MAX_PATH];
+    char version[64];
+    char selected[MAX_PATH];
+    char safe_version[64];
+    DWORD tick;
+
+    if (!get_process_image_path(pid, exe_path, sizeof(exe_path))) {
+        return 0;
+    }
+    lstrcpynA(game_dir, exe_path, sizeof(game_dir));
+    dirname_from_path(game_dir);
+
+    wsprintfA(version_path, "%s\\Version.txt", game_dir);
+    version_path[sizeof(version_path) - 1] = 0;
+    if (!read_first_line_file(version_path, version, sizeof(version))) {
+        log_line("Game Version.txt not found: %s", version_path);
+        return 0;
+    }
+
+    wsprintfA(selected, "%s\\versions\\%s\\%s", g_base_dir, version, TARGET_DLL);
+    selected[sizeof(selected) - 1] = 0;
+    if (!file_exists(selected)) {
+        wsprintfA(selected, "%s\\%s", g_base_dir, TARGET_DLL);
+        selected[sizeof(selected) - 1] = 0;
+        if (!file_exists(selected)) {
+            log_line("No plugin DLL for game version %s. Expected versions\\%s\\%s",
+                     version,
+                     version,
+                     TARGET_DLL);
+            return 0;
+        }
+        log_line("Versioned DLL missing for game %s; falling back to %s",
+                 version,
+                 selected);
+    }
+
+    sanitize_filename_component(version, safe_version, sizeof(safe_version));
+    tick = GetTickCount();
+    wsprintfA(dll_path,
+              "%s\\TaskBarHeroSpeedLive_%s_%lu_%lu.dll",
+              g_base_dir,
+              safe_version,
+              pid,
+              tick);
+    dll_path[MAX_PATH - 1] = 0;
+    if (!CopyFileA(selected, dll_path, FALSE)) {
+        log_line("CopyFile failed: %s -> %s error=%lu",
+                 selected,
+                 dll_path,
+                 GetLastError());
+        return 0;
+    }
+    log_line("Selected plugin for game version %s: %s",
+             version,
+             selected);
+    return 1;
 }
 
 static int inject_dll(DWORD pid, const char *dll_path)
@@ -203,19 +360,26 @@ static int inject_dll(DWORD pid, const char *dll_path)
 void WinMainCRTStartup(void)
 {
     char dll_path[MAX_PATH];
+    int explicit_dll;
+    DWORD pid;
+
     init_paths(dll_path);
-    read_optional_dll_arg(dll_path);
+    explicit_dll = read_optional_dll_arg(dll_path);
+
+    pid = find_process_id(TARGET_PROCESS);
+    if (!pid) {
+        log_line("Process not found: %s", TARGET_PROCESS);
+        ExitProcess(11);
+    }
+
+    if (!explicit_dll && !select_versioned_dll(pid, dll_path)) {
+        ExitProcess(12);
+    }
 
     DWORD attr = GetFileAttributesA(dll_path);
     if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY)) {
         log_line("DLL not found: %s", dll_path);
         ExitProcess(10);
-    }
-
-    DWORD pid = find_process_id(TARGET_PROCESS);
-    if (!pid) {
-        log_line("Process not found: %s", TARGET_PROCESS);
-        ExitProcess(11);
     }
 
     int rc = inject_dll(pid, dll_path);
