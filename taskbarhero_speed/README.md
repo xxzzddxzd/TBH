@@ -37,17 +37,23 @@ cd /Users/xuzhengda/Documents/workspace/tbh
 sh taskbarhero_speed/build.sh
 ```
 
-Build a release folder from a plain clone:
+Build a release folder from a plain clone without compiling:
 
 ```sh
 cd /Users/xuzhengda/Documents/workspace/tbh
-sh taskbarhero_speed/package_windows.sh
+sh taskbarhero_speed/package_prebuilt.sh
 ```
 
-If MinGW is unavailable, the package script skips compilation and uses the
-tracked `taskbarhero_speed/versions/<game-version>/` binaries plus the tracked
-injector. If MinGW is available, it refreshes the current `Version.txt` entry
-before packaging.
+This uses the tracked `taskbarhero_speed/versions/<game-version>/` binaries
+plus the tracked injector. The equivalent explicit form is:
+
+```sh
+sh taskbarhero_speed/package_windows.sh --prebuilt
+```
+
+If you want to refresh the current `Version.txt` entry from source and have
+MinGW installed, run `sh taskbarhero_speed/package_windows.sh` without
+`--prebuilt`.
 
 Enable on restart:
 

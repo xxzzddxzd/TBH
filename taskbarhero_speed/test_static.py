@@ -10,6 +10,7 @@ INI = ROOT / "taskbarhero_speed" / "package" / "TaskBarHeroSpeed.ini"
 PKG_README = ROOT / "taskbarhero_speed" / "package" / "README.txt"
 INJECTOR = ROOT / "taskbarhero_speed" / "injector.c"
 PACKAGE_SCRIPT = ROOT / "taskbarhero_speed" / "package_windows.sh"
+PREBUILT_SCRIPT = ROOT / "taskbarhero_speed" / "package_prebuilt.sh"
 VERSIONS_DIR = ROOT / "taskbarhero_speed" / "versions"
 
 
@@ -26,6 +27,7 @@ def main():
     readme = PKG_README.read_text(encoding="utf-8")
     injector = INJECTOR.read_text(encoding="utf-8")
     package_script = PACKAGE_SCRIPT.read_text(encoding="utf-8")
+    prebuilt_script = PREBUILT_SCRIPT.read_text(encoding="utf-8")
     failures = 0
 
     expectations = [
@@ -51,6 +53,8 @@ def main():
         ("versions.json", package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TRACKED_VERSIONS_DIR", package_script),
+        ("--prebuilt", package_script),
+        ("package_windows.sh --prebuilt", prebuilt_script),
         ("TaskBarHeroSpeed", readme),
         ("versions\\<游戏版本>\\TaskBarHeroSpeed.dll", readme),
     ]
