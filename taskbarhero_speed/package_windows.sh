@@ -5,36 +5,65 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG_NAME="TaskBarHeroSpeedPatch-Windows"
 OUT_DIR="$ROOT/dist/$PKG_NAME"
 ZIP_PATH="$ROOT/dist/$PKG_NAME.zip"
+TRACKED_VERSIONS_DIR="$ROOT/taskbarhero_speed/versions"
+PACKAGE_INI="$ROOT/taskbarhero_speed/package/TaskBarHeroSpeed.ini"
+PLUGIN_VERSION="0.4.0.2"
 
 cd "$ROOT"
-sh taskbarhero_speed/build.sh
+if command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1; then
+  sh taskbarhero_speed/build.sh
+  GAME_VERSION="${TBH_GAME_VERSION:-}"
+  if [ -z "$GAME_VERSION" ] && [ -f "$ROOT/Version.txt" ]; then
+    GAME_VERSION="$(sed -n '1p' "$ROOT/Version.txt" | tr -d '\r')"
+  fi
+  if [ -n "$GAME_VERSION" ]; then
+    mkdir -p "$TRACKED_VERSIONS_DIR/$GAME_VERSION"
+    cp TaskBarHeroSpeed.dll "$TRACKED_VERSIONS_DIR/$GAME_VERSION/TaskBarHeroSpeed.dll"
+    cp winhttp.dll "$TRACKED_VERSIONS_DIR/$GAME_VERSION/winhttp.dll"
+  fi
+  cp TaskBarHeroSpeedInject.exe "$ROOT/taskbarhero_speed/TaskBarHeroSpeedInject.exe"
+else
+  echo "x86_64-w64-mingw32-gcc not found; packaging tracked plugin binaries"
+fi
 
 rm -rf "$OUT_DIR" "$ZIP_PATH"
 mkdir -p "$OUT_DIR/AutoStart-Optional"
 mkdir -p "$OUT_DIR/versions"
 
-cp TaskBarHeroSpeed.dll "$OUT_DIR/"
-cp TaskBarHeroSpeedInject.exe "$OUT_DIR/"
-cp TaskBarHeroSpeed.ini "$OUT_DIR/"
+if [ -f TaskBarHeroSpeed.dll ]; then
+  cp TaskBarHeroSpeed.dll "$OUT_DIR/"
+else
+  cp "$TRACKED_VERSIONS_DIR/$(sed -n '1p' "$ROOT/Version.txt" | tr -d '\r')/TaskBarHeroSpeed.dll" "$OUT_DIR/"
+fi
+if [ -f TaskBarHeroSpeedInject.exe ]; then
+  cp TaskBarHeroSpeedInject.exe "$OUT_DIR/"
+else
+  cp "$ROOT/taskbarhero_speed/TaskBarHeroSpeedInject.exe" "$OUT_DIR/"
+fi
+cp "$PACKAGE_INI" "$OUT_DIR/TaskBarHeroSpeed.ini"
 cp taskbarhero_speed/package/Inject.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Inject-CrossOver-macOS.command "$OUT_DIR/"
 cp taskbarhero_speed/package/Install-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Uninstall-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/README.txt "$OUT_DIR/"
 cp taskbarhero_speed/package/README_AutoStart_Optional.txt "$OUT_DIR/"
-cp winhttp.dll "$OUT_DIR/AutoStart-Optional/"
+if [ -f winhttp.dll ]; then
+  cp winhttp.dll "$OUT_DIR/AutoStart-Optional/"
+else
+  cp "$TRACKED_VERSIONS_DIR/$(sed -n '1p' "$ROOT/Version.txt" | tr -d '\r')/winhttp.dll" "$OUT_DIR/AutoStart-Optional/"
+fi
 chmod +x "$OUT_DIR/Inject-CrossOver-macOS.command"
 
 FIRST_VERSION=1
 {
   printf '{\n'
-  printf '  "plugin_version": "0.4.0.2",\n'
+  printf '  "plugin_version": "%s",\n' "$PLUGIN_VERSION"
   printf '  "versions": {\n'
-  for VERSION_DIR in "$ROOT"/dll/*; do
+  for VERSION_DIR in "$TRACKED_VERSIONS_DIR"/*; do
     [ -d "$VERSION_DIR" ] || continue
     VERSION="$(basename "$VERSION_DIR")"
-    DLL_SRC="$VERSION_DIR/TaskBarHeroSpeed_latest.dll"
-    WINHTTP_SRC="$VERSION_DIR/winhttp_latest.dll"
+    DLL_SRC="$VERSION_DIR/TaskBarHeroSpeed.dll"
+    WINHTTP_SRC="$VERSION_DIR/winhttp.dll"
     [ -f "$DLL_SRC" ] || continue
     [ -f "$WINHTTP_SRC" ] || continue
     mkdir -p "$OUT_DIR/versions/$VERSION"

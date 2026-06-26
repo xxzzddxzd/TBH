@@ -26,12 +26,28 @@ Logs are written to `TaskBarHeroSpeed.log`.
 For game updates, use `UPDATE_WORKFLOW.md` and `update_rvas.py` to regenerate
 the app-specific RVAs before rebuilding.
 
+The repository intentionally carries only the latest plugin binaries per game
+version under `taskbarhero_speed/versions/`. It does not carry game binaries,
+metadata, or IDA databases.
+
 Build and archive under `dll/<game-version>/`:
 
 ```sh
 cd /Users/xuzhengda/Documents/workspace/tbh
 sh taskbarhero_speed/build.sh
 ```
+
+Build a release folder from a plain clone:
+
+```sh
+cd /Users/xuzhengda/Documents/workspace/tbh
+sh taskbarhero_speed/package_windows.sh
+```
+
+If MinGW is unavailable, the package script skips compilation and uses the
+tracked `taskbarhero_speed/versions/<game-version>/` binaries plus the tracked
+injector. If MinGW is available, it refreshes the current `Version.txt` entry
+before packaging.
 
 Enable on restart:
 

@@ -15,3 +15,9 @@ TaskBarHeroChestStats.txt
 dist/
 *.dll
 *.exe
+
+# Tracked runtime binaries kept intentionally small: latest plugin per game version
+# plus the injector needed by a plain git clone.
+!taskbarhero_speed/TaskBarHeroSpeedInject.exe
+!taskbarhero_speed/versions/
+!taskbarhero_speed/versions/**

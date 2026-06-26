@@ -6,10 +6,11 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "taskbarhero_speed" / "winhttp_proxy.c"
-INI = ROOT / "TaskBarHeroSpeed.ini"
+INI = ROOT / "taskbarhero_speed" / "package" / "TaskBarHeroSpeed.ini"
 PKG_README = ROOT / "taskbarhero_speed" / "package" / "README.txt"
 INJECTOR = ROOT / "taskbarhero_speed" / "injector.c"
 PACKAGE_SCRIPT = ROOT / "taskbarhero_speed" / "package_windows.sh"
+VERSIONS_DIR = ROOT / "taskbarhero_speed" / "versions"
 
 
 def require(condition, message):
@@ -49,6 +50,7 @@ def main():
         ("select_versioned_dll", injector),
         ("versions.json", package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
+        ("TRACKED_VERSIONS_DIR", package_script),
         ("TaskBarHeroSpeed", readme),
         ("versions\\<游戏版本>\\TaskBarHeroSpeed.dll", readme),
     ]
@@ -70,6 +72,14 @@ def main():
         if match:
             value = float(match.group(1))
             failures += require(1.0 <= value <= 10.0, f"{key} out of 1..10 range")
+
+    for version in ("1.00.19", "1.00.20", "1.00.21"):
+        failures += require((VERSIONS_DIR / version / "TaskBarHeroSpeed.dll").is_file(),
+                            f"missing tracked TaskBarHeroSpeed.dll for {version}")
+        failures += require((VERSIONS_DIR / version / "winhttp.dll").is_file(),
+                            f"missing tracked winhttp.dll for {version}")
+    failures += require((ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedInject.exe").is_file(),
+                        "missing tracked injector exe")
 
     return failures
 
