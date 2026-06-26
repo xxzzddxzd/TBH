@@ -251,18 +251,11 @@ static int select_versioned_dll(DWORD pid, char *dll_path)
     wsprintfA(selected, "%s\\versions\\%s\\%s", g_base_dir, version, TARGET_DLL);
     selected[sizeof(selected) - 1] = 0;
     if (!file_exists(selected)) {
-        wsprintfA(selected, "%s\\%s", g_base_dir, TARGET_DLL);
-        selected[sizeof(selected) - 1] = 0;
-        if (!file_exists(selected)) {
-            log_line("No plugin DLL for game version %s. Expected versions\\%s\\%s",
-                     version,
-                     version,
-                     TARGET_DLL);
-            return 0;
-        }
-        log_line("Versioned DLL missing for game %s; falling back to %s",
+        log_line("No plugin DLL for game version %s. Expected versions\\%s\\%s",
                  version,
-                 selected);
+                 version,
+                 TARGET_DLL);
+        return 0;
     }
 
     sanitize_filename_component(version, safe_version, sizeof(safe_version));

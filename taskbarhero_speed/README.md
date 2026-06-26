@@ -30,6 +30,12 @@ The repository intentionally carries only the latest plugin binaries per game
 version under `taskbarhero_speed/versions/`. It does not carry game binaries,
 metadata, or IDA databases.
 
+Normal users should use the GitHub Release ZIP, not a git clone. The release
+package contains only the latest three supported game versions under
+`versions/<game-version>/`; `Inject.bat` and `Install-AutoStart.bat` both load
+the DLL matching the running game's `Version.txt`. Unsupported game versions
+fail with an update prompt instead of falling back to an older DLL.
+
 Build and archive under `dll/<game-version>/`:
 
 ```sh
@@ -45,7 +51,8 @@ sh taskbarhero_speed/package_prebuilt.sh
 ```
 
 This uses the tracked `taskbarhero_speed/versions/<game-version>/` binaries
-plus the tracked injector. The equivalent explicit form is:
+plus the tracked injector, then includes the latest three game versions in the
+release folder. The equivalent explicit form is:
 
 ```sh
 sh taskbarhero_speed/package_windows.sh --prebuilt

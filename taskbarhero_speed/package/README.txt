@@ -10,7 +10,11 @@ TaskBarHero Speed Patch for Windows
 
    Injected ... TaskBarHeroSpeed.dll into TaskBarHero.exe
 
-这种方式不需要知道游戏安装目录。Inject.bat 会自动查找正在运行的 TaskBarHero.exe，读取游戏 Version.txt，并注入 versions\<游戏版本>\TaskBarHeroSpeed.dll。
+正式 Release 包只包含最近 3 个游戏版本的 DLL。
+Inject.bat 会自动查找正在运行的 TaskBarHero.exe，读取游戏 Version.txt，并注入 versions\<游戏版本>\TaskBarHeroSpeed.dll。
+如果当前游戏版本不在 versions 目录里，请运行 Update.bat 更新补丁包，或去 GitHub Releases 下载最新版 ZIP。
+
+这种方式不需要知道游戏安装目录。
 
 默认速度是 5 倍。注入成功后，游戏窗口上会出现一个小悬浮框:
 
@@ -107,6 +111,17 @@ next 是按同类 best 的最短间隔预测的下一次掉落倒计时；到时
 如果游戏里已经注入过，改完后可以直接再双击 Inject.bat。
 注入器会复制一个临时 DLL 文件再注入，不需要重启游戏。
 
+
+更新补丁:
+
+双击 Update.bat 会下载 GitHub 最新 Release，覆盖当前补丁文件夹，并保留:
+
+  TaskBarHeroSpeed.ini
+  TaskBarHeroChestStats.txt
+  TaskBarHeroSpeedInstallPath.txt
+
+更新完成后，重新双击 Inject.bat 即可。
+
 macOS / CrossOver:
 
 如果你是在 macOS 的 CrossOver 里运行 Windows 版 TaskBarHero:
@@ -146,8 +161,8 @@ CrossOver bottle 和游戏目录，不依赖固定 Steam 路径。
    Unity Time hooks installed ... speed=5.00
 
 4. 游戏更新后失效
-   这个补丁只适配 README 顶部显示的 TaskBarHero 版本。插件启动时会读取游戏 Version.txt；版本不匹配会弹窗提示并停止安装 hook，需要重新适配。
-   如果发布包内有 versions\<新版号>，Inject.bat 会自动选择新版号对应的最新插件。
+   这个补丁只适配 versions 目录里已有的游戏版本。插件启动时会读取游戏 Version.txt；版本不支持会提示更新并停止安装 hook。
+   如果发布包内有 versions\<新版号>，Inject.bat 会自动选择新版号对应的插件。
 
 
 可选: 自动加载方式

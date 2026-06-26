@@ -19,8 +19,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Write-Host ('Game folder: ' + $gameDir);" ^
   "Write-Host ('Game version: ' + $displayVersion);" ^
   "$versionedWinhttp = if ($gameVersion) { Join-Path $src ('versions\' + $gameVersion + '\winhttp.dll') } else { '' };" ^
-  "$fallbackWinhttp = Join-Path $src 'AutoStart-Optional\winhttp.dll';" ^
-  "if ($versionedWinhttp -and (Test-Path $versionedWinhttp)) { $winhttp = $versionedWinhttp } elseif (Test-Path $fallbackWinhttp) { $winhttp = $fallbackWinhttp; Write-Host 'Versioned winhttp.dll not found; using fallback.' } else { Write-Host 'No winhttp.dll found for this package.'; exit 3 }" ^
+  "if ($versionedWinhttp -and (Test-Path $versionedWinhttp)) { $winhttp = $versionedWinhttp } else { Write-Host ('No winhttp.dll for game version ' + $displayVersion + '. Download the latest release package.'); exit 3 }" ^
   "Copy-Item -Force $winhttp (Join-Path $gameDir 'winhttp.dll');" ^
   "$targetIni = Join-Path $gameDir 'TaskBarHeroSpeed.ini';" ^
   "if (-not (Test-Path $targetIni)) { Copy-Item -Force (Join-Path $src 'TaskBarHeroSpeed.ini') $targetIni; Write-Host 'TaskBarHeroSpeed.ini installed.' } else { Write-Host 'Existing TaskBarHeroSpeed.ini preserved.' }" ^

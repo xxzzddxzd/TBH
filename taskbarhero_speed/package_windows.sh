@@ -9,6 +9,11 @@ TRACKED_VERSIONS_DIR="$ROOT/taskbarhero_speed/versions"
 PACKAGE_INI="$ROOT/taskbarhero_speed/package/TaskBarHeroSpeed.ini"
 PLUGIN_VERSION="0.4.0.2"
 PREBUILT_ONLY=0
+MAX_RELEASE_GAME_VERSIONS=3
+
+if [ -n "${TBH_MAX_RELEASE_GAME_VERSIONS:-}" ]; then
+  MAX_RELEASE_GAME_VERSIONS="$TBH_MAX_RELEASE_GAME_VERSIONS"
+fi
 
 if [ "${1:-}" = "--prebuilt" ] || [ "${TBH_PREBUILT_ONLY:-0}" = "1" ] || [ "${TBH_SKIP_BUILD:-0}" = "1" ]; then
   PREBUILT_ONLY=1
@@ -34,27 +39,27 @@ else
   echo "x86_64-w64-mingw32-gcc not found; packaging tracked plugin binaries"
 fi
 
-if [ -z "$GAME_VERSION" ]; then
-  echo "missing game version; set TBH_GAME_VERSION or create Version.txt" >&2
-  exit 1
-fi
+release_version_dirs() {
+  (
+    cd "$TRACKED_VERSIONS_DIR"
+    for VERSION in *; do
+      [ -d "$VERSION" ] || continue
+      [ -f "$VERSION/TaskBarHeroSpeed.dll" ] || continue
+      [ -f "$VERSION/winhttp.dll" ] || continue
+      printf '%s\n' "$VERSION"
+    done | sort -t. -k1,1n -k2,2n -k3,3n | tail -n "$MAX_RELEASE_GAME_VERSIONS"
+  )
+}
 
-TRACKED_DLL="$TRACKED_VERSIONS_DIR/$GAME_VERSION/TaskBarHeroSpeed.dll"
-TRACKED_WINHTTP="$TRACKED_VERSIONS_DIR/$GAME_VERSION/winhttp.dll"
-if [ ! -f "$TRACKED_DLL" ] || [ ! -f "$TRACKED_WINHTTP" ]; then
-  echo "missing tracked plugin binaries for game version $GAME_VERSION" >&2
+RELEASE_VERSIONS="$(release_version_dirs)"
+if [ -z "$RELEASE_VERSIONS" ]; then
+  echo "missing tracked plugin binaries under $TRACKED_VERSIONS_DIR" >&2
   exit 1
 fi
 
 rm -rf "$OUT_DIR" "$ZIP_PATH"
-mkdir -p "$OUT_DIR/AutoStart-Optional"
 mkdir -p "$OUT_DIR/versions"
 
-if [ "$PREBUILT_ONLY" -eq 0 ] && [ -f TaskBarHeroSpeed.dll ]; then
-  cp TaskBarHeroSpeed.dll "$OUT_DIR/"
-else
-  cp "$TRACKED_DLL" "$OUT_DIR/"
-fi
 if [ "$PREBUILT_ONLY" -eq 0 ] && [ -f TaskBarHeroSpeedInject.exe ]; then
   cp TaskBarHeroSpeedInject.exe "$OUT_DIR/"
 else
@@ -62,16 +67,12 @@ else
 fi
 cp "$PACKAGE_INI" "$OUT_DIR/TaskBarHeroSpeed.ini"
 cp taskbarhero_speed/package/Inject.bat "$OUT_DIR/"
+cp taskbarhero_speed/package/Update.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Inject-CrossOver-macOS.command "$OUT_DIR/"
 cp taskbarhero_speed/package/Install-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Uninstall-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/README.txt "$OUT_DIR/"
 cp taskbarhero_speed/package/README_AutoStart_Optional.txt "$OUT_DIR/"
-if [ "$PREBUILT_ONLY" -eq 0 ] && [ -f winhttp.dll ]; then
-  cp winhttp.dll "$OUT_DIR/AutoStart-Optional/"
-else
-  cp "$TRACKED_WINHTTP" "$OUT_DIR/AutoStart-Optional/"
-fi
 chmod +x "$OUT_DIR/Inject-CrossOver-macOS.command"
 
 FIRST_VERSION=1
@@ -79,13 +80,10 @@ FIRST_VERSION=1
   printf '{\n'
   printf '  "plugin_version": "%s",\n' "$PLUGIN_VERSION"
   printf '  "versions": {\n'
-  for VERSION_DIR in "$TRACKED_VERSIONS_DIR"/*; do
-    [ -d "$VERSION_DIR" ] || continue
-    VERSION="$(basename "$VERSION_DIR")"
+  for VERSION in $RELEASE_VERSIONS; do
+    VERSION_DIR="$TRACKED_VERSIONS_DIR/$VERSION"
     DLL_SRC="$VERSION_DIR/TaskBarHeroSpeed.dll"
     WINHTTP_SRC="$VERSION_DIR/winhttp.dll"
-    [ -f "$DLL_SRC" ] || continue
-    [ -f "$WINHTTP_SRC" ] || continue
     mkdir -p "$OUT_DIR/versions/$VERSION"
     cp "$DLL_SRC" "$OUT_DIR/versions/$VERSION/TaskBarHeroSpeed.dll"
     cp "$WINHTTP_SRC" "$OUT_DIR/versions/$VERSION/winhttp.dll"

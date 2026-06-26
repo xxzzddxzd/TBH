@@ -111,8 +111,8 @@ if [ ! -f "$SCRIPT_DIR/TaskBarHeroSpeedInject.exe" ]; then
   exit 1
 fi
 
-if [ ! -d "$SCRIPT_DIR/versions" ] && [ ! -f "$SCRIPT_DIR/TaskBarHeroSpeed.dll" ]; then
-  echo "Missing versions/ and fallback TaskBarHeroSpeed.dll in:"
+if [ ! -d "$SCRIPT_DIR/versions" ]; then
+  echo "Missing versions/ in:"
   echo "  $SCRIPT_DIR"
   pause_if_interactive
   exit 1

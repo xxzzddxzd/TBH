@@ -12,6 +12,8 @@ INJECTOR = ROOT / "taskbarhero_speed" / "injector.c"
 PACKAGE_SCRIPT = ROOT / "taskbarhero_speed" / "package_windows.sh"
 PREBUILT_SCRIPT = ROOT / "taskbarhero_speed" / "package_prebuilt.sh"
 VERSIONS_DIR = ROOT / "taskbarhero_speed" / "versions"
+INSTALL_AUTOSTART = ROOT / "taskbarhero_speed" / "package" / "Install-AutoStart.bat"
+UPDATE_BAT = ROOT / "taskbarhero_speed" / "package" / "Update.bat"
 
 
 def require(condition, message):
@@ -28,6 +30,8 @@ def main():
     injector = INJECTOR.read_text(encoding="utf-8")
     package_script = PACKAGE_SCRIPT.read_text(encoding="utf-8")
     prebuilt_script = PREBUILT_SCRIPT.read_text(encoding="utf-8")
+    install_autostart = INSTALL_AUTOSTART.read_text(encoding="utf-8")
+    update_bat = UPDATE_BAT.read_text(encoding="utf-8") if UPDATE_BAT.exists() else ""
     failures = 0
 
     expectations = [
@@ -50,19 +54,34 @@ def main():
         ("auto_portal_stage_key=", ini),
         ("versions\\\\%s\\\\%s", injector),
         ("select_versioned_dll", injector),
+        ("No plugin DLL for game version %s. Expected versions\\\\%s\\\\%s", injector),
         ("versions.json", package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TRACKED_VERSIONS_DIR", package_script),
+        ("MAX_RELEASE_GAME_VERSIONS=3", package_script),
+        ("release_version_dirs", package_script),
         ("--prebuilt", package_script),
         ("package_windows.sh --prebuilt", prebuilt_script),
+        ("Update.bat", package_script),
+        ("api.github.com/repos/xxzzddxzd/TBH/releases/latest", update_bat),
         ("TaskBarHeroSpeed", readme),
         ("versions\\<游戏版本>\\TaskBarHeroSpeed.dll", readme),
+        ("最近 3 个游戏版本", readme),
+        ("Update.bat", readme),
     ]
     for needle, haystack in expectations:
         failures += require(needle in haystack, f"missing {needle}")
 
     failures += require("#define CUBE_EXP_MULTIPLIER 10.0f" not in src,
                         "cube multiplier must be runtime configurable, not the old fixed macro")
+    failures += require("Versioned DLL missing" not in injector,
+                        "injector must not fall back to the root DLL for unsupported game versions")
+    failures += require("TaskBarHeroSpeed.dll\" \"$OUT_DIR/\"" not in package_script,
+                        "release package must not include a root fallback TaskBarHeroSpeed.dll")
+    failures += require("AutoStart-Optional" not in package_script,
+                        "release package must not include AutoStart-Optional fallback DLLs")
+    failures += require("AutoStart-Optional" not in install_autostart,
+                        "auto-start install must not fall back to an unversioned winhttp.dll")
 
     version_match = re.search(r'#define\s+TBHS_SUPPORTED_GAME_VERSION\s+"([^"]+)"', src)
     failures += require(bool(version_match), "supported game version macro not found")
