@@ -7,7 +7,7 @@ OUT_DIR="$ROOT/dist/$PKG_NAME"
 ZIP_PATH="$ROOT/dist/$PKG_NAME.zip"
 TRACKED_VERSIONS_DIR="$ROOT/taskbarhero_speed/versions"
 PACKAGE_INI="$ROOT/taskbarhero_speed/package/TaskBarHeroSpeed.ini"
-PLUGIN_VERSION="0.4.0.2"
+PLUGIN_VERSION="0.4.0.3"
 PREBUILT_ONLY=0
 MAX_RELEASE_GAME_VERSIONS=3
 

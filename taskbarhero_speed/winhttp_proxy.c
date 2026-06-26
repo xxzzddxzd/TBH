@@ -5,8 +5,8 @@
 
 #define TBHS_SUPPORTED_GAME_VERSION "1.00.21"
 #define TBHS_PLUGIN_VERSION "0.4.0"
-#define TBHS_PLUGIN_SUBVERSION "2"
-#define TBHS_PLUGIN_DISPLAY_VERSION "0.4.0.2"
+#define TBHS_PLUGIN_SUBVERSION "3"
+#define TBHS_PLUGIN_DISPLAY_VERSION "0.4.0.3"
 #define SPEED_DEFAULT 5.0f
 #define EXP_MULTIPLIER_DEFAULT 1.0f
 #define CUBE_EXP_MULTIPLIER_DEFAULT 10.0f
@@ -50,6 +50,21 @@
 #define RVA_BOSS_DROP_RATE_CALC 0x9EC8E0ULL
 #define RVA_EXP_REWARD_CALC 0x9EC9D0ULL /* exp reward multiplier hook; not a drop rate */
 #define RVA_CUBE_ADD_EXP 0x8A3580ULL /* Cube add exp void(float) */
+#define RVA_UI_CUBE_HML 0xA20FD0ULL /* UI_Cube init; caches the active UI_Cube instance */
+#define RVA_UI_CUBE_ON_DISABLE 0xA20DF0ULL
+#define RVA_UI_CUBE_ON_DESTROY 0xA20D60ULL
+#define RVA_UI_CUBE_AUTOFILL 0xA22150ULL /* UI_Cube auto-fill current recipe */
+#define RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL /* UI_RemakeStash inventory -> stash batch button */
+#define RVA_UI_MANAGER_TYPEINFO 0x5E3D880ULL /* np<UIManager>_TypeInfo */
+#define RVA_UI_MANAGER_SINGLETON_TYPEINFO 0x5DC4860ULL /* np<UIManager> generic TypeInfo used by gea() */
+#define RVA_NP_GET_INSTANCE 0x298ECF0ULL /* np<T>.gea() singleton getter */
+#define RVA_CUBE_SET_USE_STORAGE 0x8A3050ULL
+#define RVA_CUBE_SET_SYNTHESIS_TYPE 0x89F690ULL
+#define RVA_CUBE_SELECT_RECIPE 0x8AA8D0ULL
+#define RVA_CUBE_CLEAR_CURRENT_RECIPE 0x8AD760ULL /* Cube clear current recipe slots */
+#define RVA_CUBE_TRIGGER_CURRENT_RECIPE 0x8A3F00ULL
+#define RVA_STAGE_BOX_REFRESH_AUTO_OPEN 0xA29490ULL /* StageBox::lkc refreshes auto-open cd */
+#define RVA_AUTO_CHEST_OPEN_MOVE_NEXT 0xA31D30ULL /* StageBox AutoChestOpenAsync MoveNext */
 #define RVA_STAT_VALUE_GET 0x9D5A20ULL
 #define RVA_GIVE_REWARD_ITEM 0x9097E0ULL
 #define RVA_REWARD_ADD_ITEM 0x909AB0ULL
@@ -58,6 +73,7 @@
 #define RVA_DICT_TRY_GET_VALUE 0x2D09070ULL /* Dictionary<EBoxType, List<BoxData>>.TryGetValue */
 #define RVA_BOX_REWARD_TRY_GET_METHODINFO 0x5DDAE18ULL /* MethodInfo used by box reward dictionary */
 #define RVA_IL2CPP_GC_WRITE_BARRIER 0x58F760ULL /* write barrier used after managed reference stores */
+#define RVA_OPEN_BOX_STATS 0x9EC280ULL /* yw::kor(EBoxType) returns auto-open max/reduce seconds */
 #define RVA_DROP_ROLL_PROCESS 0x891400ULL
 #define RVA_DROP_REWARD_CALLBACK 0x0ULL /* 0 = wildcard active delegate invoke */
 #define RVA_DROP_COOLDOWN_SKIP_BRANCH 0x89161BULL /* preserved/manual */
@@ -67,6 +83,15 @@
 
 #define STAGE_DATA_STAGE_LIST_OFFSET 56
 #define STAGE_DATA_CURRENT_CACHE_OFFSET 136
+#define UI_MANAGER_UI_CUBE_OFFSET 0xD8
+#define UI_MANAGER_UI_NEW_STASH_OFFSET 0xE8
+#define STAGE_BOX_BOX_TYPE_OFFSET 0x38
+#define STAGE_BOX_AUTO_OPEN_DURATION_OFFSET 0x108
+#define STAGE_BOX_AUTO_OPEN_SECONDS_OFFSET 0x10C
+#define STAGE_BOX_AUTO_OPEN_ELAPSED_OFFSET 0x114
+#define STAGE_BOX_AUTO_OPEN_PAUSED_ELAPSED_OFFSET 0x118
+#define STAGE_BOX_AUTO_OPEN_ENABLED_OFFSET 0x128
+#define AUTO_CHEST_OPEN_STATE_STAGE_BOX_OFFSET 0x10
 #define IL2CPP_TYPE_STATIC_FIELDS_OFFSET 184
 #define IL2CPP_LIST_ITEMS_OFFSET 16
 #define IL2CPP_LIST_SIZE_OFFSET 24
@@ -80,7 +105,7 @@
 #define OVERLAY_WINDOW_TITLE "TaskBarHero Overlay"
 #define OVERLAY_OLD_WINDOW_TITLE "TaskBarHero Speed"
 #define OVERLAY_WIDTH 684
-#define OVERLAY_HEIGHT 242
+#define OVERLAY_HEIGHT 278
 #define OVERLAY_LOG_LINE_COUNT 8
 #define OVERLAY_LOG_LINE_SIZE 160
 #define OVERLAY_BUTTON_MIN 1001
@@ -107,14 +132,32 @@
 #define OVERLAY_BUTTON_CUBE_MINUS 1022
 #define OVERLAY_LABEL_CUBE_MULTIPLIER 1023
 #define OVERLAY_BUTTON_CUBE_PLUS 1024
+#define OVERLAY_BUTTON_SYNTH_TOGGLE 1025
+#define OVERLAY_BUTTON_SYNTH_GRADE_MINUS 1026
+#define OVERLAY_LABEL_SYNTH_GRADE 1027
+#define OVERLAY_BUTTON_SYNTH_GRADE_PLUS 1028
+#define OVERLAY_BUTTON_SYNTH_STORAGE 1029
 #define AUTO_PORTAL_INTERVAL_MIN_MS 5000
 #define AUTO_PORTAL_INTERVAL_MAX_MS 3600000
+#define AUTO_OPEN_BOX_SECONDS 5
+#define AUTO_SYNTHESIS_INTERVAL_MS 3000
+#define AUTO_SYNTHESIS_STASH_DELAY_MS 3000
+#define AUTO_SYNTHESIS_FILL_DELAY_MS 3000
+#define AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000
+#define AUTO_SYNTHESIS_PHASE_IDLE 0
+#define AUTO_SYNTHESIS_PHASE_WAIT_STASH 1
+#define AUTO_SYNTHESIS_PHASE_WAIT_FILL 2
+#define AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER 3
 #define AUTO_RESTART_REQUEST_NONE 0
 #define AUTO_RESTART_REQUEST_LOCK 1
 #define AUTO_RESTART_REQUEST_UNLOCK 2
 #define AUTO_SWITCH_WAIT_NONE 0
 #define AUTO_SWITCH_WAIT_NORMAL_DROP 1
 #define AUTO_SWITCH_WAIT_BOSS_DROP 2
+#define ERECIPE_TYPE_SYNTHESIS 1
+#define EITEM_SYNTHESIS_GEAR 0
+#define EGRADE_BEYOND 6
+#define EGRADE_COSMIC 9
 #define OVERLAY_COLOR_BG RGB(28, 24, 20)
 #define OVERLAY_COLOR_PANEL RGB(42, 35, 29)
 #define OVERLAY_COLOR_PANEL_2 RGB(34, 30, 25)
@@ -148,6 +191,7 @@ typedef void (*unity_screen_set_resolution_bool4_t)(int width, int height, int f
 typedef void (*unity_screen_set_resolution_mode4_t)(int width, int height, int mode, int preferred_refresh_rate);
 typedef void (*unity_screen_set_resolution_injected_t)(int width, int height, int mode, UnityRefreshRate *preferred_refresh_rate);
 typedef void *(__fastcall *singleton_get_instance_t)(void *type_info);
+typedef void *(__fastcall *np_get_instance_t)(void *type_info);
 typedef int (__fastcall *stagecache_get_int_t)(void *stage_cache);
 typedef int (__fastcall *stage_enter_exact_key_t)(void *stage_manager, unsigned int stage_key, void *method);
 typedef __int64 (__fastcall *stage_set_current_cache_t)(void *stage_cache);
@@ -159,11 +203,20 @@ typedef int (__fastcall *box_count_get_t)(unsigned int box_type, void *method);
 typedef __int64 (__fastcall *box_reward_select_t)(void *box_table, unsigned int item_key, void *context);
 typedef unsigned char (__fastcall *dict_try_get_value_t)(void *dict, unsigned int key, void **out_value, void *method);
 typedef __int64 (__fastcall *gc_write_barrier_t)(void *slot, void *obj);
+typedef __int64 (__fastcall *open_box_stats_t)(void *account_status, int box_type, void *method);
 typedef void (__fastcall *drop_roll_process_t)(void *stage_manager, int source_id, int stage_type, int item_key, float raw_rate, int monster_type);
 typedef void (__fastcall *drop_reward_callback_t)(void *target, unsigned int reward_value, void *method);
 typedef float (__fastcall *drop_rate_calc_t)(void *rate_owner, float raw_rate, void *method);
 typedef float (__fastcall *exp_reward_calc_t)(void *reward_owner, float base_exp, int is_boss, char is_actboss, void *method);
 typedef void (__fastcall *cube_add_exp_t)(float amount, void *method);
+typedef __int64 (__fastcall *ui_cube_instance_t)(void *ui_cube, void *method);
+typedef __int64 (__fastcall *ui_remake_stash_action_t)(void *ui_stash, void *method);
+typedef __int64 (__fastcall *cube_set_bool_t)(char value, void *method);
+typedef __int64 (__fastcall *cube_set_int_t)(int value, void *method);
+typedef __int64 (__fastcall *cube_select_recipe_t)(int recipe_type, int synthesis_type, int grade, int index, void *method);
+typedef __int64 (__fastcall *cube_clear_current_recipe_t)(void *method);
+typedef __int64 (__fastcall *cube_trigger_current_recipe_t)(void *method);
+typedef __int64 (__fastcall *auto_chest_open_move_next_t)(void *state_machine, void *method);
 
 typedef struct DropObservationContext {
     volatile LONG active;
@@ -258,6 +311,9 @@ static int g_force_box_reward_select_enabled = 0;
 static int g_keep_boxdata_after_select_enabled = 0;
 static int g_force_box_reward_select_config_enabled = 0;
 static int g_keep_boxdata_after_select_config_enabled = 0;
+static int g_auto_synthesis_enabled = 0;
+static int g_auto_synthesis_grade = EGRADE_BEYOND;
+static int g_auto_synthesis_use_storage = 1;
 static volatile LONG g_speed_dirty = 1;
 
 static HMODULE g_game_assembly;
@@ -288,15 +344,23 @@ static HookPatch g_hook_give_reward_item;
 static HookPatch g_hook_reward_add_item;
 static HookPatch g_hook_box_count_get;
 static HookPatch g_hook_box_reward_select;
+static HookPatch g_hook_open_box_stats;
+static HookPatch g_hook_auto_chest_open_move_next;
 static HookPatch g_hook_drop_roll_process;
 static HookPatch g_hook_normal_drop_rate_observer;
 static HookPatch g_hook_boss_drop_rate_observer;
 static HookPatch g_hook_exp_reward_calc;
 static HookPatch g_hook_cube_add_exp;
+static HookPatch g_hook_ui_cube_hml;
+static HookPatch g_hook_ui_cube_on_disable;
+static HookPatch g_hook_ui_cube_on_destroy;
 static HWND g_overlay_hwnd;
 static HWND g_overlay_label;
 static HWND g_overlay_exp_multiplier_label;
 static HWND g_overlay_cube_multiplier_label;
+static HWND g_overlay_synth_button;
+static HWND g_overlay_synth_grade_label;
+static HWND g_overlay_synth_storage_button;
 static HWND g_overlay_boss_button;
 static HWND g_overlay_actboss_button;
 static HWND g_overlay_auto_switch_button;
@@ -338,12 +402,25 @@ static give_reward_item_t g_real_give_reward_item;
 static reward_add_item_t g_real_reward_add_item;
 static box_count_get_t g_real_box_count_get;
 static box_reward_select_t g_real_box_reward_select;
+static open_box_stats_t g_real_open_box_stats;
+static auto_chest_open_move_next_t g_real_auto_chest_open_move_next;
 static drop_roll_process_t g_real_drop_roll_process;
 static drop_reward_callback_t g_real_drop_reward_callback;
 static drop_rate_calc_t g_real_normal_drop_rate_calc;
 static drop_rate_calc_t g_real_boss_drop_rate_calc;
 static exp_reward_calc_t g_real_exp_reward_calc;
 static cube_add_exp_t g_real_cube_add_exp;
+static ui_cube_instance_t g_real_ui_cube_hml;
+static ui_cube_instance_t g_real_ui_cube_on_disable;
+static ui_cube_instance_t g_real_ui_cube_on_destroy;
+static volatile LONG_PTR g_cached_ui_cube;
+static DWORD g_auto_synthesis_next_tick;
+static DWORD g_auto_synthesis_step_tick;
+static int g_auto_synthesis_phase;
+static DWORD g_last_auto_synthesis_log_tick;
+static DWORD g_last_open_box_stats_log_tick;
+static DWORD g_last_auto_chest_open_cd_log_tick;
+static int g_open_box_stats_hook_installed;
 static void *g_cached_boxdata_by_type[3];
 static unsigned int g_cached_boxdata_item_by_type[3];
 static DropObservationContext g_drop_observation;
@@ -377,6 +454,24 @@ static const unsigned char k_original_reward_add[] = {
 static const unsigned char k_original_reward_capacity_branch[] = {
     0x0F, 0x84, 0x95, 0x01, 0x00, 0x00
 };
+static const unsigned char k_original_ui_cube_hml_prefix[] = {
+    0x40, 0x56,
+    0x48, 0x83, 0xEC, 0x20,
+    0x80, 0x3D, 0x4E, 0x39, 0x72, 0x05, 0x00,
+    0x48, 0x8B, 0xF1
+};
+static const unsigned char k_original_ui_cube_on_disable_prefix[] = {
+    0x40, 0x53,
+    0x48, 0x83, 0xEC, 0x20,
+    0x80, 0x3D, 0x31, 0x3B, 0x72, 0x05, 0x00,
+    0x48, 0x8B, 0xD9
+};
+static const unsigned char k_original_ui_cube_on_destroy_prefix[] = {
+    0x48, 0x89, 0x5C, 0x24, 0x08,
+    0x48, 0x89, 0x74, 0x24, 0x10,
+    0x57,
+    0x48, 0x83, 0xEC, 0x20
+};
 static const unsigned char k_original_box_count[] = {
     0x40, 0x53,
     0x48, 0x83, 0xEC, 0x20,
@@ -388,6 +483,21 @@ static const unsigned char k_original_box_reward_select[] = {
     0x56,
     0x48, 0x83, 0xEC, 0x40,
     0x80, 0x3D, 0x24, 0xEB, 0x7C, 0x05, 0x00
+};
+static const unsigned char k_original_open_box_stats[] = {
+    0x40, 0x53,
+    0x48, 0x83, 0xEC, 0x20,
+    0x48, 0xC7, 0x44, 0x24, 0x48, 0x00, 0x00, 0x00, 0x00,
+    0x48, 0x8B, 0xD9
+};
+static const unsigned char k_original_auto_chest_open_move_next[] = {
+    0x48, 0x8B, 0xC4,
+    0x48, 0x89, 0x58, 0x10,
+    0x48, 0x89, 0x48, 0x08,
+    0x56,
+    0x57,
+    0x41, 0x56,
+    0x48, 0x81, 0xEC, 0x00, 0x01, 0x00, 0x00
 };
 static const unsigned char k_original_drop_roll[] = {
     0x48, 0x89, 0x5C, 0x24, 0x08,
@@ -557,6 +667,13 @@ static int multiplier_x100(float value)
     return v < 0 ? 0 : v;
 }
 
+static int clamp_auto_synthesis_grade(int grade)
+{
+    if (grade < EGRADE_BEYOND) return EGRADE_BEYOND;
+    if (grade > EGRADE_COSMIC) return EGRADE_COSMIC;
+    return grade;
+}
+
 static int float_x10000(float value)
 {
     int scaled;
@@ -658,6 +775,41 @@ static void adjust_auto_portal_interval_seconds(int delta_seconds)
 {
     set_auto_portal_interval_seconds(auto_portal_interval_seconds() +
                                      delta_seconds);
+}
+
+static void reset_auto_synthesis_state(void)
+{
+    g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+    g_auto_synthesis_next_tick = 0;
+    g_auto_synthesis_step_tick = 0;
+}
+
+static void set_auto_synthesis_enabled(int enabled)
+{
+    g_auto_synthesis_enabled = enabled ? 1 : 0;
+    reset_auto_synthesis_state();
+    log_line("auto synthesis %s", g_auto_synthesis_enabled ? "enabled" : "disabled");
+    save_config();
+}
+
+static void adjust_auto_synthesis_grade(int delta)
+{
+    int grade = g_auto_synthesis_grade + delta;
+    if (grade < EGRADE_BEYOND) grade = EGRADE_COSMIC;
+    if (grade > EGRADE_COSMIC) grade = EGRADE_BEYOND;
+    g_auto_synthesis_grade = grade;
+    reset_auto_synthesis_state();
+    log_line("auto synthesis grade set by overlay: %d", g_auto_synthesis_grade);
+    save_config();
+}
+
+static void set_auto_synthesis_use_storage(int enabled)
+{
+    g_auto_synthesis_use_storage = enabled ? 1 : 0;
+    reset_auto_synthesis_state();
+    log_line("auto synthesis use storage %s",
+             g_auto_synthesis_use_storage ? "enabled" : "disabled");
+    save_config();
 }
 
 static void format_elapsed_interval_u64(char *buf,
@@ -1303,6 +1455,16 @@ static void load_config(void)
         } else if (lstrcmpiA(line, "auto_switch") == 0 ||
                    lstrcmpiA(line, "auto_boss_switch") == 0) {
             g_auto_switch_enabled = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "auto_synthesis") == 0 ||
+                   lstrcmpiA(line, "auto_gear_synthesis") == 0) {
+            g_auto_synthesis_enabled = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "auto_synthesis_grade") == 0 ||
+                   lstrcmpiA(line, "auto_gear_synthesis_grade") == 0) {
+            g_auto_synthesis_grade =
+                clamp_auto_synthesis_grade(parse_int_local(eq));
+        } else if (lstrcmpiA(line, "auto_synthesis_use_storage") == 0 ||
+                   lstrcmpiA(line, "auto_synthesis_storage") == 0) {
+            g_auto_synthesis_use_storage = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "free_actboss_enter") == 0) {
             g_free_actboss_enter_enabled = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "exp_multiplier") == 0 ||
@@ -1330,6 +1492,7 @@ static void load_config(void)
     set_speed_value(g_speed);
     g_exp_multiplier = clamp_exp_multiplier(g_exp_multiplier);
     g_cube_exp_multiplier = clamp_exp_multiplier(g_cube_exp_multiplier);
+    g_auto_synthesis_grade = clamp_auto_synthesis_grade(g_auto_synthesis_grade);
     if (g_auto_restart_locked && g_auto_restart_stage_key <= 0) {
         g_auto_restart_locked = 0;
     }
@@ -1342,7 +1505,7 @@ static void load_config(void)
     int sx = speed_x100();
     int expx = multiplier_x100(g_exp_multiplier);
     int cubex = multiplier_x100(g_cube_exp_multiplier);
-    log_line("config loaded: plugin=%s.%s target_game=%s speed=%d.%02d step=%d.%02d exp=%d.%02d cube_exp=%d.%02d overlay=%d force_game_title_bar=%d background_apply=%d interval=%lu auto_portal=%d/%lu direct_boss=%d actboss_boss=%d auto_switch=%d free_actboss_enter=%d drop_hooks=%d force_drop_roll=%d reward_trace_hooks=%d force_box_reward_select=%d keep_boxdata_after_select=%d",
+    log_line("config loaded: plugin=%s.%s target_game=%s speed=%d.%02d step=%d.%02d exp=%d.%02d cube_exp=%d.%02d overlay=%d force_game_title_bar=%d background_apply=%d interval=%lu auto_portal=%d/%lu direct_boss=%d actboss_boss=%d auto_switch=%d auto_synthesis=%d grade=%d storage=%d free_actboss_enter=%d drop_hooks=%d force_drop_roll=%d reward_trace_hooks=%d force_box_reward_select=%d keep_boxdata_after_select=%d",
              g_config_plugin_version[0] ? g_config_plugin_version : TBHS_PLUGIN_VERSION,
              g_config_plugin_subversion[0] ? g_config_plugin_subversion : TBHS_PLUGIN_SUBVERSION,
              g_config_target_game_version[0] ? g_config_target_game_version : TBHS_SUPPORTED_GAME_VERSION,
@@ -1356,6 +1519,9 @@ static void load_config(void)
              g_auto_portal_enabled, (unsigned long)g_auto_portal_interval_ms,
              g_direct_boss_enabled, g_actboss_boss_enabled,
              g_auto_switch_enabled,
+             g_auto_synthesis_enabled,
+             g_auto_synthesis_grade,
+             g_auto_synthesis_use_storage,
              g_free_actboss_enter_enabled,
              g_drop_hooks_enabled,
              g_force_drop_roll_rate_enabled,
@@ -1409,6 +1575,9 @@ static void save_config(void)
                     g_auto_switch_enabled ? g_auto_switch_primary_boss_enabled : g_direct_boss_enabled);
     append_int_line(buf, sizeof(buf), "actboss_boss", g_actboss_boss_enabled);
     append_int_line(buf, sizeof(buf), "auto_switch", g_auto_switch_enabled);
+    append_int_line(buf, sizeof(buf), "auto_synthesis", g_auto_synthesis_enabled);
+    append_int_line(buf, sizeof(buf), "auto_synthesis_grade", g_auto_synthesis_grade);
+    append_int_line(buf, sizeof(buf), "auto_synthesis_use_storage", g_auto_synthesis_use_storage);
     append_int_line(buf, sizeof(buf), "free_actboss_enter", g_free_actboss_enter_enabled);
     append_text_local(buf, sizeof(buf), "\r\n");
 
@@ -1614,6 +1783,69 @@ static int write_absolute_jump_with_trampoline(void *target,
     mem_copy_local(&jump_back[2], &resume, sizeof(resume));
     jump_back[10] = 0xFF;
     jump_back[11] = 0xE0;
+    mem_copy_local(trampoline + stolen_size, jump_back, sizeof(jump_back));
+
+    for (SIZE_T i = 0; i < sizeof(patch); i++) patch[i] = 0x90;
+    patch[0] = 0x48;
+    patch[1] = 0xB8;
+    mem_copy_local(&patch[2], &detour, sizeof(detour));
+    patch[10] = 0xFF;
+    patch[11] = 0xE0;
+
+    hook->target = target;
+    hook->size = stolen_size;
+    hook->trampoline = trampoline;
+    mem_copy_local(hook->original, target, stolen_size);
+
+    if (!VirtualProtect(target, stolen_size, PAGE_EXECUTE_READWRITE, &old_protect)) {
+        log_line("VirtualProtect failed at %p, error=%lu", target, GetLastError());
+        VirtualFree(trampoline, 0, MEM_RELEASE);
+        return 0;
+    }
+
+    mem_copy_local(target, patch, stolen_size);
+    FlushInstructionCache(GetCurrentProcess(), target, stolen_size);
+    VirtualProtect(target, stolen_size, old_protect, &old_protect);
+    hook->installed = 1;
+    if (out_trampoline) *out_trampoline = trampoline;
+    return 1;
+}
+
+static int write_absolute_jump_with_trampoline_preserve_rax(void *target,
+                                                            void *detour,
+                                                            HookPatch *hook,
+                                                            SIZE_T stolen_size,
+                                                            void **out_trampoline)
+{
+    unsigned char patch[32];
+    unsigned char jump_back[13];
+    unsigned char *trampoline;
+    void *resume;
+    DWORD old_protect = 0;
+
+    if (stolen_size < 12 || stolen_size > sizeof(hook->original)) {
+        log_line("invalid preserve-rax trampoline stolen size=%lu for target=%p",
+                 (unsigned long)stolen_size, target);
+        return 0;
+    }
+
+    trampoline = (unsigned char *)VirtualAlloc(NULL, stolen_size + sizeof(jump_back),
+                                               MEM_COMMIT | MEM_RESERVE,
+                                               PAGE_EXECUTE_READWRITE);
+    if (!trampoline) {
+        log_line("VirtualAlloc preserve-rax trampoline failed, error=%lu",
+                 GetLastError());
+        return 0;
+    }
+
+    resume = (void *)((unsigned char *)target + stolen_size);
+    mem_copy_local(trampoline, target, stolen_size);
+    jump_back[0] = 0x49;
+    jump_back[1] = 0xBB;
+    mem_copy_local(&jump_back[2], &resume, sizeof(resume));
+    jump_back[10] = 0x41;
+    jump_back[11] = 0xFF;
+    jump_back[12] = 0xE3;
     mem_copy_local(trampoline + stolen_size, jump_back, sizeof(jump_back));
 
     for (SIZE_T i = 0; i < sizeof(patch); i++) patch[i] = 0x90;
@@ -2601,6 +2833,138 @@ static __int64 __fastcall hook_box_reward_select(void *box_table,
     return result;
 }
 
+static __int64 __fastcall hook_open_box_stats(void *account_status,
+                                              int box_type,
+                                              void *method)
+{
+    __int64 result;
+    int max_time;
+    int reduce_time;
+    DWORD now;
+
+    if (!g_real_open_box_stats) return 0;
+    result = g_real_open_box_stats(account_status, box_type, method);
+    max_time = (int)(result & 0xFFFFFFFFu);
+    reduce_time = (int)(((unsigned __int64)result >> 32) & 0xFFFFFFFFu);
+    if (max_time <= 0) return result;
+
+    now = GetTickCount();
+    if (!g_last_open_box_stats_log_tick ||
+        (DWORD)(now - g_last_open_box_stats_log_tick) >= 10000) {
+        log_line("auto open box cd forced: type=%d(%s) original=%ds-%ds forced=%ds",
+                 box_type,
+                 box_type_name((unsigned int)box_type),
+                 max_time,
+                 reduce_time,
+                 AUTO_OPEN_BOX_SECONDS);
+        g_last_open_box_stats_log_tick = now;
+    }
+    return (__int64)(unsigned int)AUTO_OPEN_BOX_SECONDS;
+}
+
+static int clamp_stage_box_auto_open_cd(void *stage_box, const char *source)
+{
+    unsigned char *box;
+    int box_type;
+    int enabled;
+    int changed = 0;
+    int duration_was_clamped = 0;
+    float before_duration;
+    float before_configured;
+    float before_elapsed;
+    float before_paused_elapsed;
+    float after_duration;
+    float after_configured;
+    float after_elapsed;
+    float after_paused_elapsed;
+    DWORD now;
+
+    if (!stage_box ||
+        !memory_range_readable(stage_box,
+                               STAGE_BOX_AUTO_OPEN_ENABLED_OFFSET + sizeof(unsigned char))) {
+        return 0;
+    }
+
+    box = (unsigned char *)stage_box;
+    box_type = *(int *)(box + STAGE_BOX_BOX_TYPE_OFFSET);
+    enabled = *(unsigned char *)(box + STAGE_BOX_AUTO_OPEN_ENABLED_OFFSET) ? 1 : 0;
+    before_duration = *(float *)(box + STAGE_BOX_AUTO_OPEN_DURATION_OFFSET);
+    before_configured = *(float *)(box + STAGE_BOX_AUTO_OPEN_SECONDS_OFFSET);
+    before_elapsed = *(float *)(box + STAGE_BOX_AUTO_OPEN_ELAPSED_OFFSET);
+    before_paused_elapsed =
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_PAUSED_ELAPSED_OFFSET);
+
+    if (!enabled && !(before_duration > 0.0f) && !(before_configured > 0.0f)) {
+        return 0;
+    }
+    if (before_configured > (float)AUTO_OPEN_BOX_SECONDS ||
+        (enabled && !(before_configured > 0.0f))) {
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_SECONDS_OFFSET) =
+            (float)AUTO_OPEN_BOX_SECONDS;
+        changed = 1;
+    }
+    if (before_duration > (float)AUTO_OPEN_BOX_SECONDS ||
+        (enabled && !(before_duration > 0.0f))) {
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_DURATION_OFFSET) =
+            (float)AUTO_OPEN_BOX_SECONDS;
+        changed = 1;
+        duration_was_clamped = 1;
+    }
+    after_duration = *(float *)(box + STAGE_BOX_AUTO_OPEN_DURATION_OFFSET);
+    if (duration_was_clamped && enabled && before_elapsed > after_duration) {
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_ELAPSED_OFFSET) = 0.0f;
+        changed = 1;
+    }
+    if (duration_was_clamped && before_paused_elapsed > after_duration) {
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_PAUSED_ELAPSED_OFFSET) = 0.0f;
+        changed = 1;
+    }
+    if (!changed) return 0;
+
+    after_duration = *(float *)(box + STAGE_BOX_AUTO_OPEN_DURATION_OFFSET);
+    after_configured = *(float *)(box + STAGE_BOX_AUTO_OPEN_SECONDS_OFFSET);
+    after_elapsed = *(float *)(box + STAGE_BOX_AUTO_OPEN_ELAPSED_OFFSET);
+    after_paused_elapsed =
+        *(float *)(box + STAGE_BOX_AUTO_OPEN_PAUSED_ELAPSED_OFFSET);
+    now = GetTickCount();
+    if (!g_last_auto_chest_open_cd_log_tick ||
+        (DWORD)(now - g_last_auto_chest_open_cd_log_tick) >= 5000) {
+        log_line("auto chest open cd clamped: source=%s type=%d(%s) enabled=%d duration=%ds->%ds configured=%ds->%ds elapsed=%ds->%ds paused=%ds->%ds",
+                 source ? source : "unknown",
+                 box_type,
+                 box_type_name((unsigned int)box_type),
+                 enabled,
+                 (int)(before_duration + 0.5f),
+                 (int)(after_duration + 0.5f),
+                 (int)(before_configured + 0.5f),
+                 (int)(after_configured + 0.5f),
+                 (int)(before_elapsed + 0.5f),
+                 (int)(after_elapsed + 0.5f),
+                 (int)(before_paused_elapsed + 0.5f),
+                 (int)(after_paused_elapsed + 0.5f));
+        g_last_auto_chest_open_cd_log_tick = now;
+    }
+    return 1;
+}
+
+static __int64 __fastcall hook_auto_chest_open_move_next(void *state_machine,
+                                                         void *method)
+{
+    void *stage_box = NULL;
+
+    if (state_machine &&
+        memory_range_readable(state_machine,
+                              AUTO_CHEST_OPEN_STATE_STAGE_BOX_OFFSET + sizeof(void *))) {
+        stage_box = *(void **)((unsigned char *)state_machine +
+                               AUTO_CHEST_OPEN_STATE_STAGE_BOX_OFFSET);
+    }
+    clamp_stage_box_auto_open_cd(stage_box, "timer");
+    if (g_real_auto_chest_open_move_next) {
+        return g_real_auto_chest_open_move_next(state_machine, method);
+    }
+    return 0;
+}
+
 static void __fastcall hook_drop_roll_process(void *stage_manager,
                                               int source_id,
                                               int stage_type,
@@ -2918,6 +3282,120 @@ static void restore_cube_add_exp_hook(HMODULE game_assembly)
                                  "cube exp");
 }
 
+static __int64 __fastcall hook_ui_cube_hml(void *ui_cube, void *method)
+{
+    if (ui_cube && memory_range_readable(ui_cube, sizeof(void *) * 4)) {
+        if (g_cached_ui_cube != (LONG_PTR)ui_cube) {
+            g_cached_ui_cube = (LONG_PTR)ui_cube;
+            log_line("UI_Cube cached: %p", ui_cube);
+        }
+    }
+    if (g_real_ui_cube_hml) return g_real_ui_cube_hml(ui_cube, method);
+    return 0;
+}
+
+static __int64 __fastcall hook_ui_cube_on_disable(void *ui_cube, void *method)
+{
+    __int64 result = 0;
+
+    if (g_real_ui_cube_on_disable) {
+        result = g_real_ui_cube_on_disable(ui_cube, method);
+    }
+    if (ui_cube && g_cached_ui_cube == (LONG_PTR)ui_cube) {
+        g_cached_ui_cube = 0;
+        reset_auto_synthesis_state();
+        log_line("UI_Cube cache cleared on disable");
+    }
+    return result;
+}
+
+static __int64 __fastcall hook_ui_cube_on_destroy(void *ui_cube, void *method)
+{
+    __int64 result = 0;
+
+    if (g_real_ui_cube_on_destroy) {
+        result = g_real_ui_cube_on_destroy(ui_cube, method);
+    }
+    if (ui_cube && g_cached_ui_cube == (LONG_PTR)ui_cube) {
+        g_cached_ui_cube = 0;
+        reset_auto_synthesis_state();
+        log_line("UI_Cube cache cleared on destroy");
+    }
+    return result;
+}
+
+static int install_ui_cube_cache_hook(HMODULE game_assembly,
+                                      uintptr_t rva,
+                                      const unsigned char *original_prefix,
+                                      SIZE_T prefix_size,
+                                      void *detour,
+                                      HookPatch *hook,
+                                      ui_cube_instance_t *out_real,
+                                      const char *label)
+{
+    uintptr_t base = (uintptr_t)game_assembly;
+    unsigned char *target = (unsigned char *)(base + rva);
+    int original = mem_equal_local(target, original_prefix, prefix_size);
+
+    if (is_absolute_jump_local(target)) {
+        if (!restore_original_if_abs_jump(target,
+                                          original_prefix,
+                                          prefix_size,
+                                          label)) {
+            return 0;
+        }
+        original = 1;
+    }
+
+    if (!original) {
+        log_line("%s hook RVA unexpected: %02X %02X %02X %02X",
+                 label, target[0], target[1], target[2], target[3]);
+        return 0;
+    }
+
+    if (!write_absolute_jump_with_trampoline(target,
+                                             detour,
+                                             hook,
+                                             prefix_size,
+                                             (void **)out_real)) {
+        log_line("%s hook install failed", label);
+        return 0;
+    }
+    log_line("%s hook installed", label);
+    return 1;
+}
+
+static int install_ui_cube_hooks(HMODULE game_assembly)
+{
+    int ok = 1;
+
+    ok &= install_ui_cube_cache_hook(game_assembly,
+                                     RVA_UI_CUBE_HML,
+                                     k_original_ui_cube_hml_prefix,
+                                     sizeof(k_original_ui_cube_hml_prefix),
+                                     (void *)hook_ui_cube_hml,
+                                     &g_hook_ui_cube_hml,
+                                     &g_real_ui_cube_hml,
+                                     "UI_Cube hml");
+    ok &= install_ui_cube_cache_hook(game_assembly,
+                                     RVA_UI_CUBE_ON_DISABLE,
+                                     k_original_ui_cube_on_disable_prefix,
+                                     sizeof(k_original_ui_cube_on_disable_prefix),
+                                     (void *)hook_ui_cube_on_disable,
+                                     &g_hook_ui_cube_on_disable,
+                                     &g_real_ui_cube_on_disable,
+                                     "UI_Cube OnDisable");
+    ok &= install_ui_cube_cache_hook(game_assembly,
+                                     RVA_UI_CUBE_ON_DESTROY,
+                                     k_original_ui_cube_on_destroy_prefix,
+                                     sizeof(k_original_ui_cube_on_destroy_prefix),
+                                     (void *)hook_ui_cube_on_destroy,
+                                     &g_hook_ui_cube_on_destroy,
+                                     &g_real_ui_cube_on_destroy,
+                                     "UI_Cube OnDestroy");
+    return ok ? 1 : 0;
+}
+
 static int install_give_reward_item_hook(HMODULE game_assembly)
 {
     static const unsigned char original_give_reward[] = {
@@ -3122,6 +3600,105 @@ static int install_box_reward_select_hook(HMODULE game_assembly)
     return 0;
 }
 
+static int install_open_box_stats_hook(HMODULE game_assembly)
+{
+    uintptr_t base = (uintptr_t)game_assembly;
+    unsigned char *target = (unsigned char *)(base + RVA_OPEN_BOX_STATS);
+    int original = mem_equal_local(target,
+                                   k_original_open_box_stats,
+                                   sizeof(k_original_open_box_stats));
+
+    if (is_absolute_jump_local(target)) {
+        if (!restore_original_if_abs_jump(target,
+                                          k_original_open_box_stats,
+                                          sizeof(k_original_open_box_stats),
+                                          "open box stats")) {
+            return 0;
+        }
+        original = 1;
+    }
+
+    if (!original) {
+        log_line("open box stats hook RVA unexpected: %02X %02X %02X %02X",
+                 target[0], target[1], target[2], target[3]);
+        return 0;
+    }
+
+    if (!write_absolute_jump_with_trampoline(target,
+                                             (void *)hook_open_box_stats,
+                                             &g_hook_open_box_stats,
+                                             sizeof(k_original_open_box_stats),
+                                             (void **)&g_real_open_box_stats)) {
+        log_line("open box stats hook install failed");
+        return 0;
+    }
+    log_line("open box stats hook installed: auto-open cd=%ds",
+             AUTO_OPEN_BOX_SECONDS);
+    g_open_box_stats_hook_installed = 1;
+    return 1;
+}
+
+static int install_stage_box_auto_open_hook_at(HMODULE game_assembly,
+                                               uintptr_t rva,
+                                               const unsigned char *original_prefix,
+                                               SIZE_T prefix_size,
+                                               void *detour,
+                                               HookPatch *hook,
+                                               void **out_real,
+                                               const char *label)
+{
+    uintptr_t base = (uintptr_t)game_assembly;
+    unsigned char *target = (unsigned char *)(base + rva);
+    int original = mem_equal_local(target, original_prefix, prefix_size);
+
+    if (is_absolute_jump_local(target)) {
+        if (!restore_original_if_abs_jump(target,
+                                          original_prefix,
+                                          prefix_size,
+                                          label)) {
+            return 0;
+        }
+        original = 1;
+    }
+
+    if (!original) {
+        log_line("%s hook RVA unexpected: %02X %02X %02X %02X",
+                 label, target[0], target[1], target[2], target[3]);
+        return 0;
+    }
+
+    if (!write_absolute_jump_with_trampoline_preserve_rax(target,
+                                                          detour,
+                                                          hook,
+                                                          prefix_size,
+                                                          out_real)) {
+        log_line("%s hook install failed", label);
+        return 0;
+    }
+    log_line("%s hook installed", label);
+    return 1;
+}
+
+static int install_stage_box_auto_open_hooks(HMODULE game_assembly)
+{
+    int timer_ok;
+
+    timer_ok = install_stage_box_auto_open_hook_at(
+        game_assembly,
+        RVA_AUTO_CHEST_OPEN_MOVE_NEXT,
+        k_original_auto_chest_open_move_next,
+        sizeof(k_original_auto_chest_open_move_next),
+        (void *)hook_auto_chest_open_move_next,
+        &g_hook_auto_chest_open_move_next,
+        (void **)&g_real_auto_chest_open_move_next,
+        "auto chest open timer");
+    if (timer_ok) {
+        log_line("auto chest open timer hook installed: cd=%ds",
+                 AUTO_OPEN_BOX_SECONDS);
+    }
+    return timer_ok;
+}
+
 static int install_drop_roll_process_hook(HMODULE game_assembly)
 {
     static const unsigned char original_drop_roll[] = {
@@ -3238,6 +3815,7 @@ static void restore_drop_related_patches(HMODULE game_assembly)
 static void invalidate_overlay_button(HWND button);
 static void update_boss_button(void);
 static void update_auto_switch_button(void);
+static void update_auto_synthesis_buttons(void);
 
 static LONG auto_switch_waiting_for(void)
 {
@@ -3349,6 +3927,27 @@ static void update_auto_switch_button(void)
         SetWindowTextA(g_overlay_auto_switch_button, "auto:on");
     }
     invalidate_overlay_button(g_overlay_auto_switch_button);
+}
+
+static void update_auto_synthesis_buttons(void)
+{
+    char text[32];
+
+    if (g_overlay_synth_button) {
+        SetWindowTextA(g_overlay_synth_button,
+                       g_auto_synthesis_enabled ? "synth:on" : "synth:off");
+        invalidate_overlay_button(g_overlay_synth_button);
+    }
+    if (g_overlay_synth_grade_label) {
+        wsprintfA(text, "g%d", g_auto_synthesis_grade);
+        text[sizeof(text) - 1] = 0;
+        SetWindowTextA(g_overlay_synth_grade_label, text);
+    }
+    if (g_overlay_synth_storage_button) {
+        SetWindowTextA(g_overlay_synth_storage_button,
+                       g_auto_synthesis_use_storage ? "store:on" : "store:off");
+        invalidate_overlay_button(g_overlay_synth_storage_button);
+    }
 }
 
 static int chest_countdown_due(const ChestDropStats *stats)
@@ -3647,6 +4246,93 @@ static void *get_stage_manager_instance(uintptr_t base)
         return NULL;
     }
     return stage_manager;
+}
+
+static void *get_ui_manager_instance(uintptr_t base)
+{
+    void **singleton_type_slot =
+        (void **)(base + RVA_UI_MANAGER_SINGLETON_TYPEINFO);
+    np_get_instance_t get_instance =
+        (np_get_instance_t)(base + RVA_NP_GET_INSTANCE);
+    void **type_slot = (void **)(base + RVA_UI_MANAGER_TYPEINFO);
+    void *singleton_type;
+    void *ui_manager_type;
+    void *static_fields;
+    void *ui_manager;
+
+    if (memory_range_readable(singleton_type_slot, sizeof(void *)) &&
+        memory_range_readable((void *)get_instance, 12)) {
+        singleton_type = *singleton_type_slot;
+        if (singleton_type &&
+            memory_range_readable(singleton_type,
+                                  IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+            ui_manager = get_instance(singleton_type);
+            if (ui_manager &&
+                memory_range_readable(ui_manager,
+                                      UI_MANAGER_UI_NEW_STASH_OFFSET + sizeof(void *))) {
+                return ui_manager;
+            }
+        }
+    }
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
+    ui_manager_type = *type_slot;
+    if (!ui_manager_type ||
+        !memory_range_readable(ui_manager_type,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)ui_manager_type +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (!static_fields || !memory_range_readable(static_fields, sizeof(void *))) {
+        return NULL;
+    }
+    ui_manager = *(void **)static_fields;
+    if (!ui_manager ||
+        !memory_range_readable(ui_manager,
+                               UI_MANAGER_UI_NEW_STASH_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    return ui_manager;
+}
+
+static void *get_ui_cube_instance(uintptr_t base)
+{
+    void *ui_cube = (void *)g_cached_ui_cube;
+    void *ui_manager;
+
+    if (ui_cube && memory_range_readable(ui_cube, sizeof(void *) * 4)) {
+        return ui_cube;
+    }
+    if (ui_cube) {
+        g_cached_ui_cube = 0;
+    }
+
+    ui_manager = get_ui_manager_instance(base);
+    if (!ui_manager) return NULL;
+    ui_cube = *(void **)((unsigned char *)ui_manager + UI_MANAGER_UI_CUBE_OFFSET);
+    if (!ui_cube || !memory_range_readable(ui_cube, sizeof(void *) * 4)) {
+        return NULL;
+    }
+    g_cached_ui_cube = (LONG_PTR)ui_cube;
+    return ui_cube;
+}
+
+static void *get_ui_new_stash_instance(uintptr_t base)
+{
+    void *ui_manager = get_ui_manager_instance(base);
+    void *ui_stash;
+
+    if (!ui_manager ||
+        !memory_range_readable(ui_manager,
+                               UI_MANAGER_UI_NEW_STASH_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    ui_stash = *(void **)((unsigned char *)ui_manager + UI_MANAGER_UI_NEW_STASH_OFFSET);
+    if (!ui_stash || !memory_range_readable(ui_stash, sizeof(void *) * 4)) {
+        return NULL;
+    }
+    return ui_stash;
 }
 
 static void *find_actboss_stage_for_stage(uintptr_t base,
@@ -4079,6 +4765,159 @@ static void maybe_auto_restart_current_stage_from_game_thread(void)
                                                    after_stage_no));
 }
 
+static void maybe_auto_synthesis_from_game_thread(void)
+{
+    uintptr_t base;
+    DWORD now;
+    void *ui_cube;
+    void *ui_stash;
+    ui_remake_stash_action_t inventory_to_stash;
+    cube_set_bool_t set_use_storage;
+    cube_set_int_t set_synthesis_type;
+    cube_select_recipe_t select_recipe;
+    cube_clear_current_recipe_t clear_current_recipe;
+    ui_cube_instance_t autofill;
+    cube_trigger_current_recipe_t trigger_current_recipe;
+
+    if (!g_auto_synthesis_enabled || !g_game_assembly) {
+        reset_auto_synthesis_state();
+        return;
+    }
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+
+    now = GetTickCount();
+    base = (uintptr_t)g_game_assembly;
+
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_STASH) {
+        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
+
+        ui_stash = get_ui_new_stash_instance(base);
+        inventory_to_stash =
+            (ui_remake_stash_action_t)(base + RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH);
+        if (ui_stash && memory_range_readable((void *)inventory_to_stash, 12)) {
+            inventory_to_stash(ui_stash, NULL);
+            log_line("auto synthesis stash move sent: ui_stash=%p grade=%d fill_delay=%lu",
+                     ui_stash,
+                     g_auto_synthesis_grade,
+                     (unsigned long)AUTO_SYNTHESIS_FILL_DELAY_MS);
+            append_overlay_event("SYNTH g%d stash",
+                                 g_auto_synthesis_grade);
+        } else {
+            log_line("auto synthesis stash move skipped: UI_NewStash or function unavailable");
+        }
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;
+        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;
+        g_auto_synthesis_next_tick = 0;
+        return;
+    }
+
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_FILL) {
+        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
+
+        ui_cube = get_ui_cube_instance(base);
+        autofill = (ui_cube_instance_t)(base + RVA_UI_CUBE_AUTOFILL);
+        if (!ui_cube || !memory_range_readable((void *)autofill, 12)) {
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            log_line("auto synthesis autofill skipped: UI_Cube or function unavailable");
+            return;
+        }
+        autofill(ui_cube, NULL);
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER;
+        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_TRIGGER_DELAY_MS;
+        log_line("auto synthesis autofill sent: ui=%p grade=%d trigger_delay=%lu",
+                 ui_cube,
+                 g_auto_synthesis_grade,
+                 (unsigned long)AUTO_SYNTHESIS_TRIGGER_DELAY_MS);
+        append_overlay_event("SYNTH g%d fill",
+                             g_auto_synthesis_grade);
+        return;
+    }
+
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER) {
+        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
+
+        trigger_current_recipe =
+            (cube_trigger_current_recipe_t)(base + RVA_CUBE_TRIGGER_CURRENT_RECIPE);
+        if (!memory_range_readable((void *)trigger_current_recipe, 12)) {
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            log_line("auto synthesis trigger skipped: trigger function unavailable");
+            return;
+        }
+        trigger_current_recipe(NULL);
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+        log_line("auto synthesis trigger sent: grade=%d storage=%d",
+                 g_auto_synthesis_grade,
+                 g_auto_synthesis_use_storage);
+        append_overlay_event("SYNTH g%d trigger",
+                             g_auto_synthesis_grade);
+        return;
+    }
+
+    if (g_auto_synthesis_next_tick &&
+        (LONG)(now - g_auto_synthesis_next_tick) < 0) {
+        return;
+    }
+
+    ui_cube = get_ui_cube_instance(base);
+    if (!ui_cube) {
+        if (!g_last_auto_synthesis_log_tick ||
+            (DWORD)(now - g_last_auto_synthesis_log_tick) >= 10000) {
+            log_line("auto synthesis waiting: UI_Cube unavailable");
+            append_overlay_event("SYNTH wait Cube UI");
+            g_last_auto_synthesis_log_tick = now;
+        }
+        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+        return;
+    }
+
+    set_use_storage = (cube_set_bool_t)(base + RVA_CUBE_SET_USE_STORAGE);
+    set_synthesis_type = (cube_set_int_t)(base + RVA_CUBE_SET_SYNTHESIS_TYPE);
+    select_recipe = (cube_select_recipe_t)(base + RVA_CUBE_SELECT_RECIPE);
+    clear_current_recipe =
+        (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
+    autofill = (ui_cube_instance_t)(base + RVA_UI_CUBE_AUTOFILL);
+
+    if (!memory_range_readable((void *)set_use_storage, 12) ||
+        !memory_range_readable((void *)set_synthesis_type, 12) ||
+        !memory_range_readable((void *)select_recipe, 12) ||
+        !memory_range_readable((void *)clear_current_recipe, 12) ||
+        !memory_range_readable((void *)autofill, 12)) {
+        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+        log_line("auto synthesis skipped: synthesis functions unavailable");
+        return;
+    }
+
+    set_use_storage((char)(g_auto_synthesis_use_storage ? 1 : 0), NULL);
+    set_synthesis_type(EITEM_SYNTHESIS_GEAR, NULL);
+    select_recipe(ERECIPE_TYPE_SYNTHESIS,
+                  EITEM_SYNTHESIS_GEAR,
+                  clamp_auto_synthesis_grade(g_auto_synthesis_grade),
+                  0,
+                  NULL);
+    clear_current_recipe(NULL);
+
+    if (g_auto_synthesis_use_storage) {
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
+        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
+    } else {
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;
+        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;
+    }
+    g_auto_synthesis_next_tick = 0;
+    log_line("auto synthesis clear sent: ui=%p grade=%d storage=%d next_delay=%lu",
+             ui_cube,
+             g_auto_synthesis_grade,
+             g_auto_synthesis_use_storage,
+             (unsigned long)(g_auto_synthesis_use_storage ?
+                             AUTO_SYNTHESIS_STASH_DELAY_MS :
+                             AUTO_SYNTHESIS_FILL_DELAY_MS));
+    append_overlay_event("SYNTH g%d clear",
+                         g_auto_synthesis_grade);
+}
+
 static void enforce_game_title_bar(void);
 
 static void apply_speed_from_game_thread(void)
@@ -4096,6 +4935,7 @@ static void apply_speed_from_game_thread(void)
     process_auto_restart_request_from_game_thread();
     enforce_game_title_bar();
     maybe_auto_switch_from_game_thread();
+    maybe_auto_synthesis_from_game_thread();
     maybe_auto_restart_current_stage_from_game_thread();
 }
 
@@ -4242,10 +5082,14 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     label.top = 146;
     label.bottom = 170;
-    DrawTextA(hdc, "Reset", -1, &label,
+    DrawTextA(hdc, "Synth", -1, &label,
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     label.top = 182;
     label.bottom = 206;
+    DrawTextA(hdc, "Reset", -1, &label,
+              DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    label.top = 218;
+    label.bottom = 242;
     DrawTextA(hdc, "Drops", -1, &label,
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     SelectObject(hdc, old_font);
@@ -4263,6 +5107,9 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
     FillRect(hdc, &separator, g_overlay_border_brush);
     separator.top = 176;
     separator.bottom = 177;
+    FillRect(hdc, &separator, g_overlay_border_brush);
+    separator.top = 212;
+    separator.bottom = 213;
     FillRect(hdc, &separator, g_overlay_border_brush);
 
     SelectObject(hdc, old_pen);
@@ -4292,6 +5139,8 @@ static void draw_overlay_button(const DRAWITEMSTRUCT *item)
     if (id == OVERLAY_BUTTON_ACTBOSS && g_actboss_boss_enabled) active = 1;
     if (id == OVERLAY_BUTTON_AUTO_SWITCH && g_auto_switch_enabled) active = 1;
     if (id == OVERLAY_BUTTON_LOCK_STAGE && g_auto_restart_locked) active = 1;
+    if (id == OVERLAY_BUTTON_SYNTH_TOGGLE && g_auto_synthesis_enabled) active = 1;
+    if (id == OVERLAY_BUTTON_SYNTH_STORAGE && g_auto_synthesis_use_storage) active = 1;
 
     fill = active ? g_overlay_button_active_brush :
            (pressed ? g_overlay_button_hot_brush : g_overlay_button_brush);
@@ -4343,6 +5192,10 @@ static void apply_overlay_fonts(HWND hwnd)
         OVERLAY_BUTTON_BOSS,
         OVERLAY_BUTTON_ACTBOSS,
         OVERLAY_BUTTON_AUTO_SWITCH,
+        OVERLAY_BUTTON_SYNTH_TOGGLE,
+        OVERLAY_BUTTON_SYNTH_GRADE_MINUS,
+        OVERLAY_BUTTON_SYNTH_GRADE_PLUS,
+        OVERLAY_BUTTON_SYNTH_STORAGE,
         OVERLAY_BUTTON_LOCK_STAGE,
         OVERLAY_BUTTON_LOCK_MINUS30,
         OVERLAY_BUTTON_LOCK_MINUS10,
@@ -4365,6 +5218,10 @@ static void apply_overlay_fonts(HWND hwnd)
     }
     if (g_overlay_cube_multiplier_label) {
         SendMessageA(g_overlay_cube_multiplier_label, WM_SETFONT,
+                     (WPARAM)g_overlay_font_bold, TRUE);
+    }
+    if (g_overlay_synth_grade_label) {
+        SendMessageA(g_overlay_synth_grade_label, WM_SETFONT,
                      (WPARAM)g_overlay_font_bold, TRUE);
     }
     if (g_overlay_lock_interval_label) {
@@ -4699,35 +5556,50 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
                         174, 108, 122, 26, OVERLAY_BUTTON_ACTBOSS);
         g_overlay_auto_switch_button = create_overlay_button(hwnd, "auto:off",
                         302, 108, 104, 26, OVERLAY_BUTTON_AUTO_SWITCH);
-        create_overlay_button(hwnd, "-30s", 76, 144, 42, 26,
+        g_overlay_synth_button = create_overlay_button(hwnd, "synth:off",
+                        76, 144, 102, 26, OVERLAY_BUTTON_SYNTH_TOGGLE);
+        create_overlay_button(hwnd, "g-", 184, 144, 42, 26,
+                              OVERLAY_BUTTON_SYNTH_GRADE_MINUS);
+        g_overlay_synth_grade_label = CreateWindowExA(
+                        0, "STATIC", "g6",
+                        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
+                        SS_CENTER | SS_CENTERIMAGE,
+                        230, 144, 56, 26, hwnd,
+                        (HMENU)(uintptr_t)OVERLAY_LABEL_SYNTH_GRADE,
+                        g_self_module, NULL);
+        create_overlay_button(hwnd, "g+", 290, 144, 42, 26,
+                              OVERLAY_BUTTON_SYNTH_GRADE_PLUS);
+        g_overlay_synth_storage_button = create_overlay_button(hwnd, "store:on",
+                        338, 144, 92, 26, OVERLAY_BUTTON_SYNTH_STORAGE);
+        create_overlay_button(hwnd, "-30s", 76, 180, 42, 26,
                               OVERLAY_BUTTON_LOCK_MINUS30);
-        create_overlay_button(hwnd, "-10s", 122, 144, 42, 26,
+        create_overlay_button(hwnd, "-10s", 122, 180, 42, 26,
                               OVERLAY_BUTTON_LOCK_MINUS10);
         g_overlay_lock_interval_label = CreateWindowExA(
                         0, "STATIC", "60s(--s)",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_CENTER | SS_CENTERIMAGE,
-                        168, 144, 82, 26, hwnd,
+                        168, 180, 82, 26, hwnd,
                         (HMENU)(uintptr_t)OVERLAY_LABEL_LOCK_INTERVAL,
                         g_self_module, NULL);
-        create_overlay_button(hwnd, "+10s", 254, 144, 42, 26,
+        create_overlay_button(hwnd, "+10s", 254, 180, 42, 26,
                               OVERLAY_BUTTON_LOCK_PLUS10);
-        create_overlay_button(hwnd, "+30s", 300, 144, 42, 26,
+        create_overlay_button(hwnd, "+30s", 300, 180, 42, 26,
                               OVERLAY_BUTTON_LOCK_PLUS30);
         g_overlay_lock_button = create_overlay_button(hwnd, "lock",
-                        346, 144, 80, 26, OVERLAY_BUTTON_LOCK_STAGE);
+                        346, 180, 80, 26, OVERLAY_BUTTON_LOCK_STAGE);
         g_overlay_lock_stage_label = CreateWindowExA(
                         0, "STATIC", "--",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_LEFT | SS_CENTERIMAGE,
-                        434, 144, 90, 26, hwnd,
+                        434, 180, 90, 26, hwnd,
                         (HMENU)(uintptr_t)OVERLAY_LABEL_LOCK_STAGE,
                         g_self_module, NULL);
         g_overlay_chest_intervals_label = CreateWindowExA(
                         0, "STATIC", "N count 0 last -- best --/-- next --\r\nB count 0 last -- best --/-- next --",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_LEFT,
-                        76, 182, 590, 44,
+                        76, 218, 590, 44,
                         hwnd, (HMENU)(uintptr_t)OVERLAY_LABEL_CHEST_INTERVALS,
                         g_self_module, NULL);
         apply_overlay_fonts(hwnd);
@@ -4736,6 +5608,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         update_boss_button();
         update_actboss_button();
         update_auto_switch_button();
+        update_auto_synthesis_buttons();
         update_lock_button(hwnd);
         update_lock_stage_label();
         update_lock_interval_label();
@@ -4764,7 +5637,8 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         init_overlay_style();
         if (child == g_overlay_label ||
             child == g_overlay_exp_multiplier_label ||
-            child == g_overlay_cube_multiplier_label) {
+            child == g_overlay_cube_multiplier_label ||
+            child == g_overlay_synth_grade_label) {
             SetBkMode(hdc, OPAQUE);
             SetBkColor(hdc, OVERLAY_COLOR_PANEL);
             SetTextColor(hdc, OVERLAY_COLOR_ACCENT);
@@ -4813,6 +5687,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         update_lock_stage_label();
         update_lock_interval_label();
         update_auto_switch_button();
+        update_auto_synthesis_buttons();
         update_exp_multiplier_labels();
         update_chest_interval_label();
         return 0;
@@ -4878,6 +5753,26 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
             update_auto_switch_button();
             return 0;
         }
+        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_TOGGLE) {
+            set_auto_synthesis_enabled(!g_auto_synthesis_enabled);
+            update_auto_synthesis_buttons();
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_GRADE_MINUS) {
+            adjust_auto_synthesis_grade(-1);
+            update_auto_synthesis_buttons();
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_GRADE_PLUS) {
+            adjust_auto_synthesis_grade(1);
+            update_auto_synthesis_buttons();
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_STORAGE) {
+            set_auto_synthesis_use_storage(!g_auto_synthesis_use_storage);
+            update_auto_synthesis_buttons();
+            return 0;
+        }
         if (LOWORD(wp) == OVERLAY_BUTTON_LOCK_MINUS30) {
             adjust_auto_portal_interval_seconds(-30);
             update_lock_interval_label();
@@ -4921,6 +5816,9 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         g_overlay_boss_button = NULL;
         g_overlay_actboss_button = NULL;
         g_overlay_auto_switch_button = NULL;
+        g_overlay_synth_button = NULL;
+        g_overlay_synth_grade_label = NULL;
+        g_overlay_synth_storage_button = NULL;
         g_overlay_lock_button = NULL;
         g_overlay_lock_interval_label = NULL;
         g_overlay_lock_stage_label = NULL;
@@ -5201,6 +6099,9 @@ static DWORD WINAPI speed_thread(LPVOID arg)
     if (!install_stagecache_jgm_hook(game_assembly)) {
         log_line("actboss boss hook not installed");
     }
+    if (!install_ui_cube_hooks(game_assembly)) {
+        log_line("UI_Cube hooks not fully installed");
+    }
     g_last_auto_portal_tick = GetTickCount();
     apply_direct_boss_patch();
     apply_free_actboss_enter_patch();
@@ -5212,6 +6113,12 @@ static DWORD WINAPI speed_thread(LPVOID arg)
     if (!install_cube_add_exp_hook(game_assembly)) {
         restore_cube_add_exp_hook(game_assembly);
         log_line("cube exp hook not installed");
+    }
+    if (!install_open_box_stats_hook(game_assembly)) {
+        log_line("open box stats hook not installed");
+    }
+    if (!install_stage_box_auto_open_hooks(game_assembly)) {
+        log_line("stage box auto-open hooks not fully installed");
     }
     if (g_drop_hooks_enabled) {
         if (g_force_drop_roll_rate_enabled) {
