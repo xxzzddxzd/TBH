@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Local game binaries, reverse-engineering databases, and generated dumps.
+dll/
+live/
+
+# Runtime logs and stats.
+logs/
+*.log
+TaskBarHeroChestStats.txt
+
+# Build and release outputs.
+dist/
+*.dll
+*.exe
