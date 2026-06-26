@@ -14,6 +14,7 @@ PREBUILT_SCRIPT = ROOT / "taskbarhero_speed" / "package_prebuilt.sh"
 VERSIONS_DIR = ROOT / "taskbarhero_speed" / "versions"
 INSTALL_AUTOSTART = ROOT / "taskbarhero_speed" / "package" / "Install-AutoStart.bat"
 UPDATE_BAT = ROOT / "taskbarhero_speed" / "package" / "Update.bat"
+INJECT_RUNNING_SCRIPT = ROOT / "taskbarhero_speed" / "inject_running_game.sh"
 
 
 def require(condition, message):
@@ -32,6 +33,7 @@ def main():
     prebuilt_script = PREBUILT_SCRIPT.read_text(encoding="utf-8")
     install_autostart = INSTALL_AUTOSTART.read_text(encoding="utf-8")
     update_bat = UPDATE_BAT.read_text(encoding="utf-8") if UPDATE_BAT.exists() else ""
+    inject_running_script = INJECT_RUNNING_SCRIPT.read_text(encoding="utf-8")
     failures = 0
 
     expectations = [
@@ -64,6 +66,8 @@ def main():
         ("package_windows.sh --prebuilt", prebuilt_script),
         ("Update.bat", package_script),
         ("api.github.com/repos/xxzzddxzd/TBH/releases/latest", update_bat),
+        ("SCRIPT_DIR", inject_running_script),
+        ("$SCRIPT_DIR/TaskBarHeroSpeedInject.exe", inject_running_script),
         ("TaskBarHeroSpeed", readme),
         ("versions\\<游戏版本>\\TaskBarHeroSpeed.dll", readme),
         ("最近 3 个游戏版本", readme),
@@ -82,6 +86,8 @@ def main():
                         "release package must not include AutoStart-Optional fallback DLLs")
     failures += require("AutoStart-Optional" not in install_autostart,
                         "auto-start install must not fall back to an unversioned winhttp.dll")
+    failures += require("$ROOT/TaskBarHeroSpeedInject.exe" not in inject_running_script,
+                        "macOS dev inject script must launch the injector beside versions/")
 
     version_match = re.search(r'#define\s+TBHS_SUPPORTED_GAME_VERSION\s+"([^"]+)"', src)
     failures += require(bool(version_match), "supported game version macro not found")
