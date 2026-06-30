@@ -18,6 +18,8 @@ NAME_TABLE = ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedItemNames.zh-Hans.tsv
 MARKET_TOP_SCRIPT = ROOT / "taskbarhero_speed" / "generate_market_top_lock.py"
 MARKET_TOP_FILE = ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedMarketTop100.tsv"
 MARKET_TOP_DEFAULT_FILE = ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedMarketTop100.default.tsv"
+MARKET_PRICES_FILE = ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedMarketPrices.tsv"
+MARKET_PRICES_DEFAULT_FILE = ROOT / "taskbarhero_speed" / "TaskBarHeroSpeedMarketPrices.default.tsv"
 PACKAGE_SCRIPT = ROOT / "taskbarhero_speed" / "package_windows.sh"
 PREBUILT_SCRIPT = ROOT / "taskbarhero_speed" / "package_prebuilt.sh"
 BUILD_SCRIPT = ROOT / "taskbarhero_speed" / "build.sh"
@@ -46,6 +48,8 @@ def main():
     market_top_script = MARKET_TOP_SCRIPT.read_text(encoding="utf-8") if MARKET_TOP_SCRIPT.exists() else ""
     market_top_file = MARKET_TOP_FILE.read_text(encoding="utf-8") if MARKET_TOP_FILE.exists() else ""
     market_top_default_file = MARKET_TOP_DEFAULT_FILE.read_text(encoding="utf-8") if MARKET_TOP_DEFAULT_FILE.exists() else ""
+    market_prices_file = MARKET_PRICES_FILE.read_text(encoding="utf-8") if MARKET_PRICES_FILE.exists() else ""
+    market_prices_default_file = MARKET_PRICES_DEFAULT_FILE.read_text(encoding="utf-8") if MARKET_PRICES_DEFAULT_FILE.exists() else ""
     package_script = PACKAGE_SCRIPT.read_text(encoding="utf-8")
     prebuilt_script = PREBUILT_SCRIPT.read_text(encoding="utf-8")
     build_script = BUILD_SCRIPT.read_text(encoding="utf-8")
@@ -75,7 +79,7 @@ def main():
         ("RVA_ITEM_CACHE_SET_MANUAL_LOCK", src),
         ("RVA_MASTER_DATA_SINGLETON_TYPEINFO 0x5E40568ULL", src),
         ("bam holds itemInfoData", src),
-        ("maybe_load_auto_item_lock_catalog_from_game_thread", src),
+        ("maybe_preload_auto_item_lock_catalog_from_game_thread", src),
         ("maybe_auto_item_lock_from_game_thread", src),
         ("ITEM_LOCK_LIST_TIMER_REFRESH", src),
         ("refresh_item_lock_list_if_catalog_changed", src),
@@ -96,6 +100,7 @@ def main():
         ("auto_item_lock_market_top_selected", src),
         ("load_auto_item_lock_market_top_ids", src),
         ("TaskBarHeroSpeedMarketTop100.tsv", src),
+        ("TaskBarHeroSpeedMarketPrices.tsv", src),
         ("OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP", src),
         ("OVERLAY_BUTTON_VIEW_EXPANDED", src),
         ("OVERLAY_BUTTON_VIEW_LOG_ONLY", src),
@@ -174,11 +179,10 @@ def main():
         ("RVA_BOX_DATA_GET_REWARD_ITEM_UNIQUE_ID 0x967690ULL", src),
         ("read_boxdata_reward_fields", src),
         ("AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS 2000", src),
-        ("AUTO_SYNTHESIS_STASH_DELAY_MS 3000", src),
         ("AUTO_SYNTHESIS_FILL_DELAY_MS 3000", src),
         ("AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000", src),
         ("AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS", src),
-        ("AUTO_SYNTHESIS_PHASE_WAIT_STASH", src),
+        ("AUTO_STORAGE_INTERVAL_MS 300000", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_FILL", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_CLEAR", src),
@@ -187,8 +191,12 @@ def main():
         ("request_auto_synthesis_after_box_open", src),
         ("maybe_request_auto_synthesis_from_reward_item", src),
         ("maybe_auto_synthesis_from_game_thread", src),
+        ("maybe_periodic_storage_from_game_thread", src),
+        ("g_periodic_storage_next_tick", src),
         ("g_auto_synthesis_result_watch_until", src),
         ("maybe_handle_auto_synthesis_reward_add", src),
+        ("AutoItemMarketPriceEntry", src),
+        ("format_item_market_price", src),
         ("RVA_UI_CUBE_HML", src),
         ("RVA_CUBE_TYPEINFO 0x5DC88E0ULL", src),
         ("RVA_CUBE_SELECT_RECIPE_TYPE 0x8A0950ULL", src),
@@ -197,19 +205,14 @@ def main():
         ("ERECIPE_SYNTHESIS 1", src),
         ("get_cube_current_recipe", src),
         ("ensure_cube_current_recipe", src),
-        ("RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH", src),
-        ("RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL", src),
         ("RVA_UI_MANAGER_SHOW_UI_BASE 0xC391A0ULL", src),
-        ("RVA_UI_MAIN_OPEN_STASH 0x82E470ULL", src),
         ("RVA_UI_MAIN_OPEN_CUBE 0x82E6B0ULL", src),
         ("RVA_CUBE_CLEAR_CURRENT_RECIPE", src),
         ("RVA_CUBE_TRIGGER_CURRENT_RECIPE", src),
         ("UI_MANAGER_UI_MAIN_OFFSET 0xA8", src),
         ("UI_MANAGER_CURRENT_MAIN_TAB_OFFSET 0x54", src),
         ("UI_MANAGER_UI_NEW_STASH_OFFSET", src),
-        ("EMAIN_TAB_NEW_STASH 2", src),
         ("EMAIN_TAB_CUBE 4", src),
-        ("AUTO_SYNTHESIS_PAGE_DELAY_MS", src),
         ("ensure_main_tab_open", src),
         ("ui_manager_show_base_t", src),
         ("show_ui_base(ui_manager, target_ui, NULL);", src),
@@ -252,7 +255,7 @@ def main():
         ("validate_runtime_versions", src),
         ("target_game_version=1.00.21", ini),
         ("plugin_version=1.00.21", ini),
-        ("plugin_subversion=405", ini),
+        ("plugin_subversion=412", ini),
         ("exp_multiplier=", ini),
         ("cube_exp_multiplier=", ini),
         ("auto_synthesis=", ini),
@@ -272,12 +275,14 @@ def main():
         ("MIN_VALID_REMOTE_MODULE", injector),
         ("LoadLibraryA returned suspicious module", injector),
         ("versions.json", package_script),
-        ('PLUGIN_VERSION="1.00.21.405"', package_script),
+        ('PLUGIN_VERSION="1.00.21.412"', package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TaskBarHeroSpeedIcons", package_script),
         ("TaskBarHeroSpeedItemNames.zh-Hans.tsv", package_script),
         ("TaskBarHeroSpeedMarketTop100.tsv", package_script),
         ("TaskBarHeroSpeedMarketTop100.default.tsv", package_script),
+        ("TaskBarHeroSpeedMarketPrices.tsv", package_script),
+        ("TaskBarHeroSpeedMarketPrices.default.tsv", package_script),
         ("generate_market_top_lock.py", package_script),
         ("TRACKED_VERSIONS_DIR", package_script),
         ("MAX_RELEASE_GAME_VERSIONS=3", package_script),
@@ -329,26 +334,61 @@ def main():
                         "missing generated market top lock TSV")
     failures += require(MARKET_TOP_DEFAULT_FILE.is_file(),
                         "missing default market top lock fallback TSV")
+    failures += require(MARKET_PRICES_FILE.is_file(),
+                        "missing generated market prices TSV")
+    failures += require(MARKET_PRICES_DEFAULT_FILE.is_file(),
+                        "missing default market prices fallback TSV")
     if market_top_file:
-        failures += require("item_id\tprice_cents\trank\tmarket_hash\tname_zh_hans" in market_top_file,
-                            "market top TSV must expose item ids and price metadata")
+        failures += require("item_id\tprice_cents\trank\tlast_sold_at\tmarket_hash\tname_zh_hans" in market_top_file,
+                            "market top TSV must expose item ids and traded price metadata")
         data_lines = [
             line for line in market_top_file.splitlines()
             if line and not line.startswith("#") and not line.startswith("item_id\t")
         ]
         failures += require(len(data_lines) >= 100,
-                            "market top TSV must contain the expanded item ids for the top 100 market entries")
+                            "market top TSV must contain expanded item ids for the top 100 traded market entries")
+        if data_lines:
+            first_cells = data_lines[0].split("\t")
+            failures += require(len(first_cells) >= 6 and int(first_cells[1]) > 0 and int(first_cells[3]) > 0,
+                                "market top TSV rows must only include items with traded price and last sold date")
     if market_top_default_file:
-        failures += require("item_id\tprice_cents\trank\tmarket_hash\tname_zh_hans" in market_top_default_file,
-                            "default market top TSV must expose item ids and price metadata")
+        failures += require("item_id\tprice_cents\trank\tlast_sold_at\tmarket_hash\tname_zh_hans" in market_top_default_file,
+                            "default market top TSV must expose traded price metadata")
         default_data_lines = [
             line for line in market_top_default_file.splitlines()
             if line and not line.startswith("#") and not line.startswith("item_id\t")
         ]
         failures += require(len(default_data_lines) >= 100,
                             "default market top TSV must preserve the expanded current top 100 item ids")
+    if market_prices_file:
+        failures += require("item_id\tprice_cents\tlast_sold_at\tmarket_hash\tname_zh_hans" in market_prices_file,
+                            "market prices TSV must expose traded price and last sold metadata")
+        price_lines = [
+            line for line in market_prices_file.splitlines()
+            if line and not line.startswith("#") and not line.startswith("item_id\t")
+        ]
+        failures += require(len(price_lines) >= 100,
+                            "market prices TSV must include the full traded-price item surface")
+        if price_lines:
+            cells = price_lines[0].split("\t")
+            failures += require(len(cells) >= 5 and int(cells[1]) > 0 and int(cells[2]) > 0,
+                                "market prices TSV rows must only include items with成交价 and last sold date")
+    if market_prices_default_file:
+        failures += require("item_id\tprice_cents\tlast_sold_at\tmarket_hash\tname_zh_hans" in market_prices_default_file,
+                            "default market prices TSV must expose traded price and last sold metadata")
     failures += require("DEFAULT_FALLBACK_OUTPUT" in market_top_script,
                         "market top generator must name the default fallback TSV")
+    failures += require("DEFAULT_PRICE_OUTPUT" in market_top_script and
+                        "DEFAULT_PRICE_FALLBACK_OUTPUT" in market_top_script,
+                        "market generator must name full traded-price TSV outputs")
+    failures += require("PRICES_URL" in market_top_script and "medianCents" in market_top_script,
+                        "market generator must use prices.json median sale prices")
+    failures += require("last_sold_at" in market_top_script and "last_sold_timestamp" in market_top_script,
+                        "market generator must persist the last sold timestamp")
+    failures += require("cached_at // 1000" not in market_top_script,
+                        "market generator must not infer last sold date from feed cache time")
+    failures += require("build_market_prices" in market_top_script,
+                        "market generator must build a full traded-price table separate from top100 locking")
     failures += require("copy_default_fallback" in market_top_script,
                         "market top generator must copy the default TSV when live fetch fails")
     failures += require("using default fallback" in market_top_script,
@@ -412,22 +452,79 @@ def main():
                         "overlay item event helper missing")
     if item_start >= 0 and display_stage_start > item_start:
         item_body = src[item_start:display_stage_start]
-        failures += require("append_overlay_log_line_with_grade(line, grade);" in item_body,
+        failures += require("format_item_market_price(item_id, price_text, sizeof(price_text));" in item_body,
+                            "item event log must resolve current market price for dropped items")
+        failures += require("price_text[0] ? \" \" : \"\"" in item_body,
+                            "item event log must append price only when market price exists")
+        failures += require("append_overlay_log_line_with_grade(line, grade, item_id);" in item_body,
                             "only item events should append to the Drops log")
-        failures += require("persist_item_log_entry(line, grade);" in item_body,
-                            "item events must be persisted to disk")
+        failures += require("persist_item_log_entry(line, grade, item_id);" in item_body,
+                            "item events must be persisted to disk with item id metadata")
         failures += require('wsprintfA(generated_key, "ItemName_%u", item_id);' in item_body and
                             "lookup_auto_item_lock_localized_name(generated_key" in item_body,
                             "item event log must fall back to direct item id zh-Hans lookup when catalog data is unavailable")
     failures += require("TaskBarHeroSpeedItemLog.tsv" in src,
                         "item event history must have a stable TSV file")
-    failures += require("load_item_log_history();" in src,
-                        "plugin startup must load persisted item history")
+    failures += require("ITEM_MARKET_PRICES_FILE" in src,
+                        "item event price lookup must use the full traded-price TSV")
+    failures += require("g_item_market_price_count" in src,
+                        "item event history must have a market price lookup table")
+    failures += require("load_item_market_prices();" in src,
+                        "plugin startup must load full traded-price metadata for item logs")
+    failures += require("last_sold_at" in src and "format_market_last_sold_date" in src,
+                        "item price lookup must parse and format last sold dates")
+    failures += require('"最后:"' in src,
+                        "item log price text must include the last sold date label")
+    failures += require("name_zh_hans" in src,
+                        "market top TSV loader must keep zh-Hans names for old history price backfill")
+    failures += require("append_item_market_price_to_log_line" in src,
+                        "item history loader must enrich old item log lines with market prices when possible")
+    failures += require("loaded_item_id" in src,
+                        "item history loader must understand persisted item id metadata")
+    failures += require("price_cents" in src,
+                        "item price lookup must parse the market TSV price_cents column")
+    speed_thread_start = src.find("static DWORD WINAPI speed_thread")
+    if speed_thread_start >= 0:
+        speed_thread_body = src[speed_thread_start:src.find("HMODULE game_assembly", speed_thread_start)]
+        market_load_index = speed_thread_body.find("load_auto_item_lock_market_top_ids();")
+        prices_load_index = speed_thread_body.find("load_item_market_prices();")
+        history_load_index = speed_thread_body.find("load_item_log_history();")
+        failures += require(history_load_index >= 0,
+                            "plugin startup must load persisted item history")
+        failures += require(market_load_index >= 0,
+                            "plugin startup must load market top lock ids")
+        failures += require(prices_load_index >= 0 and prices_load_index < history_load_index,
+                            "plugin startup must load traded prices before persisted item history")
+    else:
+        failures += require(False, "speed thread startup missing")
     failures += require("case WM_MOUSEWHEEL:" in src and "adjust_drop_log_scroll" in src,
                         "Drops item log must be scrollable with the mouse wheel")
     failures += require("OVERLAY_LOG_VISIBLE_LINES" in src and
                         "OVERLAY_LOG_LINE_COUNT 128" in src,
                         "Drops item log must keep more history than the visible rows")
+    failures += require("OVERLAY_LOG_FILTER_PRICED" in src and
+                        "OVERLAY_LOG_FILTER_LEGENDARY" in src and
+                        "OVERLAY_LOG_FILTER_MARKET_TOP" in src,
+                        "Drops item log must expose the three left-side filter toggles")
+    failures += require("draw_overlay_drop_log_filters(hdc);" in src,
+                        "Drops item log must draw the filter toggles beside the log")
+    match_func_index = src.find("drop_log_entry_matches_filters")
+    match_func_slice = src[match_func_index:match_func_index + 900] if match_func_index >= 0 else ""
+    failures += require("drop_log_entry_matches_filters" in src and
+                        "return 1;" in match_func_slice,
+                        "Drops item log filters must use OR semantics")
+    failures += require("contains_text_local(entry->line, \"成交价:\")" in src,
+                        "priced Drops filter must match log entries that include a market price")
+    failures += require("entry->grade >= EGRADE_LEGENDARY" in src,
+                        "legendary Drops filter must match legendary and higher grades")
+    failures += require("auto_item_lock_market_top_selected(entry->item_id)" in src,
+                        "Top100 Drops filter must match entries whose item id is in the market top list")
+    failures += require("overlay_drop_log_filter_hit_test(pt)" in src and
+                        "toggle_drop_log_filter(filter_id);" in src,
+                        "Drops filter toggles must be clickable")
+    failures += require("filtered_count" in src and
+                        "max_scroll = filtered_count > OVERLAY_LOG_VISIBLE_LINES" in src,
+                        "Drops scrolling must be based on filtered entries")
     failures += require("draw_overlay_view_buttons(hdc);" in src and
                         "draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_EXPANDED, \"A\");" in src and
                         "draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_LOG_ONLY, \"L\");" in src and
@@ -577,11 +674,27 @@ def main():
         failures += require(plugin_version_match.group(1) == version_match.group(1),
                             "plugin base version must match the supported game version")
     if plugin_subversion_match:
-        failures += require(plugin_subversion_match.group(1) == "405",
-                            "plugin subversion should be 405 for this change set")
+        failures += require(plugin_subversion_match.group(1) == "412",
+                            "plugin subversion should be 412 for this change set")
     if plugin_display_match:
-        failures += require(plugin_display_match.group(1) == "1.00.21.405",
+        failures += require(plugin_display_match.group(1) == "1.00.21.412",
                             "plugin display version should be game version plus subversion")
+    validate_start = src.find("static int validate_runtime_versions(void)")
+    validate_end = src.find("#define TBHS_TRAMPOLINE_MAX_DISTANCE", validate_start + 1)
+    failures += require(validate_start >= 0 and validate_end > validate_start,
+                        "runtime version validator missing")
+    if validate_start >= 0 and validate_end > validate_start:
+        body = src[validate_start:validate_end]
+        config_mismatch_index = body.find("config version metadata updated")
+        game_mismatch_index = body.find("TaskBarHero game version mismatch")
+        failures += require(config_mismatch_index >= 0,
+                            "config version metadata mismatch should be logged without blocking plugin load")
+        failures += require("save_config();" in body[config_mismatch_index:],
+                            "config version metadata mismatch should update the existing user config")
+        if config_mismatch_index >= 0:
+            version_check_index = body.find("version check:", config_mismatch_index)
+            failures += require("MessageBoxA" not in body[config_mismatch_index:version_check_index if version_check_index >= 0 else len(body)],
+                                "config metadata mismatch must not show a blocking MessageBox")
 
     for key in ("exp_multiplier", "cube_exp_multiplier"):
         match = re.search(rf"^{key}=([0-9.]+)$", ini, re.MULTILINE)
@@ -639,6 +752,8 @@ def main():
         clear_index = body.find("clear_current_recipe(NULL);")
         fill_index = body.find("autofill_current_recipe(current_recipe, NULL);")
         trigger_index = body.find("trigger_current_recipe(NULL);")
+        result_watch_index = body.find("g_auto_synthesis_result_watch_until")
+        result_pending_index = body.find("InterlockedExchange(&g_auto_synthesis_result_pending, 1);")
         post_trigger_clear_index = body.find("clear_current_recipe(NULL);", clear_index + 1)
         failures += require(clear_index >= 0, "auto synthesis must clear current recipe before filling")
         failures += require(fill_index >= 0, "auto synthesis must auto-fill the current recipe without UI_Cube")
@@ -664,47 +779,38 @@ def main():
         cube_page_index = body.find("ensure_main_tab_open(base, EMAIN_TAB_CUBE);")
         failures += require(cube_page_index >= 0,
                             "auto synthesis must request the Cube page before clearing/filling")
-        stash_index = body.find("inventory_to_stash(ui_stash, NULL);")
-        stash_page_index = body.find("ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)")
-        failures += require(stash_page_index >= 0,
-                            "auto synthesis must open the stash page before moving inventory to stash")
-        failures += require(stash_index >= 0,
-                            "auto synthesis must call inventory-to-stash after synthesis when storage is enabled")
+        failures += require("ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)" not in body,
+                            "auto synthesis must not open the stash page from the post-box flow")
+        failures += require("move_inventory_slots_to_stash_from_backend(base)" not in body,
+                            "auto synthesis must not move inventory to stash from the post-box flow")
+        failures += require("inventory_to_stash(ui_stash, NULL);" not in body,
+                            "auto synthesis must not call UI stash moves from the post-box flow")
+        failures += require("AUTO_SYNTHESIS_PHASE_WAIT_STASH" not in body,
+                            "auto synthesis must not enter a stash phase after box-open synthesis")
         if cube_page_index >= 0 and clear_index >= 0:
             failures += require(cube_page_index < clear_index,
                                 "auto synthesis must request the Cube page before the first clear")
         if clear_index >= 0 and fill_index >= 0:
             failures += require(clear_index < fill_index,
                                 "auto synthesis first clear must happen before autofill")
-        if stash_page_index >= 0 and stash_index >= 0:
-            failures += require(stash_page_index < stash_index,
-                                "auto synthesis must open stash before moving items")
-        if stash_index >= 0 and fill_index >= 0:
-            failures += require(fill_index < stash_index,
-                                "auto synthesis stash move must happen after autofill")
         if fill_index >= 0 and trigger_index >= 0:
             failures += require(fill_index < trigger_index,
                                 "auto synthesis autofill must happen before trigger")
+        if result_watch_index >= 0 and result_pending_index >= 0 and trigger_index >= 0:
+            failures += require(result_watch_index < trigger_index and
+                                result_pending_index < trigger_index,
+                                "auto synthesis must arm the result watcher before the trigger because synthesis rewards can be added synchronously")
         if trigger_index >= 0 and post_trigger_clear_index >= 0:
             failures += require(trigger_index < post_trigger_clear_index,
                                 "auto synthesis second clear must happen after trigger")
-        if post_trigger_clear_index >= 0 and stash_index >= 0:
-            failures += require(post_trigger_clear_index < stash_index,
-                                "auto synthesis stash move must happen after the second clear")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_CLEAR;" in body,
                             "auto synthesis must wait for a post-trigger Cube clear phase")
-        failures += require("if (g_auto_synthesis_use_storage) {\n            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;" in body,
-                            "auto synthesis must enter stash phase after the post-trigger clear when storage is enabled")
-        failures += require("inventory_to_stash(ui_stash, NULL);\n            log_line(\"auto synthesis stash move sent" in body,
-                            "auto synthesis stash phase must execute the stash move")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;\n        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;" in body,
-                            "auto synthesis stash phase must finish the post-box flow")
+                            "auto synthesis post-clear phase must finish the post-box flow")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;" in body,
                             "auto synthesis must enter wait-fill phase immediately after the first clear")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER;" in body,
                             "auto synthesis must enter wait-trigger phase after autofill")
-        failures += require("auto synthesis stash move sent" in body,
-                            "auto synthesis must log the stash move step")
         failures += require("auto synthesis post-trigger clear sent" in body,
                             "auto synthesis must log the second clear step")
         failures += require("auto synthesis clear sent" in body,
@@ -713,8 +819,6 @@ def main():
                             "auto synthesis must log a separate autofill step")
         failures += require("auto synthesis Cube page open requested" in body,
                             "auto synthesis must log Cube page open requests")
-        failures += require("auto synthesis stash page open requested" in body,
-                            "auto synthesis must log stash page open requests")
         failures += require("InterlockedExchange(&g_auto_synthesis_pending, 0)" in body,
                             "auto synthesis must consume a pending box-open request before starting")
         failures += require("if (!g_auto_synthesis_pending ||" in body,
@@ -779,14 +883,16 @@ def main():
     failures += require(bool(apply_speed_match), "apply speed loop body missing")
     if apply_speed_match:
         body = apply_speed_match.group("body")
-        catalog_index = body.find("maybe_load_auto_item_lock_catalog_from_game_thread();")
+        catalog_index = body.find("maybe_preload_auto_item_lock_catalog_from_game_thread();")
         lock_index = body.find("maybe_auto_item_lock_from_game_thread();")
         manual_lock_index = body.find("manual_item_lock_from_game_thread();")
         synth_index = body.find("maybe_auto_synthesis_from_game_thread();")
-        failures += require(catalog_index >= 0, "game-thread loop must load item lock catalog")
+        storage_index = body.find("maybe_periodic_storage_from_game_thread();")
+        failures += require(catalog_index >= 0, "game-thread loop must preload item lock catalog")
         failures += require(lock_index >= 0, "game-thread loop must process pending auto item locks")
         failures += require(manual_lock_index >= 0, "game-thread loop must process manual item lock requests")
         failures += require(synth_index >= 0, "game-thread loop must process pending auto synthesis")
+        failures += require(storage_index >= 0, "game-thread loop must process periodic inventory-to-stash storage")
         if catalog_index >= 0 and lock_index >= 0:
             failures += require(catalog_index < lock_index,
                                 "item lock catalog must load before processing pending item locks")
@@ -796,19 +902,22 @@ def main():
         if manual_lock_index >= 0 and synth_index >= 0:
             failures += require(manual_lock_index < synth_index,
                                 "manual item lock requests should run before synthesis after box open")
+        if synth_index >= 0 and storage_index >= 0:
+            failures += require(synth_index < storage_index,
+                                "periodic storage should run after synthesis has had a chance to advance")
 
     catalog_loader_match = re.search(
-        r"static void maybe_load_auto_item_lock_catalog_from_game_thread\(void\)\s*\{(?P<body>.*?)\n\}",
+        r"static void maybe_preload_auto_item_lock_catalog_from_game_thread\(void\)\s*\{(?P<body>.*?)\n\}",
         src,
         re.DOTALL,
     )
-    failures += require(bool(catalog_loader_match), "item lock catalog loader body missing")
+    failures += require(bool(catalog_loader_match), "item lock catalog preload body missing")
     if catalog_loader_match:
         body = catalog_loader_match.group("body")
         failures += require("g_auto_item_lock_catalog_count > 0" in body,
-                            "item lock catalog loader must stop after data is loaded")
-        failures += require("g_auto_item_lock_enabled" not in body and "g_item_lock_list_hwnd" in body,
-                            "item lock catalog loader must run only while the list window is open")
+                            "item lock catalog preload must stop after data is loaded")
+        failures += require("g_auto_item_lock_catalog_preload_pending" in body and "g_item_lock_list_hwnd" in body,
+                            "item lock catalog preload must run for startup preload or while the list window is open")
 
     catalog_load_match = re.search(
         r"static int load_auto_item_lock_catalog_from_game\(void\)\s*\{(?P<body>.*?)\n\}",
@@ -1137,6 +1246,168 @@ def main():
         failures += require('begin_actboss_cache_watch_from_stage_box(stage_box, "timer");' in body,
                             "act boss auto-open timer must start the item cache watch before the server reward lands")
 
+    failures += require("RVA_CUBE_SYNTHESIS_CORE 0x8CD370ULL" in src,
+                        "manual Cube synthesis results must be observed at the Cube synthesis state-machine core")
+    failures += require("cube_synthesis_core_t" in src,
+                        "Cube synthesis core hook typedef missing")
+    failures += require("k_original_cube_synthesis_core" in src,
+                        "Cube synthesis core hook must validate the expected function prologue")
+    failures += require("g_hook_cube_synthesis_core" in src,
+                        "Cube synthesis core hook patch state missing")
+    failures += require("SYNTHESIS_CACHE_WATCH_MS" in src,
+                        "Cube synthesis needs a short item cache watch for async result delivery")
+
+    synthesis_core_hook_match = re.search(
+        r"static __int64 __fastcall hook_cube_synthesis_core\(void \*state_machine\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(synthesis_core_hook_match), "Cube synthesis core hook body missing")
+    if synthesis_core_hook_match:
+        body = synthesis_core_hook_match.group("body")
+        begin_index = body.find('begin_synthesis_cache_watch("core");')
+        real_index = body.find("g_real_cube_synthesis_core(state_machine)")
+        failures += require("synthesis_state == -1" in body,
+                            "Cube synthesis cache watch must only start on the initial state-machine entry")
+        failures += require(begin_index >= 0,
+                            "Cube synthesis core hook must snapshot the item cache before running synthesis")
+        failures += require(real_index >= 0,
+                            "Cube synthesis core hook must call the original synthesis core")
+        if begin_index >= 0 and real_index >= 0:
+            failures += require(begin_index < real_index,
+                                "Cube synthesis cache snapshot must happen before the synthesis core runs")
+
+    begin_synthesis_watch_match = re.search(
+        r"static void begin_synthesis_cache_watch\(const char \*source\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(begin_synthesis_watch_match),
+                        "Cube synthesis cache watch starter missing")
+    if begin_synthesis_watch_match:
+        body = begin_synthesis_watch_match.group("body")
+        failures += require("snapshot_synthesis_cache_watch_ids();" in body,
+                            "Cube synthesis cache watch must snapshot current item cache ids")
+        failures += require("g_synthesis_cache_watch_until = now + SYNTHESIS_CACHE_WATCH_MS;" in body,
+                            "Cube synthesis cache watch must use the synthesis watch window")
+
+    synthesis_watch_start = src.find(
+        "static void maybe_handle_synthesis_cache_watch_from_game_thread(void)\n{"
+    )
+    synthesis_watch_end = src.find("static void reset_actboss_cache_watch(void)",
+                                   synthesis_watch_start + 1
+                                   if synthesis_watch_start >= 0 else 0)
+    failures += require(synthesis_watch_start >= 0 and
+                        synthesis_watch_end > synthesis_watch_start,
+                        "Cube synthesis cache watch game-thread helper missing")
+    if synthesis_watch_start >= 0 and synthesis_watch_end > synthesis_watch_start:
+        body = src[synthesis_watch_start:synthesis_watch_end]
+        failures += require("IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET" in body,
+                            "Cube synthesis cache watch must dedupe by item cache unique id key")
+        failures += require("item_key_is_stage_box_candidate(item_id)" in body,
+                            "Cube synthesis cache watch must not log stage boxes as synthesized items")
+        failures += require("item_type != EITEM_TYPE_GEAR && item_type != EITEM_TYPE_MATERIAL" in body,
+                            "Cube synthesis cache watch must only log synthesized gear/material results")
+        failures += require("auto_item_lock_apply_cache_now(item_cache, item_id, \"synthesis cache watch\"" in body,
+                            "Cube synthesis cache watch must lock matched new items immediately")
+        failures += require('append_overlay_item_event("合成", item_id, locked);' in body,
+                            "Cube synthesis cache watch must print new synthesis results as item logs")
+        recent_box_index = body.find("recent_box_reward_matches(unique_id, item_id)")
+        synth_log_index = body.find('append_overlay_item_event("合成", item_id, locked);')
+        failures += require(recent_box_index >= 0,
+                            "Cube synthesis cache watch must skip item cache entries already logged as open-box rewards")
+        if recent_box_index >= 0 and synth_log_index >= 0:
+            failures += require(recent_box_index < synth_log_index,
+                                "Cube synthesis cache watch must skip recent open-box rewards before printing synthesis logs")
+
+    failures += require("RECENT_BOX_REWARD_IGNORE_MS" in src,
+                        "recent open-box rewards need an ignore window to prevent duplicate synthesis logs")
+    failures += require("remember_recent_box_reward_unique_id(reward_item_id, reward_unique_key);" in src,
+                        "box reward select path must remember the reward unique id before later synthesis cache scans")
+
+    synthesis_reward_impl_anchor = src.find("static void remember_recent_box_reward(")
+    synthesis_reward_impl_anchor = src.find("static void maybe_handle_box_reward_add",
+                                            synthesis_reward_impl_anchor + 1
+                                            if synthesis_reward_impl_anchor >= 0 else 0)
+    auto_synth_reward_start = src.find(
+        "static void maybe_handle_auto_synthesis_reward_add(unsigned int item_id,",
+        synthesis_reward_impl_anchor + 1 if synthesis_reward_impl_anchor >= 0 else 0
+    )
+    auto_synth_reward_end = src.find("static void maybe_handle_manual_synthesis_reward_add",
+                                     auto_synth_reward_start + 1
+                                     if auto_synth_reward_start >= 0 else 0)
+    if auto_synth_reward_start >= 0 and auto_synth_reward_end > auto_synth_reward_start:
+        body = src[auto_synth_reward_start:auto_synth_reward_end]
+        failures += require("recent_box_reward_matches(unique_id, item_id)" in body,
+                            "auto synthesis reward-add fallback must not log recent open-box rewards as synthesis")
+
+    manual_synth_reward_start = src.find(
+        "static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,",
+        auto_synth_reward_start + 1 if auto_synth_reward_start >= 0 else 0
+    )
+    manual_synth_reward_end = src.find("static void reset_synthesis_cache_watch(void)",
+                                       manual_synth_reward_start + 1
+                                       if manual_synth_reward_start >= 0 else 0)
+    if manual_synth_reward_start >= 0 and manual_synth_reward_end > manual_synth_reward_start:
+        body = src[manual_synth_reward_start:manual_synth_reward_end]
+        failures += require("recent_box_reward_matches(unique_id, item_id)" in body,
+                            "manual synthesis reward-add fallback must not log recent open-box rewards as synthesis")
+
+    append_item_event_match = re.search(
+        r"static void append_overlay_item_event\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(append_item_event_match), "overlay item event appender missing")
+    if append_item_event_match:
+        body = append_item_event_match.group("body")
+        failures += require("load_auto_item_lock_catalog_from_game()" not in body,
+                            "item drop logging must not synchronously load the full item catalog")
+
+    reward_match_fn = re.search(
+        r"static int auto_item_lock_reward_matches_conditions\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(reward_match_fn), "reward lock condition helper missing")
+    if reward_match_fn:
+        body = reward_match_fn.group("body")
+        failures += require("load_auto_item_lock_catalog_from_game()" not in body,
+                            "reward lock condition checks must not synchronously load the full item catalog")
+
+    preload_match = re.search(
+        r"static void maybe_preload_auto_item_lock_catalog_from_game_thread\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(preload_match),
+                        "item catalog must be preloaded from the game thread after injection")
+    if preload_match:
+        body = preload_match.group("body")
+        failures += require("g_auto_item_lock_catalog_preload_pending" in body,
+                            "item catalog preload helper must be controlled by a startup pending flag")
+        failures += require("load_auto_item_lock_catalog_from_game()" in body,
+                            "item catalog preload helper must load the full catalog before box drops need names")
+        failures += require("InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 0)" in body,
+                            "item catalog preload helper must clear the startup pending flag after loading")
+
+    failures += require("InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 1);" in src,
+                        "plugin startup must request item catalog preload after GameAssembly is available")
+
+    install_synthesis_core_match = re.search(
+        r"static int install_cube_synthesis_core_hook\(HMODULE game_assembly\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(install_synthesis_core_match),
+                        "Cube synthesis core hook installer missing")
+    if install_synthesis_core_match:
+        body = install_synthesis_core_match.group("body")
+        failures += require("RVA_CUBE_SYNTHESIS_CORE" in body,
+                            "Cube synthesis core hook installer must target the synthesis core RVA")
+        failures += require("write_absolute_jump_with_trampoline" in body,
+                            "Cube synthesis core hook must preserve and call the original function through a trampoline")
+
     apply_speed_match = re.search(
         r"static void apply_speed_from_game_thread\(.*?\)\s*\{(?P<body>.*?)\n\}",
         src,
@@ -1145,19 +1416,33 @@ def main():
     failures += require(bool(apply_speed_match), "game-thread periodic hook body missing")
     if apply_speed_match:
         body = apply_speed_match.group("body")
+        failures += require("maybe_preload_auto_item_lock_catalog_from_game_thread();" in body,
+                            "game-thread loop must run item catalog preload before item logs are needed")
         failures += require("maybe_handle_actboss_cache_watch_from_game_thread();" in body,
                             "act boss cache watch must be polled from the game thread")
+        failures += require("maybe_handle_synthesis_cache_watch_from_game_thread();" in body,
+                            "Cube synthesis cache watch must be polled from the game thread")
 
-    failures += require("RVA_SLOT_MANAGER_MOVE_REQUEST" in src,
-                        "auto synthesis storage must use rd.ktp MoveRequest backend path")
-    failures += require("RVA_SLOT_MANAGER_MOVE_TO_TARGET" in src,
-                        "auto synthesis storage must use rd.kit to let the game choose stash slots")
-    failures += require("RVA_INVENTORY_TYPEINFO" in src,
-                        "auto synthesis storage must locate backend inventory slot dictionary")
-    failures += require("TaskbarHeroMoveRequest" in src,
-                        "auto synthesis storage must define the MoveRequest ABI struct")
+    failures += require("install_cube_synthesis_core_hook(game_assembly)" in src,
+                        "Cube synthesis core hook must be installed during plugin startup")
+
+    failures += require("RVA_SLOT_MANAGER_MOVE_REQUEST" not in src,
+                        "inventory-to-stash must not keep the old rd.ktp MoveRequest path")
+    failures += require("TaskbarHeroMoveRequest" not in src and
+                        "slot_manager_move_request_t" not in src,
+                        "inventory-to-stash must not keep the old MoveRequest ABI")
+    failures += require("RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH" not in src and
+                        "ui_remake_stash_action_t" not in src,
+                        "inventory-to-stash must not keep the UI_RemakeStash button path")
+    failures += require("RVA_UI_MAIN_OPEN_STASH" not in src and
+                        "EMAIN_TAB_NEW_STASH" not in src,
+                        "inventory-to-stash must not keep code that opens the stash page")
+    failures += require("RVA_SLOT_MANAGER_MOVE_ALL" in src,
+                        "periodic inventory-to-stash must use rd.hyp")
     failures += require("move_inventory_slots_to_stash_from_backend" in src,
-                        "auto synthesis storage must try backend inventory->stash moves")
+                        "periodic storage must try backend inventory->stash moves")
+    failures += require(src.count("move_inventory_slots_to_stash_from_backend(base)") == 1,
+                        "the 5 minute periodic storage loop must be the only inventory->stash caller")
     backend_storage_match = re.search(
         r"static int move_inventory_slots_to_stash_from_backend\(.*?\)\s*\{(?P<body>.*?)\n\}",
         src,
@@ -1166,26 +1451,44 @@ def main():
     failures += require(bool(backend_storage_match), "backend inventory->stash function missing")
     if backend_storage_match:
         body = backend_storage_match.group("body")
-        failures += require("get_inventory_slot_dictionary(base)" in body,
-                            "backend stash moves must enumerate the inventory slot dictionary")
         failures += require("get_ui_hero_instance(base)" not in body,
                             "backend stash moves must not depend on UI_Hero being loaded")
-        failures += require("move_to_target(slot_manager, ESLOT_TYPE_STASH, source_index, NULL, 0, NULL)" in body,
-                            "backend stash moves must delegate target slot selection to rd.kit")
-    auto_synthesis_match = re.search(
-        r"static void maybe_auto_synthesis_from_game_thread\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        failures += require(
+            re.search(
+                r"move_all\(\s*slot_manager\s*,\s*ESLOT_TYPE_INVENTORY\s*,\s*ESLOT_TYPE_STASH\s*,\s*NULL\s*\)",
+                body,
+                re.DOTALL,
+            ),
+            "backend stash moves must mirror UI_RemakeStash.lmo by calling rd.hyp(1, 2)",
+        )
+    periodic_storage_match = re.search(
+        r"static void maybe_periodic_storage_from_game_thread\(.*?\)\s*\{(?P<body>.*?)\n\}",
         src,
         re.DOTALL,
     )
-    failures += require(bool(auto_synthesis_match), "auto synthesis game-thread body missing")
-    if auto_synthesis_match:
-        body = auto_synthesis_match.group("body")
+    failures += require(bool(periodic_storage_match), "periodic storage game-thread body missing")
+    if periodic_storage_match:
+        body = periodic_storage_match.group("body")
+        failures += require("!g_auto_synthesis_use_storage" in body,
+                            "periodic storage must be controlled by the storage toggle")
+        failures += require("!g_auto_synthesis_enabled" not in body,
+                            "periodic storage must not require auto synthesis to be enabled")
+        failures += require("g_auto_synthesis_phase != AUTO_SYNTHESIS_PHASE_IDLE" in body,
+                            "periodic storage must wait while synthesis is in progress")
+        failures += require("main_tab_current_ready(base, EMAIN_TAB_NEW_STASH)" not in body,
+                            "periodic storage must not wait for the stash tab UI before moving inventory")
+        failures += require("ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)" not in body,
+                            "periodic storage must not open the stash page every cycle")
         failures += require("move_inventory_slots_to_stash_from_backend(base)" in body,
-                            "auto synthesis stash phase must try backend stash moves")
-        failures += require("auto synthesis stash backend move sent" in body,
-                            "auto synthesis stash phase must log backend move attempts")
-        failures += require("AUTO_SYNTHESIS_STASH_RETRY_MAX" in body,
-                            "auto synthesis stash phase must not wait forever for the stash UI")
+                            "periodic storage must try backend stash moves")
+        failures += require("AUTO_STORAGE_INTERVAL_MS" in body and
+                            "g_periodic_storage_next_tick = now + AUTO_STORAGE_INTERVAL_MS" in body,
+                            "periodic storage must run on the 5 minute storage interval")
+        failures += require("periodic stash backend batch sent" in body,
+                            "periodic storage must log backend batch attempts")
+        failures += require("periodic stash page open requested" not in body and
+                            "stash UI unavailable" not in body,
+                            "periodic storage must not retry on UI availability")
 
     for version in ("1.00.19", "1.00.20", "1.00.21"):
         failures += require((VERSIONS_DIR / version / "TaskBarHeroSpeed.dll").is_file(),

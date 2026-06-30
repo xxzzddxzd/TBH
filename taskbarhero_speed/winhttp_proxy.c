@@ -5,8 +5,8 @@
 
 #define TBHS_SUPPORTED_GAME_VERSION "1.00.21"
 #define TBHS_PLUGIN_VERSION "1.00.21"
-#define TBHS_PLUGIN_SUBVERSION "405"
-#define TBHS_PLUGIN_DISPLAY_VERSION "1.00.21.405"
+#define TBHS_PLUGIN_SUBVERSION "412"
+#define TBHS_PLUGIN_DISPLAY_VERSION "1.00.21.412"
 #define SPEED_DEFAULT 5.0f
 #define EXP_MULTIPLIER_DEFAULT 1.0f
 #define CUBE_EXP_MULTIPLIER_DEFAULT 10.0f
@@ -54,31 +54,24 @@
 #define RVA_UI_CUBE_ON_DISABLE 0xA20DF0ULL
 #define RVA_UI_CUBE_ON_DESTROY 0xA20D60ULL
 #define RVA_UI_CUBE_AUTOFILL 0xA22150ULL /* UI_Cube auto-fill current recipe */
-#define RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL /* UI_RemakeStash inventory -> stash batch button */
 #define RVA_UI_MANAGER_SHOW_UI_BASE 0xC391A0ULL /* UIManager.hhf shows a UI_Base main tab */
-#define RVA_UI_MAIN_OPEN_STASH 0x82E470ULL /* UI_Main stash tab button handler */
 #define RVA_UI_MAIN_OPEN_CUBE 0x82E6B0ULL /* UI_Main cube tab button handler */
 #define RVA_CUBE_TYPEINFO 0x5DC88E0ULL /* uz.Cube_TypeInfo */
 #define RVA_CUBE_SELECT_RECIPE_TYPE 0x8A0950ULL /* uz.Cube.imr(ERecipeType) selects current recipe */
 #define RVA_UI_MANAGER_TYPEINFO 0x5E3D880ULL /* np<UIManager>_TypeInfo */
 #define RVA_SLOT_MANAGER_TYPEINFO 0x5E40D28ULL /* np<rd>_TypeInfo; item slot move manager */
-#define RVA_SLOT_MANAGER_MOVE_REQUEST 0x8847B0ULL /* rd.ktp(MoveRequest, Action<MoveResult>) */
-#define RVA_SLOT_MANAGER_MOVE_TO_TARGET 0x883C60ULL /* rd.kit(targetType, sourceIndex, callback, targetIndex) */
-#define RVA_INVENTORY_TYPEINFO 0x5DC90A0ULL /* uz.ty_TypeInfo; backend inventory slot dictionary */
+#define RVA_SLOT_MANAGER_MOVE_ALL 0x87FEC0ULL /* rd.hyp(sourceType, targetType), used by UI_RemakeStash.lmo */
 #define RVA_MASTER_DATA_SINGLETON_TYPEINFO 0x5E40568ULL /* np<bam>_TypeInfo; bam holds itemInfoData */
 #define RVA_ITEM_CACHE_BY_UNIQUE_ID 0x909D00ULL /* uz.uc.izf(ulong) returns uz.uc.ua item cache */
 #define RVA_ITEM_CACHE_STORE_TYPEINFO 0x5DC9198ULL /* uz.uc_TypeInfo owns live item cache dictionary */
 #define RVA_ITEM_CACHE_GET_MANUAL_LOCK 0x901180ULL /* uz.uc.ua.iws() manual lock flag */
 #define RVA_ITEM_CACHE_SET_MANUAL_LOCK 0x903480ULL /* uz.uc.ua.iyj/klu(bool) sets manual lock */
-#define RVA_STASH_CACHE_BY_INDEX 0x935B70ULL /* uz.Stash.jjd(index) */
-#define RVA_STASH_MAX_SLOT_COUNT 0x9366A0ULL /* uz.Stash.jjk() */
-#define RVA_SLOT_CACHE_GET_UNIQUE_ID 0x933000ULL /* ve/StashCache.jjs() */
-#define RVA_STASH_CACHE_GET_UNIQUE_ID RVA_SLOT_CACHE_GET_UNIQUE_ID /* legacy name */
 #define RVA_CUBE_SET_USE_STORAGE 0x8A3050ULL
 #define RVA_CUBE_SET_SYNTHESIS_TYPE 0x89F690ULL
 #define RVA_CUBE_CLEAR_CURRENT_RECIPE 0x8AD760ULL /* Cube clear current recipe slots */
 #define RVA_CUBE_AUTOFILL_CURRENT_RECIPE 0x941B40ULL /* backend auto-fill dispatcher used by UI_Cube.kzn */
 #define RVA_CUBE_TRIGGER_CURRENT_RECIPE 0x8A3F00ULL
+#define RVA_CUBE_SYNTHESIS_CORE 0x8CD370ULL /* Cube synthesis state-machine core */
 #define RVA_STAGE_BOX_REFRESH_AUTO_OPEN 0xA29490ULL /* StageBox::lkc refreshes auto-open cd */
 #define RVA_AUTO_CHEST_OPEN_MOVE_NEXT 0xA31D30ULL /* StageBox AutoChestOpenAsync MoveNext */
 #define RVA_STAT_VALUE_GET 0x9D5A20ULL
@@ -117,7 +110,6 @@
 #define UI_HERO_INVENTORY_SLOTS_OFFSET 0x78
 #define UI_REMAKE_STASH_SLOT_LIST_OFFSET 0x60
 #define ITEM_SLOT_ITEM_CACHE_OFFSET 0xB8
-#define STASH_CACHE_SAVE_DATA_OFFSET 0x18
 #define ITEM_CACHE_ITEM_INFO_OFFSET 0x10
 #define ITEM_CACHE_EQUIP_CLASS_OFFSET 0x30
 #define IL2CPP_STRING_LENGTH_OFFSET 0x10
@@ -140,11 +132,6 @@
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET 8
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET 16
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE 24
-#define IL2CPP_DICT_INT_OBJECT_ENTRY_HASH_OFFSET 0
-#define IL2CPP_DICT_INT_OBJECT_ENTRY_KEY_OFFSET 8
-#define IL2CPP_DICT_INT_OBJECT_ENTRY_VALUE_OFFSET 16
-#define IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE 24
-#define INVENTORY_STATIC_SLOT_DICT_OFFSET 0x0
 #define ESTAGE_TYPE_NORMAL 0
 #define ESTAGE_TYPE_ACTBOSS 1
 
@@ -166,10 +153,17 @@
 #define OVERLAY_LOG_LINE_COUNT 128
 #define OVERLAY_LOG_VISIBLE_LINES 8
 #define OVERLAY_LOG_LINE_SIZE 220
-#define OVERLAY_LOG_BOX_LEFT 76
+#define OVERLAY_LOG_FILTER_LEFT 12
+#define OVERLAY_LOG_FILTER_WIDTH 126
+#define OVERLAY_LOG_FILTER_ROW_HEIGHT 22
+#define OVERLAY_LOG_FILTER_CHECK_SIZE 12
+#define OVERLAY_LOG_BOX_LEFT 148
 #define OVERLAY_LOG_BOX_TOP 304
-#define OVERLAY_LOG_BOX_WIDTH 590
+#define OVERLAY_LOG_BOX_WIDTH 518
 #define OVERLAY_LOG_BOX_HEIGHT 112
+#define OVERLAY_LOG_FILTER_PRICED 1
+#define OVERLAY_LOG_FILTER_LEGENDARY 2
+#define OVERLAY_LOG_FILTER_MARKET_TOP 4
 #define OVERLAY_BUTTON_MIN 1001
 #define OVERLAY_BUTTON_MINUS5 1002
 #define OVERLAY_BUTTON_MINUS1 1003
@@ -224,6 +218,8 @@
 #define ITEM_LOCK_ICON_TRANSPARENT_KEY RGB(255, 0, 255)
 #define ITEM_LOCK_NAME_TABLE_FILE "TaskBarHeroSpeedItemNames.zh-Hans.tsv"
 #define ITEM_LOCK_MARKET_TOP_FILE "TaskBarHeroSpeedMarketTop100.tsv"
+#define ITEM_MARKET_PRICES_FILE "TaskBarHeroSpeedMarketPrices.tsv"
+#define ITEM_MARKET_LAST_SOLD_LABEL "最后:"
 #define AUTO_ITEM_LOCK_NAME_MAX 8192
 #define AUTO_ITEM_LOCK_NAME_FILE_MAX_BYTES 1048576
 #define AUTO_PORTAL_INTERVAL_MIN_MS 5000
@@ -231,23 +227,23 @@
 #define AUTO_OPEN_BOX_SECONDS 5
 #define AUTO_SYNTHESIS_INTERVAL_MS 3000
 #define AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS 2000
-#define AUTO_SYNTHESIS_STASH_DELAY_MS 3000
-#define AUTO_SYNTHESIS_PAGE_DELAY_MS 1000
-#define AUTO_SYNTHESIS_STASH_RETRY_MAX 3
-#define AUTO_SYNTHESIS_BACKEND_STASH_MAX_MOVES 96
-#define AUTO_SYNTHESIS_STASH_SCAN_MAX 1024
 #define AUTO_SYNTHESIS_FILL_DELAY_MS 3000
 #define AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000
 #define AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS 1000
 #define AUTO_SYNTHESIS_RESULT_WATCH_MS 5000
+#define AUTO_STORAGE_INTERVAL_MS 300000
 #define BOX_REWARD_RESULT_WATCH_MS 4000
 #define ACTBOSS_BOX_ITEM_KEY 930801
 #define ACTBOSS_CACHE_WATCH_MS 15000
 #define ACTBOSS_CACHE_WATCH_COOLDOWN_MS 2500
 #define ACTBOSS_CACHE_WATCH_SCAN_INTERVAL_MS 250
 #define ACTBOSS_CACHE_WATCH_MAX_IDS 32768
+#define SYNTHESIS_CACHE_WATCH_MS 10000
+#define SYNTHESIS_CACHE_WATCH_SCAN_INTERVAL_MS 100
+#define SYNTHESIS_CACHE_WATCH_MAX_IDS 32768
+#define RECENT_BOX_REWARD_IGNORE_MS 60000
+#define RECENT_BOX_REWARD_MAX 64
 #define AUTO_SYNTHESIS_PHASE_IDLE 0
-#define AUTO_SYNTHESIS_PHASE_WAIT_STASH 1
 #define AUTO_SYNTHESIS_PHASE_WAIT_FILL 2
 #define AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER 3
 #define AUTO_SYNTHESIS_PHASE_WAIT_CLEAR 4
@@ -258,12 +254,12 @@
 #define AUTO_SWITCH_WAIT_NORMAL_DROP 1
 #define AUTO_SWITCH_WAIT_BOSS_DROP 2
 #define ERECIPE_SYNTHESIS 1
-#define EMAIN_TAB_NEW_STASH 2
 #define EMAIN_TAB_CUBE 4
 #define ESLOT_TYPE_INVENTORY 1
 #define ESLOT_TYPE_STASH 2
 #define EMOVE_TYPE_EXPLICIT_SLOT 0
 #define EITEM_SYNTHESIS_GEAR 0
+#define EGRADE_LEGENDARY 3
 #define EGRADE_BEYOND 6
 #define EGRADE_CELESTIAL 7
 #define EGRADE_DIVINE 8
@@ -271,6 +267,7 @@
 #define AUTO_ITEM_LOCK_MAX_ITEMS 8192
 #define AUTO_ITEM_LOCK_MAX_SELECTED 2048
 #define AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS 512
+#define AUTO_ITEM_MARKET_PRICE_MAX_IDS 8192
 #define AUTO_ITEM_LOCK_COIN_MIN 160000
 #define AUTO_ITEM_LOCK_COIN_MAX 160020
 #define EITEM_TYPE_STAGEBOX 0
@@ -319,13 +316,6 @@ typedef void *(*resolve_icall_t)(const char *name);
 typedef float (*unity_time_get_t)(void);
 typedef void (*unity_time_set_t)(float value);
 typedef void *(__fastcall *singleton_get_instance_t)(void *type_info);
-typedef struct TaskbarHeroMoveRequest {
-    int source_type;
-    int source_index;
-    int target_type;
-    int target_index;
-    int move_type;
-} TaskbarHeroMoveRequest;
 typedef int (__fastcall *stagecache_get_int_t)(void *stage_cache);
 typedef int (__fastcall *stage_enter_exact_key_t)(void *stage_manager, unsigned int stage_key, void *method);
 typedef __int64 (__fastcall *stage_set_current_cache_t)(void *stage_cache);
@@ -345,16 +335,11 @@ typedef void (__fastcall *drop_reward_callback_t)(void *target, unsigned int rew
 typedef float (__fastcall *drop_rate_calc_t)(void *rate_owner, float raw_rate, void *method);
 typedef float (__fastcall *exp_reward_calc_t)(void *reward_owner, float base_exp, int is_boss, char is_actboss, void *method);
 typedef void (__fastcall *cube_add_exp_t)(float amount, void *method);
+typedef __int64 (__fastcall *cube_synthesis_core_t)(void *state_machine);
 typedef __int64 (__fastcall *ui_cube_instance_t)(void *ui_cube, void *method);
-typedef __int64 (__fastcall *ui_remake_stash_action_t)(void *ui_stash, void *method);
 typedef void (__fastcall *ui_manager_show_base_t)(void *ui_manager, void *ui_base, void *method);
 typedef void (__fastcall *ui_main_action_t)(void *ui_main, void *method);
-typedef void (__fastcall *slot_manager_move_request_t)(void *slot_manager, TaskbarHeroMoveRequest *request, void *callback, void *method);
-typedef void (__fastcall *slot_manager_move_to_target_t)(void *slot_manager, int target_type, int source_index, void *callback, int target_index, void *method);
-typedef void *(__fastcall *stash_cache_by_index_t)(int index, void *method);
-typedef int (__fastcall *stash_max_slot_count_t)(void *method);
-typedef unsigned __int64 (__fastcall *slot_cache_get_unique_id_t)(void *slot_cache, void *method);
-typedef slot_cache_get_unique_id_t stash_cache_get_unique_id_t;
+typedef __int64 (__fastcall *slot_manager_move_all_t)(void *slot_manager, int source_type, int target_type, void *method);
 typedef __int64 (__fastcall *cube_set_bool_t)(char value, void *method);
 typedef __int64 (__fastcall *cube_set_int_t)(int value, void *method);
 typedef __int64 (__fastcall *cube_clear_current_recipe_t)(void *method);
@@ -420,9 +405,19 @@ typedef struct AutoItemLockNameEntry {
     char name[160];
 } AutoItemLockNameEntry;
 
+typedef struct AutoItemMarketPriceEntry {
+    unsigned int item_id;
+    unsigned int price_cents;
+    unsigned __int64 last_sold_at;
+    char name_zh_hans[160];
+    char base_name_zh_hans[120];
+    char grade_name_zh_hans[32];
+} AutoItemMarketPriceEntry;
+
 typedef struct OverlayLogEntry {
     char line[OVERLAY_LOG_LINE_SIZE];
     int grade;
+    unsigned int item_id;
 } OverlayLogEntry;
 
 typedef void *HINTERNET_LOCAL;
@@ -500,6 +495,7 @@ static int g_auto_item_lock_catalog_count = 0;
 static DWORD g_auto_item_lock_last_catalog_log_tick = 0;
 static DWORD g_auto_item_lock_last_catalog_try_tick = 0;
 static volatile LONG g_auto_item_lock_catalog_version = 0;
+static volatile LONG g_auto_item_lock_catalog_preload_pending = 0;
 static AutoItemLockNameEntry g_auto_item_lock_name_table[AUTO_ITEM_LOCK_NAME_MAX];
 static int g_auto_item_lock_name_count = 0;
 static int g_auto_item_lock_names_loaded = 0;
@@ -507,6 +503,8 @@ static unsigned int g_auto_item_lock_selected_ids[AUTO_ITEM_LOCK_MAX_SELECTED];
 static int g_auto_item_lock_selected_count = 0;
 static unsigned int g_auto_item_lock_market_top_ids[AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS];
 static int g_auto_item_lock_market_top_count = 0;
+static AutoItemMarketPriceEntry g_item_market_prices[AUTO_ITEM_MARKET_PRICE_MAX_IDS];
+static int g_item_market_price_count = 0;
 static unsigned int g_auto_item_lock_temp_ids[AUTO_ITEM_LOCK_MAX_SELECTED];
 static int g_auto_item_lock_temp_count = 0;
 static volatile LONG g_auto_item_lock_pending = 0;
@@ -543,6 +541,7 @@ static HookPatch g_hook_normal_drop_rate_observer;
 static HookPatch g_hook_boss_drop_rate_observer;
 static HookPatch g_hook_exp_reward_calc;
 static HookPatch g_hook_cube_add_exp;
+static HookPatch g_hook_cube_synthesis_core;
 static HookPatch g_hook_ui_cube_hml;
 static HookPatch g_hook_ui_cube_on_disable;
 static HookPatch g_hook_ui_cube_on_destroy;
@@ -616,6 +615,7 @@ static drop_rate_calc_t g_real_normal_drop_rate_calc;
 static drop_rate_calc_t g_real_boss_drop_rate_calc;
 static exp_reward_calc_t g_real_exp_reward_calc;
 static cube_add_exp_t g_real_cube_add_exp;
+static cube_synthesis_core_t g_real_cube_synthesis_core;
 static ui_cube_instance_t g_real_ui_cube_hml;
 static ui_cube_instance_t g_real_ui_cube_on_disable;
 static ui_cube_instance_t g_real_ui_cube_on_destroy;
@@ -624,14 +624,18 @@ static DWORD g_auto_synthesis_next_tick;
 static DWORD g_auto_synthesis_step_tick;
 static DWORD g_auto_synthesis_result_watch_until;
 static int g_auto_synthesis_phase;
-static int g_auto_synthesis_stash_retry_count;
 static volatile LONG g_auto_synthesis_pending;
 static volatile LONG g_auto_synthesis_result_pending;
 static DWORD g_last_auto_synthesis_log_tick;
+static DWORD g_periodic_storage_next_tick;
 static DWORD g_box_reward_result_watch_until;
 static volatile LONG g_box_reward_result_pending;
 static unsigned int g_box_reward_expected_item_id;
 static unsigned int g_box_reward_box_item_key;
+static unsigned __int64 g_recent_box_reward_unique_ids[RECENT_BOX_REWARD_MAX];
+static unsigned int g_recent_box_reward_item_ids[RECENT_BOX_REWARD_MAX];
+static DWORD g_recent_box_reward_ticks[RECENT_BOX_REWARD_MAX];
+static int g_recent_box_reward_next;
 static volatile LONG g_actboss_cache_watch_active;
 static DWORD g_actboss_cache_watch_until;
 static DWORD g_actboss_cache_watch_last_begin_tick;
@@ -640,6 +644,12 @@ static unsigned __int64 g_actboss_cache_watch_seen_ids[ACTBOSS_CACHE_WATCH_MAX_I
 static int g_actboss_cache_watch_seen_count;
 static int g_actboss_cache_watch_logged_count;
 static int g_actboss_cache_watch_synthesis_requested;
+static volatile LONG g_synthesis_cache_watch_active;
+static DWORD g_synthesis_cache_watch_until;
+static DWORD g_synthesis_cache_watch_last_scan_tick;
+static unsigned __int64 g_synthesis_cache_watch_seen_ids[SYNTHESIS_CACHE_WATCH_MAX_IDS];
+static int g_synthesis_cache_watch_seen_count;
+static int g_synthesis_cache_watch_logged_count;
 static DWORD g_last_open_box_stats_log_tick;
 static DWORD g_last_auto_chest_open_cd_log_tick;
 static int g_open_box_stats_hook_installed;
@@ -652,6 +662,7 @@ static OverlayLogEntry g_drop_log_entries[OVERLAY_LOG_LINE_COUNT];
 static int g_drop_log_next;
 static int g_drop_log_count;
 static int g_drop_log_scroll;
+static int g_drop_log_filter_flags;
 static ChestDropStats g_normal_chest_stats;
 static ChestDropStats g_boss_chest_stats;
 static volatile LONG g_chest_interval_version;
@@ -749,6 +760,11 @@ static const unsigned char k_original_cube_add_exp[] = {
     0x80, 0x3D, 0x98, 0x08, 0x8A, 0x05, 0x00,
     0x0F, 0x29, 0x74, 0x24, 0x60
 };
+static const unsigned char k_original_cube_synthesis_core[] = {
+    0x48, 0x89, 0x5C, 0x24, 0x10,
+    0x48, 0x89, 0x74, 0x24, 0x20,
+    0x48, 0x89, 0x4C, 0x24, 0x08
+};
 static const unsigned char k_original_stagecache_jgm[] = {
     0x40, 0x53,
     0x48, 0x83, 0xEC, 0x30,
@@ -799,6 +815,27 @@ static char *find_char(char *s, char c)
         if (*s == c) return s;
     }
     return NULL;
+}
+
+static const char *find_text_local(const char *s, const char *needle)
+{
+    int needle_len;
+
+    if (!s || !needle || !needle[0]) return NULL;
+    needle_len = lstrlenA(needle);
+    for (; *s; s++) {
+        int i;
+        for (i = 0; i < needle_len; ++i) {
+            if (!s[i] || s[i] != needle[i]) break;
+        }
+        if (i == needle_len) return s;
+    }
+    return NULL;
+}
+
+static int contains_text_local(const char *s, const char *needle)
+{
+    return find_text_local(s, needle) ? 1 : 0;
 }
 
 static int starts_with_local(const char *s, const char *prefix)
@@ -974,6 +1011,7 @@ static int read_il2cpp_string_utf8(void *string_obj, char *buf, int buflen);
 static void load_auto_item_lock_ids(const char *text);
 static void save_auto_item_lock_ids(char *buf, int buflen);
 static void load_auto_item_lock_market_top_ids(void);
+static void load_item_market_prices(void);
 static void update_item_lock_list_button(void);
 static void update_item_lock_condition_buttons(void);
 static void open_item_lock_list_window(void);
@@ -995,6 +1033,8 @@ static void *get_item_cache_dictionary(uintptr_t base);
 static void queue_manual_item_lock_request(void);
 static void begin_box_reward_result_watch(unsigned int box_item_key,
                                           unsigned int expected_item_id);
+static void begin_synthesis_cache_watch(const char *source);
+static void maybe_handle_synthesis_cache_watch_from_game_thread(void);
 static void maybe_handle_box_reward_add(unsigned int item_id,
                                         unsigned int result_low,
                                         unsigned int result_high);
@@ -1089,7 +1129,6 @@ static void reset_auto_synthesis_state(void)
     g_auto_synthesis_next_tick = 0;
     g_auto_synthesis_step_tick = 0;
     g_auto_synthesis_result_watch_until = 0;
-    g_auto_synthesis_stash_retry_count = 0;
     InterlockedExchange(&g_auto_synthesis_pending, 0);
     InterlockedExchange(&g_auto_synthesis_result_pending, 0);
 }
@@ -1149,6 +1188,7 @@ static void set_auto_synthesis_use_storage(int enabled)
 {
     g_auto_synthesis_use_storage = enabled ? 1 : 0;
     reset_auto_synthesis_state();
+    g_periodic_storage_next_tick = 0;
     log_line("auto synthesis use storage %s",
              g_auto_synthesis_use_storage ? "enabled" : "disabled");
     save_config();
@@ -1362,15 +1402,8 @@ static int auto_item_lock_reward_matches_conditions(unsigned int item_id)
     if (!auto_item_lock_catalog_lookup(item_id,
                                        &item_type,
                                        &grade,
-                                       NULL) &&
-        g_game_assembly &&
-        g_game_thread_id &&
-        GetCurrentThreadId() == g_game_thread_id) {
-        load_auto_item_lock_catalog_from_game();
-        auto_item_lock_catalog_lookup(item_id,
-                                      &item_type,
-                                      &grade,
-                                      NULL);
+                                       NULL)) {
+        InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 1);
     }
     return auto_item_lock_item_matches_conditions(item_id, item_type, grade);
 }
@@ -1448,7 +1481,375 @@ static void auto_item_lock_add_market_top_id(unsigned int item_id)
     g_auto_item_lock_market_top_ids[g_auto_item_lock_market_top_count++] = item_id;
 }
 
-static int load_auto_item_lock_market_top_file(const char *path)
+static int item_market_price_index(unsigned int item_id)
+{
+    int i;
+
+    for (i = 0; i < g_item_market_price_count; ++i) {
+        if (g_item_market_prices[i].item_id == item_id) return i;
+    }
+    return -1;
+}
+
+static void copy_trimmed_range(const char *start,
+                               const char *end,
+                               char *buf,
+                               int buflen)
+{
+    int len;
+
+    if (buflen <= 0) return;
+    buf[0] = 0;
+    if (!start || !end || end < start) return;
+    while (start < end &&
+           (*start == ' ' || *start == '\t' ||
+            *start == '\r' || *start == '\n')) {
+        start++;
+    }
+    while (end > start &&
+           (end[-1] == ' ' || end[-1] == '\t' ||
+            end[-1] == '\r' || end[-1] == '\n')) {
+        end--;
+    }
+    len = (int)(end - start);
+    if (len >= buflen) len = buflen - 1;
+    if (len > 0) {
+        int i;
+        for (i = 0; i < len; ++i) buf[i] = start[i];
+        buf[len] = 0;
+    }
+}
+
+static void item_market_price_set_name(AutoItemMarketPriceEntry *entry,
+                                       const char *name_zh_hans)
+{
+    char *open_paren;
+    char *close_paren;
+
+    if (!entry) return;
+    entry->name_zh_hans[0] = 0;
+    entry->base_name_zh_hans[0] = 0;
+    entry->grade_name_zh_hans[0] = 0;
+    if (!name_zh_hans || !name_zh_hans[0]) return;
+
+    lstrcpynA(entry->name_zh_hans,
+              name_zh_hans,
+              sizeof(entry->name_zh_hans));
+    lstrcpynA(entry->base_name_zh_hans,
+              name_zh_hans,
+              sizeof(entry->base_name_zh_hans));
+    open_paren = find_char(entry->base_name_zh_hans, '(');
+    if (open_paren) {
+        char *trim_end = open_paren;
+        while (trim_end > entry->base_name_zh_hans &&
+               (trim_end[-1] == ' ' || trim_end[-1] == '\t')) {
+            trim_end--;
+        }
+        *trim_end = 0;
+    }
+
+    open_paren = find_char(entry->name_zh_hans, '(');
+    close_paren = open_paren ? find_char(open_paren + 1, ')') : NULL;
+    if (open_paren && close_paren && close_paren > open_paren + 1) {
+        copy_trimmed_range(open_paren + 1,
+                           close_paren,
+                           entry->grade_name_zh_hans,
+                           sizeof(entry->grade_name_zh_hans));
+    }
+}
+
+static void item_market_price_add(unsigned int item_id,
+                                  unsigned int price_cents,
+                                  unsigned __int64 last_sold_at,
+                                  const char *name_zh_hans)
+{
+    int index;
+
+    if (!item_id || !price_cents || !last_sold_at) return;
+    index = item_market_price_index(item_id);
+    if (index >= 0) {
+        g_item_market_prices[index].price_cents = price_cents;
+        g_item_market_prices[index].last_sold_at = last_sold_at;
+        item_market_price_set_name(&g_item_market_prices[index],
+                                   name_zh_hans);
+        return;
+    }
+    if (g_item_market_price_count >= AUTO_ITEM_MARKET_PRICE_MAX_IDS) return;
+    g_item_market_prices[g_item_market_price_count].item_id = item_id;
+    g_item_market_prices[g_item_market_price_count].price_cents = price_cents;
+    g_item_market_prices[g_item_market_price_count].last_sold_at = last_sold_at;
+    item_market_price_set_name(&g_item_market_prices[g_item_market_price_count],
+                               name_zh_hans);
+    g_item_market_price_count++;
+}
+
+static int item_market_price_lookup(unsigned int item_id,
+                                    unsigned int *out_price_cents,
+                                    unsigned __int64 *out_last_sold_at)
+{
+    int index = item_market_price_index(item_id);
+
+    if (out_price_cents) *out_price_cents = 0;
+    if (out_last_sold_at) *out_last_sold_at = 0;
+    if (index < 0) return 0;
+    if (out_price_cents) {
+        *out_price_cents = g_item_market_prices[index].price_cents;
+    }
+    if (out_last_sold_at) {
+        *out_last_sold_at = g_item_market_prices[index].last_sold_at;
+    }
+    return 1;
+}
+
+static int item_market_price_lookup_from_line(const char *line,
+                                              unsigned int *out_price_cents,
+                                              unsigned __int64 *out_last_sold_at)
+{
+    int i;
+
+    if (out_price_cents) *out_price_cents = 0;
+    if (out_last_sold_at) *out_last_sold_at = 0;
+    if (!line || !line[0]) return 0;
+    for (i = 0; i < g_item_market_price_count; ++i) {
+        AutoItemMarketPriceEntry *entry = &g_item_market_prices[i];
+        char grade_pattern[48];
+
+        if (!entry->price_cents || !entry->base_name_zh_hans[0]) continue;
+        if (!contains_text_local(line, entry->base_name_zh_hans)) continue;
+        if (entry->grade_name_zh_hans[0]) {
+            wsprintfA(grade_pattern, "[%s]", entry->grade_name_zh_hans);
+            grade_pattern[sizeof(grade_pattern) - 1] = 0;
+            if (!contains_text_local(line, grade_pattern)) continue;
+        }
+        if (out_price_cents) *out_price_cents = entry->price_cents;
+        if (out_last_sold_at) *out_last_sold_at = entry->last_sold_at;
+        return 1;
+    }
+    return 0;
+}
+
+static void format_market_last_sold_date(unsigned __int64 last_sold_at,
+                                         char *buf,
+                                         int buflen)
+{
+    ULARGE_INTEGER ticks;
+    FILETIME utc_time;
+    FILETIME local_time;
+    SYSTEMTIME st;
+
+    if (buflen <= 0) return;
+    buf[0] = 0;
+    if (!last_sold_at) return;
+
+    ticks.QuadPart =
+        (last_sold_at * 10000000ULL) + 116444736000000000ULL;
+    utc_time.dwLowDateTime = ticks.LowPart;
+    utc_time.dwHighDateTime = ticks.HighPart;
+    if (!FileTimeToLocalFileTime(&utc_time, &local_time) ||
+        !FileTimeToSystemTime(&local_time, &st)) {
+        return;
+    }
+    wsprintfA(buf, "%u.%u", st.wMonth, st.wDay);
+    buf[buflen - 1] = 0;
+}
+
+static void format_market_price_text(unsigned int price_cents,
+                                     unsigned __int64 last_sold_at,
+                                     char *buf,
+                                     int buflen)
+{
+    char date_text[24];
+
+    if (buflen <= 0) return;
+    buf[0] = 0;
+    if (!price_cents || !last_sold_at) return;
+    format_market_last_sold_date(last_sold_at,
+                                 date_text,
+                                 sizeof(date_text));
+    if (!date_text[0]) return;
+    wsprintfA(buf,
+              "成交价:%u.%02u " ITEM_MARKET_LAST_SOLD_LABEL "%s",
+              price_cents / 100u,
+              price_cents % 100u,
+              date_text);
+    buf[buflen - 1] = 0;
+}
+
+static void format_item_market_price(unsigned int item_id,
+                                     char *buf,
+                                     int buflen)
+{
+    unsigned int price_cents = 0;
+    unsigned __int64 last_sold_at = 0;
+
+    if (buflen <= 0) return;
+    buf[0] = 0;
+    if (!item_market_price_lookup(item_id,
+                                  &price_cents,
+                                  &last_sold_at) ||
+        !price_cents ||
+        !last_sold_at) {
+        return;
+    }
+    format_market_price_text(price_cents, last_sold_at, buf, buflen);
+}
+
+static void append_item_market_price_to_log_line(const char *line,
+                                                 unsigned int item_id,
+                                                 char *out,
+                                                 int out_size)
+{
+    unsigned int price_cents = 0;
+    unsigned __int64 last_sold_at = 0;
+    char price_text[48];
+    const char *insert_at;
+    int prefix_len;
+    int has_price;
+
+    if (out_size <= 0) return;
+    out[0] = 0;
+    if (!line || !line[0]) return;
+    has_price = contains_text_local(line, "成交价:");
+    if (has_price && contains_text_local(line, ITEM_MARKET_LAST_SOLD_LABEL)) {
+        lstrcpynA(out, line, out_size);
+        return;
+    }
+    if (item_id) {
+        item_market_price_lookup(item_id,
+                                 &price_cents,
+                                 &last_sold_at);
+    }
+    if (!price_cents) {
+        item_market_price_lookup_from_line(line,
+                                           &price_cents,
+                                           &last_sold_at);
+    }
+    if (!price_cents || !last_sold_at) {
+        lstrcpynA(out, line, out_size);
+        return;
+    }
+
+    if (has_price) {
+        char date_text[24];
+
+        format_market_last_sold_date(last_sold_at,
+                                     date_text,
+                                     sizeof(date_text));
+        if (!date_text[0]) {
+            lstrcpynA(out, line, out_size);
+            return;
+        }
+        wsprintfA(price_text,
+                  ITEM_MARKET_LAST_SOLD_LABEL "%s",
+                  date_text);
+        price_text[sizeof(price_text) - 1] = 0;
+    } else {
+        format_market_price_text(price_cents,
+                                 last_sold_at,
+                                 price_text,
+                                 sizeof(price_text));
+    }
+    if (!price_text[0]) {
+        lstrcpynA(out, line, out_size);
+        return;
+    }
+    insert_at = find_text_local(line, "（");
+    if (!insert_at) insert_at = line + lstrlenA(line);
+    prefix_len = (int)(insert_at - line);
+    if (prefix_len >= out_size) prefix_len = out_size - 1;
+    copy_trimmed_range(line, line + prefix_len, out, out_size);
+    append_text_local(out, out_size, " ");
+    append_text_local(out, out_size, price_text);
+    if (*insert_at) {
+        append_text_local(out, out_size, " ");
+        append_text_local(out, out_size, insert_at);
+    }
+}
+
+static int parse_market_top_row(const char *start,
+                                const char *end,
+                                int has_rank,
+                                unsigned int *out_item_id,
+                                unsigned int *out_price_cents,
+                                unsigned __int64 *out_last_sold_at,
+                                char *out_name_zh_hans,
+                                int out_name_size)
+{
+    const char *p = start;
+    unsigned __int64 item_id = 0;
+    unsigned __int64 price_cents = 0;
+    unsigned __int64 last_sold_at = 0;
+
+    if (out_item_id) *out_item_id = 0;
+    if (out_price_cents) *out_price_cents = 0;
+    if (out_last_sold_at) *out_last_sold_at = 0;
+    if (out_name_size > 0) out_name_zh_hans[0] = 0;
+    while (p < end && (*p == ' ' || *p == '\t' || *p == '\r')) p++;
+    if (p >= end || *p == '#' || *p < '0' || *p > '9') return 0;
+
+    while (p < end && *p >= '0' && *p <= '9') {
+        item_id = item_id * 10ULL + (unsigned __int64)(*p - '0');
+        p++;
+    }
+    if (!item_id || item_id > 0xffffffffULL) return 0;
+
+    if (p < end && *p == '\t') {
+        p++;
+        while (p < end && *p >= '0' && *p <= '9') {
+            price_cents = price_cents * 10ULL + (unsigned __int64)(*p - '0');
+            p++;
+        }
+    }
+    if (price_cents > 0xffffffffULL) price_cents = 0xffffffffULL;
+
+    if (has_rank) {
+        if (p < end && *p == '\t') p++;
+        while (p < end && *p >= '0' && *p <= '9') p++;
+    }
+    if (p < end && *p == '\t') {
+        p++;
+        while (p < end && *p >= '0' && *p <= '9') {
+            last_sold_at =
+                last_sold_at * 10ULL +
+                (unsigned __int64)(*p - '0');
+            p++;
+        }
+    }
+    if (!last_sold_at) return 0;
+
+    if (out_name_zh_hans && out_name_size > 0) {
+        int tabs_seen = 0;
+        const char *name_start = NULL;
+        const char *q;
+        int name_tab = has_rank ? 5 : 4;
+
+        for (q = start; q < end; ++q) {
+            if (*q == '\t') {
+                tabs_seen++;
+                if (tabs_seen == name_tab) {
+                    name_start = q + 1;
+                    break;
+                }
+            }
+        }
+        if (name_start && name_start < end) {
+            copy_trimmed_range(name_start,
+                               end,
+                               out_name_zh_hans,
+                               out_name_size);
+        }
+    }
+
+    if (out_item_id) *out_item_id = (unsigned int)item_id;
+    if (out_price_cents) *out_price_cents = (unsigned int)price_cents;
+    if (out_last_sold_at) *out_last_sold_at = last_sold_at;
+    return 1;
+}
+
+static int load_market_file(const char *path,
+                            int load_ids,
+                            int load_prices,
+                            int has_rank)
 {
     HANDLE file;
     DWORD size;
@@ -1456,6 +1857,7 @@ static int load_auto_item_lock_market_top_file(const char *path)
     char *data;
     DWORD pos = 0;
     int loaded_before = g_auto_item_lock_market_top_count;
+    int prices_before = g_item_market_price_count;
 
     if (!path || !path[0]) return 0;
     file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
@@ -1479,33 +1881,52 @@ static int load_auto_item_lock_market_top_file(const char *path)
     CloseHandle(file);
     data[read] = 0;
 
-    while (pos < read &&
-           g_auto_item_lock_market_top_count < AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS) {
+    while (pos < read) {
         DWORD line_start = pos;
+        DWORD line_end;
         unsigned int item_id = 0;
+        unsigned int price_cents = 0;
+        unsigned __int64 last_sold_at = 0;
+        char name_zh_hans[160];
         while (pos < read && data[pos] != '\n') pos++;
+        line_end = pos;
         if (pos < read && data[pos] == '\n') pos++;
-        while (line_start < read &&
-               (data[line_start] == ' ' || data[line_start] == '\t' ||
-                data[line_start] == '\r')) {
-            line_start++;
+        while (line_end > line_start &&
+               (data[line_end - 1] == '\r' || data[line_end - 1] == '\n')) {
+            line_end--;
         }
-        if (line_start >= read ||
-            data[line_start] == '#' ||
-            data[line_start] < '0' ||
-            data[line_start] > '9') {
-            continue;
+        if (parse_market_top_row(data + line_start,
+                                 data + line_end,
+                                 has_rank,
+                                 &item_id,
+                                 &price_cents,
+                                 &last_sold_at,
+                                 name_zh_hans,
+                                 sizeof(name_zh_hans))) {
+            if (load_ids) auto_item_lock_add_market_top_id(item_id);
+            if (load_prices) {
+                item_market_price_add(item_id,
+                                      price_cents,
+                                      last_sold_at,
+                                      name_zh_hans);
+            }
         }
-        while (line_start < read &&
-               data[line_start] >= '0' &&
-               data[line_start] <= '9') {
-            item_id = item_id * 10u + (unsigned int)(data[line_start] - '0');
-            line_start++;
-        }
-        auto_item_lock_add_market_top_id(item_id);
     }
     HeapFree(GetProcessHeap(), 0, data);
+    if (load_prices && !load_ids) {
+        return g_item_market_price_count - prices_before;
+    }
     return g_auto_item_lock_market_top_count - loaded_before;
+}
+
+static int load_auto_item_lock_market_top_file(const char *path)
+{
+    return load_market_file(path, 1, 0, 1);
+}
+
+static int load_item_market_prices_from_file(const char *path)
+{
+    return load_market_file(path, 0, 1, 0);
 }
 
 static void load_auto_item_lock_market_top_ids(void)
@@ -1533,6 +1954,34 @@ static void load_auto_item_lock_market_top_ids(void)
     } else {
         log_line("market top item lock list not found: %s",
                  ITEM_LOCK_MARKET_TOP_FILE);
+    }
+}
+
+static void load_item_market_prices(void)
+{
+    char path[MAX_PATH];
+    int loaded = 0;
+
+    g_item_market_price_count = 0;
+    if (g_base_dir[0]) {
+        wsprintfA(path, "%s\\%s", g_base_dir, ITEM_MARKET_PRICES_FILE);
+        path[sizeof(path) - 1] = 0;
+        loaded += load_item_market_prices_from_file(path);
+    }
+    if (!loaded && g_config_dir[0] &&
+        lstrcmpiA(g_config_dir, g_base_dir) != 0) {
+        wsprintfA(path, "%s\\%s", g_config_dir, ITEM_MARKET_PRICES_FILE);
+        path[sizeof(path) - 1] = 0;
+        loaded += load_item_market_prices_from_file(path);
+    }
+
+    if (loaded) {
+        log_line("market traded price list loaded: prices=%d file=%s",
+                 g_item_market_price_count,
+                 ITEM_MARKET_PRICES_FILE);
+    } else {
+        log_line("market traded price list not found: %s",
+                 ITEM_MARKET_PRICES_FILE);
     }
 }
 
@@ -1762,7 +2211,9 @@ static void unlock_drop_log(void)
     InterlockedExchange(&g_drop_log_spin, 0);
 }
 
-static void append_overlay_log_line_with_grade(const char *line, int grade)
+static void append_overlay_log_line_with_grade(const char *line,
+                                               int grade,
+                                               unsigned int item_id)
 {
     lock_drop_log();
     lstrcpynA(g_drop_log_entries[g_drop_log_next].line,
@@ -1770,6 +2221,7 @@ static void append_overlay_log_line_with_grade(const char *line, int grade)
               OVERLAY_LOG_LINE_SIZE);
     g_drop_log_entries[g_drop_log_next].line[OVERLAY_LOG_LINE_SIZE - 1] = 0;
     g_drop_log_entries[g_drop_log_next].grade = grade;
+    g_drop_log_entries[g_drop_log_next].item_id = item_id;
     g_drop_log_next = (g_drop_log_next + 1) % OVERLAY_LOG_LINE_COUNT;
     if (g_drop_log_count < OVERLAY_LOG_LINE_COUNT) g_drop_log_count++;
     g_drop_log_scroll = 0;
@@ -1782,10 +2234,12 @@ static void append_overlay_log_line_with_grade(const char *line, int grade)
 
 static void TBHS_UNUSED append_overlay_log_line(const char *line)
 {
-    append_overlay_log_line_with_grade(line, -1);
+    append_overlay_log_line_with_grade(line, -1, 0);
 }
 
-static void append_loaded_item_log_line(const char *line, int grade)
+static void append_loaded_item_log_line(const char *line,
+                                        int grade,
+                                        unsigned int item_id)
 {
     if (!line || !line[0]) return;
     lock_drop_log();
@@ -1794,20 +2248,23 @@ static void append_loaded_item_log_line(const char *line, int grade)
               OVERLAY_LOG_LINE_SIZE);
     g_drop_log_entries[g_drop_log_next].line[OVERLAY_LOG_LINE_SIZE - 1] = 0;
     g_drop_log_entries[g_drop_log_next].grade = grade;
+    g_drop_log_entries[g_drop_log_next].item_id = item_id;
     g_drop_log_next = (g_drop_log_next + 1) % OVERLAY_LOG_LINE_COUNT;
     if (g_drop_log_count < OVERLAY_LOG_LINE_COUNT) g_drop_log_count++;
     g_drop_log_scroll = 0;
     unlock_drop_log();
 }
 
-static void persist_item_log_entry(const char *line, int grade)
+static void persist_item_log_entry(const char *line,
+                                   int grade,
+                                   unsigned int item_id)
 {
     HANDLE file;
     DWORD written = 0;
-    char record[OVERLAY_LOG_LINE_SIZE + 32];
+    char record[OVERLAY_LOG_LINE_SIZE + 64];
 
     if (!line || !line[0] || !g_item_log_path[0]) return;
-    wsprintfA(record, "%d\t%s\r\n", grade, line);
+    wsprintfA(record, "%d\t%u\t%s\r\n", grade, item_id, line);
     record[sizeof(record) - 1] = 0;
     file = CreateFileA(g_item_log_path,
                        FILE_APPEND_DATA,
@@ -1856,8 +2313,11 @@ static void load_item_log_history(void)
         DWORD line_start = pos;
         DWORD line_end;
         DWORD text_start;
+        DWORD field_start;
         int grade = -1;
+        unsigned int loaded_item_id = 0;
         char line[OVERLAY_LOG_LINE_SIZE];
+        char enriched_line[OVERLAY_LOG_LINE_SIZE];
         int sign = 1;
 
         while (pos < read && data[pos] != '\n') pos++;
@@ -1892,6 +2352,28 @@ static void load_item_log_history(void)
                 text_start = line_start;
             }
         }
+        field_start = text_start;
+        if (field_start < line_end &&
+            data[field_start] >= '0' &&
+            data[field_start] <= '9') {
+            unsigned __int64 parsed_item_id = 0;
+            DWORD p = field_start;
+
+            while (p < line_end &&
+                   data[p] >= '0' &&
+                   data[p] <= '9') {
+                parsed_item_id =
+                    parsed_item_id * 10ULL +
+                    (unsigned __int64)(data[p] - '0');
+                p++;
+            }
+            if (p < line_end && data[p] == '\t' &&
+                parsed_item_id > 0 &&
+                parsed_item_id <= 0xffffffffULL) {
+                loaded_item_id = (unsigned int)parsed_item_id;
+                text_start = p + 1;
+            }
+        }
         if (line_end <= text_start) continue;
         {
             DWORD copy_len = line_end - text_start;
@@ -1904,7 +2386,11 @@ static void load_item_log_history(void)
             }
             line[copy_len] = 0;
         }
-        append_loaded_item_log_line(line, grade);
+        append_item_market_price_to_log_line(line,
+                                             loaded_item_id,
+                                             enriched_line,
+                                             sizeof(enriched_line));
+        append_loaded_item_log_line(enriched_line, grade, loaded_item_id);
     }
     HeapFree(GetProcessHeap(), 0, data);
     InterlockedIncrement(&g_drop_log_version);
@@ -1940,15 +2426,98 @@ static int point_in_drop_log_box(POINT pt)
     return PtInRect(&box, pt) ? 1 : 0;
 }
 
+static RECT overlay_drop_log_filter_row_rect(int filter_id)
+{
+    RECT box = overlay_log_box_rect();
+    RECT rc;
+    int row = 0;
+
+    if (filter_id == OVERLAY_LOG_FILTER_LEGENDARY) {
+        row = 1;
+    } else if (filter_id == OVERLAY_LOG_FILTER_MARKET_TOP) {
+        row = 2;
+    }
+    rc.left = OVERLAY_LOG_FILTER_LEFT;
+    rc.top = box.top + 5 + row * OVERLAY_LOG_FILTER_ROW_HEIGHT;
+    rc.right = OVERLAY_LOG_FILTER_LEFT + OVERLAY_LOG_FILTER_WIDTH;
+    rc.bottom = rc.top + OVERLAY_LOG_FILTER_ROW_HEIGHT;
+    return rc;
+}
+
+static int overlay_drop_log_filter_hit_test(POINT pt)
+{
+    RECT rc;
+
+    rc = overlay_drop_log_filter_row_rect(OVERLAY_LOG_FILTER_PRICED);
+    if (PtInRect(&rc, pt)) return OVERLAY_LOG_FILTER_PRICED;
+    rc = overlay_drop_log_filter_row_rect(OVERLAY_LOG_FILTER_LEGENDARY);
+    if (PtInRect(&rc, pt)) return OVERLAY_LOG_FILTER_LEGENDARY;
+    rc = overlay_drop_log_filter_row_rect(OVERLAY_LOG_FILTER_MARKET_TOP);
+    if (PtInRect(&rc, pt)) return OVERLAY_LOG_FILTER_MARKET_TOP;
+    return 0;
+}
+
+static int drop_log_entry_matches_filters(const OverlayLogEntry *entry)
+{
+    int flags = g_drop_log_filter_flags;
+
+    if (!entry || !entry->line[0]) return 0;
+    if (!flags) return 1;
+    if ((flags & OVERLAY_LOG_FILTER_PRICED) &&
+        contains_text_local(entry->line, "成交价:")) {
+        return 1;
+    }
+    if ((flags & OVERLAY_LOG_FILTER_LEGENDARY) &&
+        entry->grade >= EGRADE_LEGENDARY &&
+        entry->grade < EGRADE_NONE) {
+        return 1;
+    }
+    if ((flags & OVERLAY_LOG_FILTER_MARKET_TOP) &&
+        auto_item_lock_market_top_selected(entry->item_id)) {
+        return 1;
+    }
+    return 0;
+}
+
+static void toggle_drop_log_filter(int filter_id)
+{
+    if (filter_id != OVERLAY_LOG_FILTER_PRICED &&
+        filter_id != OVERLAY_LOG_FILTER_LEGENDARY &&
+        filter_id != OVERLAY_LOG_FILTER_MARKET_TOP) {
+        return;
+    }
+    g_drop_log_filter_flags ^= filter_id;
+    lock_drop_log();
+    g_drop_log_scroll = 0;
+    unlock_drop_log();
+    if (g_overlay_hwnd) {
+        InvalidateRect(g_overlay_hwnd, NULL, FALSE);
+    }
+}
+
 static void adjust_drop_log_scroll(int delta)
 {
     int max_scroll;
+    int filtered_count = 0;
     int changed = 0;
 
     if (!delta) return;
     lock_drop_log();
-    max_scroll = g_drop_log_count > OVERLAY_LOG_VISIBLE_LINES ?
-                 g_drop_log_count - OVERLAY_LOG_VISIBLE_LINES : 0;
+    if (g_drop_log_count > 0) {
+        int count = g_drop_log_count;
+        int start = g_drop_log_next - count;
+        int i;
+
+        while (start < 0) start += OVERLAY_LOG_LINE_COUNT;
+        for (i = 0; i < count && i < OVERLAY_LOG_LINE_COUNT; ++i) {
+            int index = (start + i) % OVERLAY_LOG_LINE_COUNT;
+            if (drop_log_entry_matches_filters(&g_drop_log_entries[index])) {
+                filtered_count++;
+            }
+        }
+    }
+    max_scroll = filtered_count > OVERLAY_LOG_VISIBLE_LINES ?
+                 filtered_count - OVERLAY_LOG_VISIBLE_LINES : 0;
     g_drop_log_scroll += delta;
     if (g_drop_log_scroll < 0) g_drop_log_scroll = 0;
     if (g_drop_log_scroll > max_scroll) g_drop_log_scroll = max_scroll;
@@ -1974,6 +2543,7 @@ static void append_overlay_item_event(const char *action,
     SYSTEMTIME st;
     AutoItemLockInfo info;
     char name[160];
+    char price_text[48];
     char line[OVERLAY_LOG_LINE_SIZE];
     int grade = -1;
     int item_type = -1;
@@ -1981,13 +2551,8 @@ static void append_overlay_item_event(const char *action,
     if (!item_id) return;
     zero_memory_local(&info, sizeof(info));
     name[0] = 0;
-    if (!auto_item_lock_catalog_copy(item_id, &info) &&
-        g_game_assembly &&
-        g_game_thread_id &&
-        GetCurrentThreadId() == g_game_thread_id) {
-        load_auto_item_lock_catalog_from_game();
-        auto_item_lock_catalog_copy(item_id, &info);
-    }
+    price_text[0] = 0;
+    auto_item_lock_catalog_copy(item_id, &info);
     if (info.item_id == item_id) {
         grade = info.grade;
         item_type = info.item_type;
@@ -2010,9 +2575,10 @@ static void append_overlay_item_event(const char *action,
         name[sizeof(name) - 1] = 0;
     }
 
+    format_item_market_price(item_id, price_text, sizeof(price_text));
     GetLocalTime(&st);
     wsprintfA(line,
-              "[%u.%u %02u:%02u] [%s]->[%s][%s]%s %s",
+              "[%u.%u %02u:%02u] [%s]->[%s][%s]%s%s%s %s",
               st.wMonth,
               st.wDay,
               st.wHour,
@@ -2021,10 +2587,12 @@ static void append_overlay_item_event(const char *action,
               auto_item_lock_grade_name(grade),
               auto_item_lock_type_name(item_type),
               name,
+              price_text[0] ? " " : "",
+              price_text,
               locked ? "（已锁定）" : "（未锁定）");
     line[sizeof(line) - 1] = 0;
-    append_overlay_log_line_with_grade(line, grade);
-    persist_item_log_entry(line, grade);
+    append_overlay_log_line_with_grade(line, grade, item_id);
+    persist_item_log_entry(line, grade, item_id);
 }
 
 static int display_stage_no_from_key(int stage_key, int stage_no)
@@ -2530,21 +3098,6 @@ static int validate_runtime_versions(void)
         log_line("game Version.txt not found: %s", version_path);
     }
 
-    if (lstrcmpiA(config_game, TBHS_SUPPORTED_GAME_VERSION) != 0 ||
-        lstrcmpiA(config_plugin, TBHS_PLUGIN_VERSION) != 0 ||
-        lstrcmpiA(config_subversion, TBHS_PLUGIN_SUBVERSION) != 0) {
-        wsprintfA(message,
-                  "TaskBarHeroSpeed config version mismatch.\r\nConfig: game %s plugin %s.%s\r\nDLL: game %s plugin %s",
-                  config_game,
-                  config_plugin,
-                  config_subversion,
-                  TBHS_SUPPORTED_GAME_VERSION,
-                  TBHS_PLUGIN_DISPLAY_VERSION);
-        message[sizeof(message) - 1] = 0;
-        log_line("%s", message);
-        MessageBoxA(NULL, message, "TaskBarHeroSpeed", MB_OK | MB_ICONWARNING | MB_TOPMOST);
-    }
-
     if (g_detected_game_version[0] &&
         lstrcmpiA(g_detected_game_version, TBHS_SUPPORTED_GAME_VERSION) != 0) {
         wsprintfA(message,
@@ -2555,6 +3108,18 @@ static int validate_runtime_versions(void)
         log_line("%s", message);
         MessageBoxA(NULL, message, "TaskBarHeroSpeed", MB_OK | MB_ICONERROR | MB_TOPMOST);
         return 0;
+    }
+
+    if (lstrcmpiA(config_game, TBHS_SUPPORTED_GAME_VERSION) != 0 ||
+        lstrcmpiA(config_plugin, TBHS_PLUGIN_VERSION) != 0 ||
+        lstrcmpiA(config_subversion, TBHS_PLUGIN_SUBVERSION) != 0) {
+        log_line("config version metadata updated: config game=%s plugin=%s.%s dll game=%s plugin=%s",
+                 config_game,
+                 config_plugin,
+                 config_subversion,
+                 TBHS_SUPPORTED_GAME_VERSION,
+                 TBHS_PLUGIN_DISPLAY_VERSION);
+        save_config();
     }
 
     log_line("version check: game=%s supported=%s plugin=%s",
@@ -3420,6 +3985,24 @@ static void __fastcall hook_cube_add_exp(float amount, void *method)
     InterlockedExchange(&g_cube_exp_call_guard, 0);
 }
 
+static __int64 __fastcall hook_cube_synthesis_core(void *state_machine)
+{
+    int synthesis_state = 0;
+
+    if (state_machine &&
+        memory_range_readable(state_machine, sizeof(synthesis_state))) {
+        synthesis_state = *(int *)state_machine;
+        if (synthesis_state == -1) {
+            begin_synthesis_cache_watch("core");
+        }
+    }
+
+    if (g_real_cube_synthesis_core) {
+        return g_real_cube_synthesis_core(state_machine);
+    }
+    return 0;
+}
+
 static void __fastcall hook_drop_reward_callback(void *target,
                                                  unsigned int reward_value,
                                                  void *method)
@@ -4012,6 +4595,64 @@ static void begin_box_reward_result_watch(unsigned int box_item_key,
     InterlockedExchange(&g_box_reward_result_pending, 1);
 }
 
+static void remember_recent_box_reward(unsigned int item_id,
+                                       unsigned __int64 unique_id)
+{
+    DWORD now;
+    int i;
+    int slot;
+
+    if (!item_id || !unique_id) return;
+    now = GetTickCount();
+    for (i = 0; i < RECENT_BOX_REWARD_MAX; ++i) {
+        if (g_recent_box_reward_unique_ids[i] != unique_id) continue;
+        g_recent_box_reward_item_ids[i] = item_id;
+        g_recent_box_reward_ticks[i] = now;
+        return;
+    }
+
+    slot = g_recent_box_reward_next++ % RECENT_BOX_REWARD_MAX;
+    if (g_recent_box_reward_next < 0) g_recent_box_reward_next = 0;
+    g_recent_box_reward_unique_ids[slot] = unique_id;
+    g_recent_box_reward_item_ids[slot] = item_id;
+    g_recent_box_reward_ticks[slot] = now;
+}
+
+static void remember_recent_box_reward_unique_id(unsigned int reward_item_id,
+                                                 const char *reward_unique_key)
+{
+    unsigned __int64 unique_id;
+
+    if (!reward_unique_key || !reward_unique_key[0]) return;
+    unique_id = parse_u64_local(reward_unique_key);
+    remember_recent_box_reward(reward_item_id, unique_id);
+}
+
+static int recent_box_reward_matches(unsigned __int64 unique_id,
+                                     unsigned int item_id)
+{
+    DWORD now;
+    int i;
+
+    if (!unique_id) return 0;
+    now = GetTickCount();
+    for (i = 0; i < RECENT_BOX_REWARD_MAX; ++i) {
+        if (!g_recent_box_reward_unique_ids[i]) continue;
+        if ((DWORD)(now - g_recent_box_reward_ticks[i]) >
+            RECENT_BOX_REWARD_IGNORE_MS) {
+            g_recent_box_reward_unique_ids[i] = 0;
+            g_recent_box_reward_item_ids[i] = 0;
+            g_recent_box_reward_ticks[i] = 0;
+            continue;
+        }
+        if (g_recent_box_reward_unique_ids[i] == unique_id &&
+            (!item_id || g_recent_box_reward_item_ids[i] == item_id)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static void maybe_handle_box_reward_add(unsigned int item_id,
                                         unsigned int result_low,
                                         unsigned int result_high)
@@ -4043,11 +4684,13 @@ static void maybe_handle_box_reward_add(unsigned int item_id,
     g_box_reward_expected_item_id = 0;
     g_box_reward_box_item_key = 0;
 
+    unique_id = ((unsigned __int64)result_high << 32) |
+                (unsigned __int64)result_low;
+    format_u64_local(unique_key, sizeof(unique_key), unique_id);
+    remember_recent_box_reward(item_id, unique_id);
+
     if (g_auto_item_lock_enabled &&
         auto_item_lock_reward_matches_conditions(item_id)) {
-        unique_id = ((unsigned __int64)result_high << 32) |
-                    (unsigned __int64)result_low;
-        format_u64_local(unique_key, sizeof(unique_key), unique_id);
         queue_auto_item_lock_request(item_id, unique_key);
         locked = 1;
     }
@@ -4077,10 +4720,12 @@ static void maybe_handle_auto_synthesis_reward_add(unsigned int item_id,
     if (InterlockedExchange(&g_auto_synthesis_result_pending, 0) == 0) return;
     g_auto_synthesis_result_watch_until = 0;
 
+    unique_id = ((unsigned __int64)result_high << 32) |
+                (unsigned __int64)result_low;
+    if (recent_box_reward_matches(unique_id, item_id)) return;
+
     if (g_auto_item_lock_enabled &&
         auto_item_lock_reward_matches_conditions(item_id)) {
-        unique_id = ((unsigned __int64)result_high << 32) |
-                    (unsigned __int64)result_low;
         format_u64_local(unique_key, sizeof(unique_key), unique_id);
         queue_auto_item_lock_request(item_id, unique_key);
         locked = 1;
@@ -4114,15 +4759,8 @@ static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,
                                                   &item_type,
                                                   &grade,
                                                   NULL);
-    if (!catalog_found &&
-        g_game_assembly &&
-        g_game_thread_id &&
-        GetCurrentThreadId() == g_game_thread_id) {
-        load_auto_item_lock_catalog_from_game();
-        catalog_found = auto_item_lock_catalog_lookup(item_id,
-                                                      &item_type,
-                                                      &grade,
-                                                      NULL);
+    if (!catalog_found) {
+        InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 1);
     }
     if (catalog_found &&
         item_type != EITEM_TYPE_GEAR && item_type != EITEM_TYPE_MATERIAL) {
@@ -4131,6 +4769,7 @@ static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,
 
     unique_id = ((unsigned __int64)result_high << 32) |
                 (unsigned __int64)result_low;
+    if (recent_box_reward_matches(unique_id, item_id)) return;
     format_u64_local(unique_key, sizeof(unique_key), unique_id);
     if (g_auto_item_lock_enabled &&
         auto_item_lock_item_matches_conditions(item_id, item_type, grade)) {
@@ -4144,6 +4783,235 @@ static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,
              grade,
              item_type,
              locked);
+}
+
+static void reset_synthesis_cache_watch(void)
+{
+    InterlockedExchange(&g_synthesis_cache_watch_active, 0);
+    g_synthesis_cache_watch_until = 0;
+    g_synthesis_cache_watch_last_scan_tick = 0;
+    g_synthesis_cache_watch_seen_count = 0;
+    g_synthesis_cache_watch_logged_count = 0;
+}
+
+static int synthesis_cache_watch_has_seen_id(unsigned __int64 unique_id)
+{
+    int i;
+
+    if (!unique_id) return 1;
+    for (i = 0; i < g_synthesis_cache_watch_seen_count; ++i) {
+        if (g_synthesis_cache_watch_seen_ids[i] == unique_id) return 1;
+    }
+    return 0;
+}
+
+static int synthesis_cache_watch_remember_id(unsigned __int64 unique_id)
+{
+    if (!unique_id) return 0;
+    if (synthesis_cache_watch_has_seen_id(unique_id)) return 1;
+    if (g_synthesis_cache_watch_seen_count >= SYNTHESIS_CACHE_WATCH_MAX_IDS) {
+        return 0;
+    }
+    g_synthesis_cache_watch_seen_ids[g_synthesis_cache_watch_seen_count++] =
+        unique_id;
+    return 1;
+}
+
+static void snapshot_synthesis_cache_watch_ids(void)
+{
+    uintptr_t base;
+    void *dict;
+    void *entries;
+    int count;
+    int array_len;
+    int i;
+
+    g_synthesis_cache_watch_seen_count = 0;
+    if (!g_game_assembly) return;
+    base = (uintptr_t)g_game_assembly;
+    dict = get_item_cache_dictionary(base);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return;
+    }
+    count = *(int *)((unsigned char *)dict + IL2CPP_DICT_COUNT_OFFSET);
+    if (count <= 0 || count > 200000) return;
+    entries = *(void **)((unsigned char *)dict + IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        return;
+    }
+    array_len = *(int *)((unsigned char *)entries + IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 || count > array_len) return;
+
+    for (i = 0; i < count; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        unsigned __int64 unique_id;
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) continue;
+        unique_id = *(unsigned __int64 *)(entry +
+                                          IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET);
+        if (!synthesis_cache_watch_remember_id(unique_id)) break;
+    }
+}
+
+static void begin_synthesis_cache_watch(const char *source)
+{
+    DWORD now;
+
+    if (!g_game_assembly) return;
+    if (!g_game_thread_id) g_game_thread_id = GetCurrentThreadId();
+
+    now = GetTickCount();
+    if (g_synthesis_cache_watch_active &&
+        (LONG)(now - g_synthesis_cache_watch_until) < 0) {
+        g_synthesis_cache_watch_until = now + SYNTHESIS_CACHE_WATCH_MS;
+        return;
+    }
+
+    reset_synthesis_cache_watch();
+    snapshot_synthesis_cache_watch_ids();
+    g_synthesis_cache_watch_until = now + SYNTHESIS_CACHE_WATCH_MS;
+    InterlockedExchange(&g_synthesis_cache_watch_active, 1);
+    log_line("synthesis cache watch started: source=%s baseline=%d window_ms=%lu",
+             source ? source : "unknown",
+             g_synthesis_cache_watch_seen_count,
+             (unsigned long)SYNTHESIS_CACHE_WATCH_MS);
+}
+
+static void maybe_handle_synthesis_cache_watch_from_game_thread(void)
+{
+    uintptr_t base;
+    DWORD now;
+    void *dict;
+    void *entries;
+    int count;
+    int array_len;
+    int i;
+
+    if (!g_synthesis_cache_watch_active) return;
+    if (!g_game_assembly) {
+        reset_synthesis_cache_watch();
+        return;
+    }
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+
+    now = GetTickCount();
+    if (!g_synthesis_cache_watch_until ||
+        (LONG)(now - g_synthesis_cache_watch_until) > 0) {
+        log_line("synthesis cache watch ended: logged=%d seen=%d",
+                 g_synthesis_cache_watch_logged_count,
+                 g_synthesis_cache_watch_seen_count);
+        reset_synthesis_cache_watch();
+        return;
+    }
+    if (g_synthesis_cache_watch_last_scan_tick &&
+        (DWORD)(now - g_synthesis_cache_watch_last_scan_tick) <
+            SYNTHESIS_CACHE_WATCH_SCAN_INTERVAL_MS) {
+        return;
+    }
+    g_synthesis_cache_watch_last_scan_tick = now;
+
+    base = (uintptr_t)g_game_assembly;
+    dict = get_item_cache_dictionary(base);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return;
+    }
+    count = *(int *)((unsigned char *)dict + IL2CPP_DICT_COUNT_OFFSET);
+    if (count <= 0 || count > 200000) return;
+    entries = *(void **)((unsigned char *)dict + IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        return;
+    }
+    array_len = *(int *)((unsigned char *)entries + IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 || count > array_len) return;
+
+    for (i = 0; i < count; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        unsigned __int64 unique_id;
+        void *item_cache;
+        unsigned int item_id = 0;
+        int item_type = -1;
+        int grade = -1;
+        int equip_class = -1;
+        int locked = 0;
+        int already_locked = 0;
+        char unique_id_text[32];
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) continue;
+        unique_id = *(unsigned __int64 *)(entry +
+                                          IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET);
+        if (synthesis_cache_watch_has_seen_id(unique_id)) continue;
+        if (!synthesis_cache_watch_remember_id(unique_id)) continue;
+
+        item_cache = *(void **)(entry +
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET);
+        if (!auto_item_lock_read_cache_info(item_cache,
+                                            &item_id,
+                                            &item_type,
+                                            &grade,
+                                            &equip_class)) {
+            continue;
+        }
+        if (!item_id || item_key_is_stage_box_candidate(item_id)) continue;
+        if (item_type != EITEM_TYPE_GEAR && item_type != EITEM_TYPE_MATERIAL) {
+            continue;
+        }
+        if (recent_box_reward_matches(unique_id, item_id)) {
+            format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+            log_line("synthesis cache skipped recent box reward: item_id=%u unique_id=%s",
+                     item_id,
+                     unique_id_text);
+            continue;
+        }
+
+        if (g_auto_item_lock_enabled &&
+            auto_item_lock_item_matches_conditions(item_id,
+                                                   item_type,
+                                                   grade) &&
+            auto_item_lock_apply_cache_now(item_cache, item_id, "synthesis cache watch",
+                                           &already_locked)) {
+            locked = 1;
+        }
+        append_overlay_item_event("合成", item_id, locked);
+        g_synthesis_cache_watch_logged_count++;
+
+        format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+        log_line("synthesis cache item event: item_id=%u unique_id=%s grade=%d type=%d class=%d locked=%d already=%d",
+                 item_id,
+                 unique_id_text,
+                 grade,
+                 item_type,
+                 equip_class,
+                 locked,
+                 already_locked);
+    }
 }
 
 static void reset_actboss_cache_watch(void)
@@ -4368,6 +5236,7 @@ static void maybe_handle_actboss_cache_watch_from_game_thread(void)
             continue;
         }
         if (!item_id || item_key_is_stage_box_candidate(item_id)) continue;
+        remember_recent_box_reward(item_id, unique_id);
 
         if (g_auto_item_lock_enabled &&
             auto_item_lock_item_matches_conditions(item_id,
@@ -4458,6 +5327,7 @@ static int handle_box_reward_select_item(unsigned int box_item_key,
 
     if (!item_key_is_stage_box_candidate(box_item_key)) return 0;
     if (!reward_item_id || item_key_is_stage_box_candidate(reward_item_id)) return 0;
+    remember_recent_box_reward_unique_id(reward_item_id, reward_unique_key);
 
     if (g_auto_item_lock_enabled &&
         auto_item_lock_reward_matches_conditions(reward_item_id) &&
@@ -5009,6 +5879,54 @@ static void restore_cube_add_exp_hook(HMODULE game_assembly)
                                  k_original_cube_add_exp,
                                  sizeof(k_original_cube_add_exp),
                                  "cube exp");
+}
+
+static int install_cube_synthesis_core_hook(HMODULE game_assembly)
+{
+    uintptr_t base = (uintptr_t)game_assembly;
+    unsigned char *target = (unsigned char *)(base + RVA_CUBE_SYNTHESIS_CORE);
+    int original = mem_equal_local(target,
+                                   k_original_cube_synthesis_core,
+                                   sizeof(k_original_cube_synthesis_core));
+
+    if (is_absolute_jump_local(target)) {
+        if (!restore_original_if_abs_jump(target,
+                                          k_original_cube_synthesis_core,
+                                          sizeof(k_original_cube_synthesis_core),
+                                          "cube synthesis core")) {
+            return 0;
+        }
+        original = 1;
+    }
+
+    if (!original) {
+        log_line("cube synthesis core hook RVA unexpected: %02X %02X %02X %02X",
+                 target[0], target[1], target[2], target[3]);
+        return 0;
+    }
+
+    if (!write_absolute_jump_with_trampoline(target,
+                                             (void *)hook_cube_synthesis_core,
+                                             &g_hook_cube_synthesis_core,
+                                             sizeof(k_original_cube_synthesis_core),
+                                             (void **)&g_real_cube_synthesis_core)) {
+        log_line("cube synthesis core hook install failed");
+        return 0;
+    }
+    log_line("cube synthesis core hook installed");
+    return 1;
+}
+
+static void restore_cube_synthesis_core_hook(HMODULE game_assembly)
+{
+    uintptr_t base;
+
+    if (!game_assembly) return;
+    base = (uintptr_t)game_assembly;
+    restore_original_if_abs_jump((unsigned char *)(base + RVA_CUBE_SYNTHESIS_CORE),
+                                 k_original_cube_synthesis_core,
+                                 sizeof(k_original_cube_synthesis_core),
+                                 "cube synthesis core");
 }
 
 static __int64 __fastcall hook_ui_cube_hml(void *ui_cube, void *method)
@@ -6634,38 +7552,6 @@ static void *get_slot_manager_instance(uintptr_t base)
     return slot_manager;
 }
 
-static void *get_inventory_slot_dictionary(uintptr_t base)
-{
-    void **type_slot = (void **)(base + RVA_INVENTORY_TYPEINFO);
-    void *inventory_type;
-    void *static_fields;
-    void *dict;
-
-    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
-    inventory_type = *type_slot;
-    if (!inventory_type ||
-        !memory_range_readable(inventory_type,
-                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
-        return NULL;
-    }
-    static_fields = *(void **)((unsigned char *)inventory_type +
-                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
-    if (!static_fields ||
-        !memory_range_readable((unsigned char *)static_fields +
-                                   INVENTORY_STATIC_SLOT_DICT_OFFSET,
-                               sizeof(void *))) {
-        return NULL;
-    }
-    dict = *(void **)((unsigned char *)static_fields +
-                      INVENTORY_STATIC_SLOT_DICT_OFFSET);
-    if (!dict ||
-        !memory_range_readable(dict,
-                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
-        return NULL;
-    }
-    return dict;
-}
-
 static void *get_cube_static_fields(uintptr_t base)
 {
     void **type_slot = (void **)(base + RVA_CUBE_TYPEINFO);
@@ -6763,103 +7649,20 @@ static void *get_ui_hero_instance(uintptr_t base)
 static int move_inventory_slots_to_stash_from_backend(uintptr_t base)
 {
     void *slot_manager;
-    void *inventory_dict;
-    void *entries;
-    slot_manager_move_to_target_t move_to_target;
-    slot_cache_get_unique_id_t slot_get_unique_id;
-    int inventory_count;
-    int array_len;
-    int sent = 0;
-    int i;
+    slot_manager_move_all_t move_all;
 
     slot_manager = get_slot_manager_instance(base);
-    move_to_target =
-        (slot_manager_move_to_target_t)(base + RVA_SLOT_MANAGER_MOVE_TO_TARGET);
-    slot_get_unique_id =
-        (slot_cache_get_unique_id_t)(base + RVA_SLOT_CACHE_GET_UNIQUE_ID);
-    inventory_dict = get_inventory_slot_dictionary(base);
+    move_all = (slot_manager_move_all_t)(base + RVA_SLOT_MANAGER_MOVE_ALL);
     if (!slot_manager ||
-        !memory_range_readable((void *)move_to_target, 12) ||
-        !memory_range_readable((void *)slot_get_unique_id, 12) ||
-        !inventory_dict) {
-        log_line("auto synthesis stash backend unavailable: slot_manager=%p move_to_target=%d uid_fn=%d inventory_dict=%p",
+        !memory_range_readable((void *)move_all, 12)) {
+        log_line("inventory stash backend unavailable: slot_manager=%p move_all=%d",
                  slot_manager,
-                 memory_range_readable((void *)move_to_target, 12) ? 1 : 0,
-                 memory_range_readable((void *)slot_get_unique_id, 12) ? 1 : 0,
-                 inventory_dict);
+                 memory_range_readable((void *)move_all, 12) ? 1 : 0);
         return 0;
     }
 
-    inventory_count = *(int *)((unsigned char *)inventory_dict +
-                               IL2CPP_DICT_COUNT_OFFSET);
-    if (inventory_count <= 0 || inventory_count > 200000) {
-        log_line("auto synthesis stash backend unavailable: inventory_dict=%p count=%d",
-                 inventory_dict,
-                 inventory_count);
-        return 0;
-    }
-    entries = *(void **)((unsigned char *)inventory_dict +
-                         IL2CPP_DICT_ENTRIES_OFFSET);
-    if (!entries ||
-        !memory_range_readable(entries,
-                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
-        log_line("auto synthesis stash backend unavailable: inventory entries missing dict=%p count=%d",
-                 inventory_dict,
-                 inventory_count);
-        return 0;
-    }
-    array_len = *(int *)((unsigned char *)entries +
-                         IL2CPP_ARRAY_LENGTH_OFFSET);
-    if (array_len <= 0 || array_len > 200000 ||
-        inventory_count > array_len) {
-        log_line("auto synthesis stash backend unavailable: invalid entries len=%d count=%d",
-                 array_len,
-                 inventory_count);
-        return 0;
-    }
-
-    for (i = 0; i < array_len && sent < AUTO_SYNTHESIS_BACKEND_STASH_MAX_MOVES; ++i) {
-        unsigned char *entry = (unsigned char *)entries +
-                               IL2CPP_ARRAY_DATA_OFFSET +
-                               ((SIZE_T)i *
-                                IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE);
-        int hash_code;
-        int source_index;
-        void *slot;
-        unsigned __int64 unique_id;
-
-        if (!memory_range_readable(entry,
-                                   IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE)) {
-            break;
-        }
-        hash_code = *(int *)(entry +
-                             IL2CPP_DICT_INT_OBJECT_ENTRY_HASH_OFFSET);
-        if (hash_code < 0) {
-            continue;
-        }
-        source_index = *(int *)(entry +
-                                IL2CPP_DICT_INT_OBJECT_ENTRY_KEY_OFFSET);
-        slot = *(void **)(entry +
-                          IL2CPP_DICT_INT_OBJECT_ENTRY_VALUE_OFFSET);
-        if (source_index < 0 ||
-            !slot ||
-            !memory_range_readable(slot, sizeof(void *) * 4)) {
-            continue;
-        }
-        unique_id = slot_get_unique_id(slot, NULL);
-        if (!unique_id) {
-            continue;
-        }
-
-        move_to_target(slot_manager, ESLOT_TYPE_STASH, source_index, NULL, 0, NULL);
-        sent++;
-    }
-    if (!sent) {
-        log_line("auto synthesis stash backend unavailable: no inventory item slots inventory_count=%d entries=%d",
-                 inventory_count,
-                 array_len);
-    }
-    return sent;
+    move_all(slot_manager, ESLOT_TYPE_INVENTORY, ESLOT_TYPE_STASH, NULL);
+    return 1;
 }
 
 static void *get_ui_new_stash_instance(uintptr_t base)
@@ -6883,9 +7686,6 @@ static int main_tab_target_ready(uintptr_t base, int tab)
 {
     if (tab == EMAIN_TAB_CUBE) {
         return get_ui_cube_instance(base) != NULL;
-    }
-    if (tab == EMAIN_TAB_NEW_STASH) {
-        return get_ui_new_stash_instance(base) != NULL;
     }
     return 1;
 }
@@ -6922,12 +7722,6 @@ static int ensure_main_tab_open(uintptr_t base, int tab)
                               UI_MANAGER_UI_CUBE_OFFSET + sizeof(void *))) {
         target_ui = *(void **)((unsigned char *)ui_manager +
                                UI_MANAGER_UI_CUBE_OFFSET);
-    } else if (tab == EMAIN_TAB_NEW_STASH &&
-               memory_range_readable(ui_manager,
-                                     UI_MANAGER_UI_NEW_STASH_OFFSET +
-                                         sizeof(void *))) {
-        target_ui = *(void **)((unsigned char *)ui_manager +
-                               UI_MANAGER_UI_NEW_STASH_OFFSET);
     }
 
     show_ui_base = (ui_manager_show_base_t)(base + RVA_UI_MANAGER_SHOW_UI_BASE);
@@ -6949,8 +7743,6 @@ static int ensure_main_tab_open(uintptr_t base, int tab)
 
     if (tab == EMAIN_TAB_CUBE) {
         open_tab = (ui_main_action_t)(base + RVA_UI_MAIN_OPEN_CUBE);
-    } else if (tab == EMAIN_TAB_NEW_STASH) {
-        open_tab = (ui_main_action_t)(base + RVA_UI_MAIN_OPEN_STASH);
     }
     if (!open_tab || !memory_range_readable((void *)open_tab, 12)) {
         return 0;
@@ -7369,12 +8161,19 @@ static void maybe_auto_restart_current_stage_from_game_thread(void)
              after_stage_no, after_stage_key);
 }
 
-static void maybe_load_auto_item_lock_catalog_from_game_thread(void)
+static void maybe_preload_auto_item_lock_catalog_from_game_thread(void)
 {
     DWORD now;
+    int preload_pending;
+    int list_window_open;
 
-    if (g_auto_item_lock_catalog_count > 0) return;
-    if (!(g_item_lock_list_hwnd && IsWindow(g_item_lock_list_hwnd))) return;
+    preload_pending = g_auto_item_lock_catalog_preload_pending ? 1 : 0;
+    list_window_open = (g_item_lock_list_hwnd && IsWindow(g_item_lock_list_hwnd)) ? 1 : 0;
+    if (g_auto_item_lock_catalog_count > 0) {
+        InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 0);
+        return;
+    }
+    if (!preload_pending && !list_window_open) return;
     if (!g_game_assembly) return;
     if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
 
@@ -7384,7 +8183,9 @@ static void maybe_load_auto_item_lock_catalog_from_game_thread(void)
         return;
     }
     g_auto_item_lock_last_catalog_try_tick = now;
-    load_auto_item_lock_catalog_from_game();
+    if (load_auto_item_lock_catalog_from_game()) {
+        InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 0);
+    }
 }
 
 static void maybe_auto_item_lock_from_game_thread(void)
@@ -7626,8 +8427,6 @@ static void maybe_auto_synthesis_from_game_thread(void)
     uintptr_t base;
     DWORD now;
     void *current_recipe;
-    void *ui_stash;
-    ui_remake_stash_action_t inventory_to_stash;
     cube_set_bool_t set_use_storage;
     cube_set_int_t set_synthesis_type;
     cube_clear_current_recipe_t clear_current_recipe;
@@ -7736,13 +8535,13 @@ static void maybe_auto_synthesis_from_game_thread(void)
             log_line("auto synthesis trigger skipped: trigger function unavailable");
             return;
         }
+        g_auto_synthesis_result_watch_until =
+            now + AUTO_SYNTHESIS_RESULT_WATCH_MS;
+        InterlockedExchange(&g_auto_synthesis_result_pending, 1);
         trigger_current_recipe(NULL);
         g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_CLEAR;
         g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS;
         g_auto_synthesis_next_tick = 0;
-        g_auto_synthesis_result_watch_until =
-            now + AUTO_SYNTHESIS_RESULT_WATCH_MS;
-        InterlockedExchange(&g_auto_synthesis_result_pending, 1);
         log_line("auto synthesis trigger sent: storage=%d clear_delay=%lu",
                  g_auto_synthesis_use_storage,
                  (unsigned long)AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS);
@@ -7757,94 +8556,54 @@ static void maybe_auto_synthesis_from_game_thread(void)
             (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
         if (!current_recipe ||
             !memory_range_readable((void *)clear_current_recipe, 12)) {
-            if (g_auto_synthesis_use_storage) {
-                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
-                g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
-                g_auto_synthesis_next_tick = 0;
-                g_auto_synthesis_stash_retry_count = 0;
-            } else {
-                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
-                g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-                g_auto_synthesis_step_tick = 0;
-            }
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            g_auto_synthesis_step_tick = 0;
             log_line("auto synthesis post-trigger clear skipped: Cube current recipe or function unavailable");
             return;
         }
         clear_current_recipe(NULL);
-        if (g_auto_synthesis_use_storage) {
-            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
-            g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
-            g_auto_synthesis_next_tick = 0;
-            g_auto_synthesis_stash_retry_count = 0;
-        } else {
-            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
-            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-            g_auto_synthesis_step_tick = 0;
-        }
-        log_line("auto synthesis post-trigger clear sent: recipe=%p storage=%d next_delay=%lu",
-                 current_recipe,
-                 g_auto_synthesis_use_storage,
-                 (unsigned long)(g_auto_synthesis_use_storage ?
-                     AUTO_SYNTHESIS_STASH_DELAY_MS :
-                     AUTO_SYNTHESIS_INTERVAL_MS));
-        return;
-    }
-
-    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_STASH) {
-        int backend_moves;
-
-        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
-
-        backend_moves = move_inventory_slots_to_stash_from_backend(base);
-        if (backend_moves > 0) {
-            log_line("auto synthesis stash backend move sent: moves=%d next_delay=%lu",
-                     backend_moves,
-                     (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
-            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
-            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-            g_auto_synthesis_step_tick = 0;
-            g_auto_synthesis_stash_retry_count = 0;
-            return;
-        }
-
-        inventory_to_stash =
-            (ui_remake_stash_action_t)(base + RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH);
-        if (ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)) {
-            ui_stash = get_ui_new_stash_instance(base);
-        } else {
-            ui_stash = NULL;
-        }
-        if (ui_stash && memory_range_readable((void *)inventory_to_stash, 12)) {
-            inventory_to_stash(ui_stash, NULL);
-            log_line("auto synthesis stash move sent: ui_stash=%p next_delay=%lu",
-                     ui_stash,
-                     (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
-        } else {
-            g_auto_synthesis_stash_retry_count++;
-            if (g_auto_synthesis_stash_retry_count >=
-                AUTO_SYNTHESIS_STASH_RETRY_MAX) {
-                log_line("auto synthesis stash move skipped: backend/UI unavailable retries=%d next_delay=%lu",
-                         g_auto_synthesis_stash_retry_count,
-                         (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
-                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
-                g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-                g_auto_synthesis_step_tick = 0;
-                g_auto_synthesis_stash_retry_count = 0;
-                return;
-            }
-            g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_PAGE_DELAY_MS;
-            log_line("auto synthesis stash page open requested: retry=%d next_delay=%lu",
-                     g_auto_synthesis_stash_retry_count,
-                     (unsigned long)AUTO_SYNTHESIS_PAGE_DELAY_MS);
-            return;
-        }
         g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
         g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
         g_auto_synthesis_step_tick = 0;
-        g_auto_synthesis_stash_retry_count = 0;
+        log_line("auto synthesis post-trigger clear sent: recipe=%p storage=%d next_delay=%lu",
+                 current_recipe,
+                 g_auto_synthesis_use_storage,
+                 (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
         return;
     }
 
+}
+
+static void maybe_periodic_storage_from_game_thread(void)
+{
+    uintptr_t base;
+    DWORD now;
+    int backend_moves;
+
+    if (!g_auto_synthesis_use_storage || !g_game_assembly) {
+        g_periodic_storage_next_tick = 0;
+        return;
+    }
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+    if (g_auto_synthesis_phase != AUTO_SYNTHESIS_PHASE_IDLE) return;
+
+    now = GetTickCount();
+    if (g_periodic_storage_next_tick &&
+        (LONG)(now - g_periodic_storage_next_tick) < 0) {
+        return;
+    }
+
+    base = (uintptr_t)g_game_assembly;
+    backend_moves = move_inventory_slots_to_stash_from_backend(base);
+    if (backend_moves > 0) {
+        log_line("periodic stash backend batch sent: source=inventory target=stash next_delay=%lu",
+                 (unsigned long)AUTO_STORAGE_INTERVAL_MS);
+    } else {
+        log_line("periodic stash move skipped: backend unavailable next_delay=%lu",
+                 (unsigned long)AUTO_STORAGE_INTERVAL_MS);
+    }
+    g_periodic_storage_next_tick = now + AUTO_STORAGE_INTERVAL_MS;
 }
 
 static void apply_speed_from_game_thread(void)
@@ -7861,11 +8620,13 @@ static void apply_speed_from_game_thread(void)
     }
     process_auto_restart_request_from_game_thread();
     maybe_auto_switch_from_game_thread();
-    maybe_load_auto_item_lock_catalog_from_game_thread();
+    maybe_preload_auto_item_lock_catalog_from_game_thread();
     maybe_auto_item_lock_from_game_thread();
     manual_item_lock_from_game_thread();
     maybe_handle_actboss_cache_watch_from_game_thread();
+    maybe_handle_synthesis_cache_watch_from_game_thread();
     maybe_auto_synthesis_from_game_thread();
+    maybe_periodic_storage_from_game_thread();
     maybe_auto_restart_current_stage_from_game_thread();
 }
 
@@ -8074,15 +8835,71 @@ static int overlay_view_button_hit_test(POINT pt)
     return 0;
 }
 
+static void draw_overlay_drop_log_filter_row(HDC hdc,
+                                             int filter_id,
+                                             const WCHAR *label)
+{
+    RECT rc = overlay_drop_log_filter_row_rect(filter_id);
+    RECT check;
+    RECT text;
+    HBRUSH fill;
+    HBRUSH border;
+    HGDIOBJ old_font;
+    int active = (g_drop_log_filter_flags & filter_id) ? 1 : 0;
+
+    if (!hdc || !label) return;
+    init_overlay_style();
+    check.left = rc.left;
+    check.top = rc.top + 4;
+    check.right = check.left + OVERLAY_LOG_FILTER_CHECK_SIZE;
+    check.bottom = check.top + OVERLAY_LOG_FILTER_CHECK_SIZE;
+    fill = active ? g_overlay_button_active_brush : g_overlay_button_brush;
+    border = active ? g_overlay_accent_brush : g_overlay_border_brush;
+    FillRect(hdc, &check, fill);
+    FrameRect(hdc, &check, border);
+    if (active) {
+        MoveToEx(hdc, check.left + 3, check.top + 6, NULL);
+        LineTo(hdc, check.left + 5, check.bottom - 3);
+        LineTo(hdc, check.right - 3, check.top + 3);
+    }
+
+    text.left = check.right + 6;
+    text.top = rc.top;
+    text.right = rc.right;
+    text.bottom = rc.bottom;
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, active ? RGB(246, 237, 190) : OVERLAY_COLOR_TEXT);
+    old_font = SelectObject(hdc, active ? g_overlay_font_bold : g_overlay_font);
+    DrawTextW(hdc, label, -1, &text,
+              DT_LEFT | DT_VCENTER | DT_SINGLELINE |
+              DT_END_ELLIPSIS | DT_NOPREFIX);
+    SelectObject(hdc, old_font);
+}
+
+static void draw_overlay_drop_log_filters(HDC hdc)
+{
+    draw_overlay_drop_log_filter_row(hdc,
+                                     OVERLAY_LOG_FILTER_PRICED,
+                                     L"\x6709\x4EF7\x683C");
+    draw_overlay_drop_log_filter_row(hdc,
+                                     OVERLAY_LOG_FILTER_LEGENDARY,
+                                     L"\x4F20\x5947+");
+    draw_overlay_drop_log_filter_row(hdc,
+                                     OVERLAY_LOG_FILTER_MARKET_TOP,
+                                     L"Top100");
+}
+
 static void draw_overlay_drop_log(HDC hdc)
 {
     OverlayLogEntry entries[OVERLAY_LOG_LINE_COUNT];
+    OverlayLogEntry filtered[OVERLAY_LOG_LINE_COUNT];
     RECT box;
     RECT row;
     RECT track;
     RECT thumb;
     HGDIOBJ old_font;
     int count;
+    int filtered_count = 0;
     int start;
     int max_scroll;
     int scroll;
@@ -8091,6 +8908,7 @@ static void draw_overlay_drop_log(HDC hdc)
     int i;
 
     zero_memory_local(entries, sizeof(entries));
+    zero_memory_local(filtered, sizeof(filtered));
     lock_drop_log();
     count = g_drop_log_count;
     start = g_drop_log_next - count;
@@ -8098,25 +8916,30 @@ static void draw_overlay_drop_log(HDC hdc)
     for (i = 0; i < count && i < OVERLAY_LOG_LINE_COUNT; ++i) {
         int index = (start + i) % OVERLAY_LOG_LINE_COUNT;
         entries[i] = g_drop_log_entries[index];
+        if (drop_log_entry_matches_filters(&entries[i])) {
+            filtered[filtered_count++] = entries[i];
+        }
     }
-    max_scroll = count > OVERLAY_LOG_VISIBLE_LINES ?
-                 count - OVERLAY_LOG_VISIBLE_LINES : 0;
+    max_scroll = filtered_count > OVERLAY_LOG_VISIBLE_LINES ?
+                 filtered_count - OVERLAY_LOG_VISIBLE_LINES : 0;
     if (g_drop_log_scroll < 0) g_drop_log_scroll = 0;
     if (g_drop_log_scroll > max_scroll) g_drop_log_scroll = max_scroll;
     scroll = g_drop_log_scroll;
     unlock_drop_log();
 
     box = overlay_log_box_rect();
+    draw_overlay_drop_log_filters(hdc);
     FillRect(hdc, &box, g_overlay_panel_brush);
     FrameRect(hdc, &box, g_overlay_border_brush);
 
     SetBkMode(hdc, TRANSPARENT);
     old_font = SelectObject(hdc, g_overlay_font);
-    visible = count < OVERLAY_LOG_VISIBLE_LINES ? count : OVERLAY_LOG_VISIBLE_LINES;
-    first = count - visible - scroll;
+    visible = filtered_count < OVERLAY_LOG_VISIBLE_LINES ?
+              filtered_count : OVERLAY_LOG_VISIBLE_LINES;
+    first = filtered_count - visible - scroll;
     if (first < 0) first = 0;
     for (i = 0; i < visible; ++i) {
-        OverlayLogEntry entry = entries[first + i];
+        OverlayLogEntry entry = filtered[first + i];
         if (!entry.line[0]) continue;
         row.left = box.left + 8;
         row.top = box.top + 5 + i * 13;
@@ -8136,7 +8959,8 @@ static void draw_overlay_drop_log(HDC hdc)
         track.bottom = box.bottom - 5;
         FillRect(hdc, &track, g_overlay_border_brush);
         track_height = track.bottom - track.top;
-        thumb_height = (track_height * OVERLAY_LOG_VISIBLE_LINES) / count;
+        thumb_height = (track_height * OVERLAY_LOG_VISIBLE_LINES) /
+                       filtered_count;
         if (thumb_height < 14) thumb_height = 14;
         if (thumb_height > track_height) thumb_height = track_height;
         thumb_top = track.top;
@@ -9884,6 +10708,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         pt.y = (short)HIWORD(lp);
         ScreenToClient(hwnd, &pt);
         if (overlay_view_button_hit_test(pt)) return HTCLIENT;
+        if (overlay_drop_log_filter_hit_test(pt)) return HTCLIENT;
         return HTCAPTION;
     }
     case WM_LBUTTONDOWN: {
@@ -9893,6 +10718,13 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         pt.x = (short)LOWORD(lp);
         pt.y = (short)HIWORD(lp);
         button_id = overlay_view_button_hit_test(pt);
+        if (!button_id) {
+            int filter_id = overlay_drop_log_filter_hit_test(pt);
+            if (filter_id) {
+                toggle_drop_log_filter(filter_id);
+                return 0;
+            }
+        }
         if (button_id == OVERLAY_BUTTON_VIEW_EXPANDED) {
             set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_EXPANDED);
             return 0;
@@ -10285,8 +11117,9 @@ static DWORD WINAPI speed_thread(LPVOID arg)
     (void)arg;
     init_paths();
     ensure_auto_item_lock_localized_names_loaded();
-    load_item_log_history();
     load_auto_item_lock_market_top_ids();
+    load_item_market_prices();
+    load_item_log_history();
     load_config();
     if (!validate_runtime_versions()) {
         return 0;
@@ -10310,6 +11143,7 @@ static DWORD WINAPI speed_thread(LPVOID arg)
         return 0;
     }
     g_game_assembly = game_assembly;
+    InterlockedExchange(&g_auto_item_lock_catalog_preload_pending, 1);
 
     for (int i = 0; i < 240; i++) {
         if (resolve_unity_time_calls(game_assembly)) break;
@@ -10343,6 +11177,10 @@ static DWORD WINAPI speed_thread(LPVOID arg)
     if (!install_cube_add_exp_hook(game_assembly)) {
         restore_cube_add_exp_hook(game_assembly);
         log_line("cube exp hook not installed");
+    }
+    if (!install_cube_synthesis_core_hook(game_assembly)) {
+        restore_cube_synthesis_core_hook(game_assembly);
+        log_line("cube synthesis core hook not installed");
     }
     if (!install_open_box_stats_hook(game_assembly)) {
         log_line("open box stats hook not installed");

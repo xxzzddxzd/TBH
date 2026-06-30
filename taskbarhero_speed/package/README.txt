@@ -20,7 +20,7 @@ start-win.bat 会自动查找正在运行的 TaskBarHero.exe，读取游戏 Vers
 
 默认速度是 5 倍。注入成功后，游戏窗口上会出现一个小悬浮框:
 
-  TaskBarHero game:1.00.21 plugin:1.00.21.405
+  TaskBarHero game:1.00.21 plugin:1.00.21.412
   Speed [min -5 -1  5  +1 +5 max]
   Exp   [exp- x1 exp+] [cube- x10 cube+]
   Boss  [boss:off] [actboss:off] [auto:off]

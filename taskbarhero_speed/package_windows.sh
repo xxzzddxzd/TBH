@@ -11,8 +11,10 @@ ICON_DIR="$ROOT/taskbarhero_speed/TaskBarHeroSpeedIcons"
 NAME_TABLE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedItemNames.zh-Hans.tsv"
 MARKET_TOP_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketTop100.tsv"
 MARKET_TOP_DEFAULT_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketTop100.default.tsv"
+MARKET_PRICES_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketPrices.tsv"
+MARKET_PRICES_DEFAULT_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketPrices.default.tsv"
 MARKET_TOP_SCRIPT="$ROOT/taskbarhero_speed/generate_market_top_lock.py"
-PLUGIN_VERSION="1.00.21.405"
+PLUGIN_VERSION="1.00.21.412"
 PREBUILT_ONLY=0
 MAX_RELEASE_GAME_VERSIONS=3
 MINGW_CC="${TBH_MINGW_CC:-x86_64-w64-mingw32-gcc}"
@@ -90,6 +92,12 @@ if [ -f "$MARKET_TOP_FILE" ]; then
 fi
 if [ -f "$MARKET_TOP_DEFAULT_FILE" ]; then
   cp "$MARKET_TOP_DEFAULT_FILE" "$OUT_DIR/"
+fi
+if [ -f "$MARKET_PRICES_FILE" ]; then
+  cp "$MARKET_PRICES_FILE" "$OUT_DIR/"
+fi
+if [ -f "$MARKET_PRICES_DEFAULT_FILE" ]; then
+  cp "$MARKET_PRICES_DEFAULT_FILE" "$OUT_DIR/"
 fi
 if [ -f "$MARKET_TOP_SCRIPT" ]; then
   cp "$MARKET_TOP_SCRIPT" "$OUT_DIR/"
