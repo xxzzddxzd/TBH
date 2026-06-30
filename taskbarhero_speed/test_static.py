@@ -255,7 +255,7 @@ def main():
         ("validate_runtime_versions", src),
         ("target_game_version=1.00.21", ini),
         ("plugin_version=1.00.21", ini),
-        ("plugin_subversion=412", ini),
+        ("plugin_subversion=413", ini),
         ("exp_multiplier=", ini),
         ("cube_exp_multiplier=", ini),
         ("auto_synthesis=", ini),
@@ -275,7 +275,7 @@ def main():
         ("MIN_VALID_REMOTE_MODULE", injector),
         ("LoadLibraryA returned suspicious module", injector),
         ("versions.json", package_script),
-        ('PLUGIN_VERSION="1.00.21.412"', package_script),
+        ('PLUGIN_VERSION="1.00.21.413"', package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TaskBarHeroSpeedIcons", package_script),
         ("TaskBarHeroSpeedItemNames.zh-Hans.tsv", package_script),
@@ -674,10 +674,10 @@ def main():
         failures += require(plugin_version_match.group(1) == version_match.group(1),
                             "plugin base version must match the supported game version")
     if plugin_subversion_match:
-        failures += require(plugin_subversion_match.group(1) == "412",
-                            "plugin subversion should be 412 for this change set")
+        failures += require(plugin_subversion_match.group(1) == "413",
+                            "plugin subversion should be 413 for this change set")
     if plugin_display_match:
-        failures += require(plugin_display_match.group(1) == "1.00.21.412",
+        failures += require(plugin_display_match.group(1) == "1.00.21.413",
                             "plugin display version should be game version plus subversion")
     validate_start = src.find("static int validate_runtime_versions(void)")
     validate_end = src.find("#define TBHS_TRAMPOLINE_MAX_DISTANCE", validate_start + 1)
