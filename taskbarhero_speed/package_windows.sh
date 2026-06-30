@@ -7,9 +7,15 @@ OUT_DIR="$ROOT/dist/$PKG_NAME"
 ZIP_PATH="$ROOT/dist/$PKG_NAME.zip"
 TRACKED_VERSIONS_DIR="$ROOT/taskbarhero_speed/versions"
 PACKAGE_INI="$ROOT/taskbarhero_speed/package/TaskBarHeroSpeed.ini"
-PLUGIN_VERSION="0.4.0.3"
+ICON_DIR="$ROOT/taskbarhero_speed/TaskBarHeroSpeedIcons"
+NAME_TABLE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedItemNames.zh-Hans.tsv"
+MARKET_TOP_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketTop100.tsv"
+MARKET_TOP_DEFAULT_FILE="$ROOT/taskbarhero_speed/TaskBarHeroSpeedMarketTop100.default.tsv"
+MARKET_TOP_SCRIPT="$ROOT/taskbarhero_speed/generate_market_top_lock.py"
+PLUGIN_VERSION="1.00.21.404"
 PREBUILT_ONLY=0
 MAX_RELEASE_GAME_VERSIONS=3
+MINGW_CC="${TBH_MINGW_CC:-x86_64-w64-mingw32-gcc}"
 
 if [ -n "${TBH_MAX_RELEASE_GAME_VERSIONS:-}" ]; then
   MAX_RELEASE_GAME_VERSIONS="$TBH_MAX_RELEASE_GAME_VERSIONS"
@@ -27,7 +33,7 @@ fi
 
 if [ "$PREBUILT_ONLY" -eq 1 ]; then
   echo "packaging tracked plugin binaries without compiling"
-elif command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1; then
+elif command -v "$MINGW_CC" >/dev/null 2>&1; then
   sh taskbarhero_speed/build.sh
   if [ -n "$GAME_VERSION" ]; then
     mkdir -p "$TRACKED_VERSIONS_DIR/$GAME_VERSION"
@@ -36,7 +42,7 @@ elif command -v x86_64-w64-mingw32-gcc >/dev/null 2>&1; then
   fi
   cp TaskBarHeroSpeedInject.exe "$ROOT/taskbarhero_speed/TaskBarHeroSpeedInject.exe"
 else
-  echo "x86_64-w64-mingw32-gcc not found; packaging tracked plugin binaries"
+  echo "$MINGW_CC not found; packaging tracked plugin binaries"
 fi
 
 release_version_dirs() {
@@ -66,14 +72,29 @@ else
   cp "$ROOT/taskbarhero_speed/TaskBarHeroSpeedInject.exe" "$OUT_DIR/"
 fi
 cp "$PACKAGE_INI" "$OUT_DIR/TaskBarHeroSpeed.ini"
-cp taskbarhero_speed/package/Inject.bat "$OUT_DIR/"
+cp taskbarhero_speed/package/start-win.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Update.bat "$OUT_DIR/"
-cp taskbarhero_speed/package/Inject-CrossOver-macOS.command "$OUT_DIR/"
+cp taskbarhero_speed/package/start-mac.command "$OUT_DIR/"
 cp taskbarhero_speed/package/Install-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/Uninstall-AutoStart.bat "$OUT_DIR/"
 cp taskbarhero_speed/package/README.txt "$OUT_DIR/"
 cp taskbarhero_speed/package/README_AutoStart_Optional.txt "$OUT_DIR/"
-chmod +x "$OUT_DIR/Inject-CrossOver-macOS.command"
+if [ -d "$ICON_DIR" ]; then
+  cp -R "$ICON_DIR" "$OUT_DIR/"
+fi
+if [ -f "$NAME_TABLE" ]; then
+  cp "$NAME_TABLE" "$OUT_DIR/"
+fi
+if [ -f "$MARKET_TOP_FILE" ]; then
+  cp "$MARKET_TOP_FILE" "$OUT_DIR/"
+fi
+if [ -f "$MARKET_TOP_DEFAULT_FILE" ]; then
+  cp "$MARKET_TOP_DEFAULT_FILE" "$OUT_DIR/"
+fi
+if [ -f "$MARKET_TOP_SCRIPT" ]; then
+  cp "$MARKET_TOP_SCRIPT" "$OUT_DIR/"
+fi
+chmod +x "$OUT_DIR/start-mac.command"
 
 FIRST_VERSION=1
 {

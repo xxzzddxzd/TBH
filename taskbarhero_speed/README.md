@@ -12,7 +12,6 @@ known `GameAssembly.dll` RVAs for:
 - `StageManager` locked-stage pullback when the game leaves the locked stage
 - the stage-spawn branch used by the `boss:on/off` overlay toggle
 - `StageCache::jgz()` for the `actboss:on/off` normal-stage boss monster swap
-- Unity `Screen` windowed mode so CrossOver/macOS can show a draggable native title bar
 - ordinary experience and cube experience multipliers, both configurable from 1x to 10x
 - a draggable overlay split into Speed, Exp, Boss, Reset, and Drops rows
 - `auto:on/off` switching between normal and direct-boss flow from chest countdowns
@@ -20,7 +19,8 @@ known `GameAssembly.dll` RVAs for:
 - runtime version validation against `Version.txt`, `target_game_version`, and plugin version fields
 
 Configuration is read from `TaskBarHeroSpeed.ini` in the game directory.
-Overlay changes are persisted back to `TaskBarHeroSpeed.ini`.
+Overlay changes are persisted back to the same game-directory file. The hot
+injector copies the package default config there on first use if it is missing.
 Logs are written to `TaskBarHeroSpeed.log`.
 
 For game updates, use `UPDATE_WORKFLOW.md` and `update_rvas.py` to regenerate
@@ -32,7 +32,7 @@ metadata, or IDA databases.
 
 Normal users should use the GitHub Release ZIP, not a git clone. The release
 package contains only the latest three supported game versions under
-`versions/<game-version>/`; `Inject.bat` and `Install-AutoStart.bat` both load
+`versions/<game-version>/`; `start-win.bat` and `Install-AutoStart.bat` both load
 the DLL matching the running game's `Version.txt`. Unsupported game versions
 fail with an update prompt instead of falling back to an older DLL.
 
@@ -42,6 +42,23 @@ Build and archive under `dll/<game-version>/`:
 cd /Users/xuzhengda/Documents/workspace/tbh
 sh taskbarhero_speed/build.sh
 ```
+
+Steam Deck / Linux hosts use the same build.sh path:
+
+```sh
+cd /Users/xuzhengda/Documents/workspace/tbh
+sh taskbarhero_speed/build.sh
+```
+
+The default target list is `windows-x64`, which produces Windows PE binaries
+for Windows, CrossOver, and the Windows game running under Proton on Steam Deck:
+`winhttp.dll`, `TaskBarHeroSpeed.dll`, and `TaskBarHeroSpeedInject.exe`.
+The same files are also copied to `dist/build/windows-x64/`.
+
+Install a MinGW-w64 cross compiler in your host environment. On Steam Deck,
+prefer a writable Linux dev environment such as Distrobox; if the compiler is
+not named `x86_64-w64-mingw32-gcc`, set
+`TBH_MINGW_CC=/path/to/x86_64-w64-mingw32-gcc`.
 
 Build a release folder from a plain clone without compiling:
 

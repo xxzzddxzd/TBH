@@ -21,6 +21,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$versionedWinhttp = if ($gameVersion) { Join-Path $src ('versions\' + $gameVersion + '\winhttp.dll') } else { '' };" ^
   "if ($versionedWinhttp -and (Test-Path $versionedWinhttp)) { $winhttp = $versionedWinhttp } else { Write-Host ('No winhttp.dll for game version ' + $displayVersion + '. Download the latest release package.'); exit 3 }" ^
   "Copy-Item -Force $winhttp (Join-Path $gameDir 'winhttp.dll');" ^
+  "$iconSrc = Join-Path $src 'TaskBarHeroSpeedIcons';" ^
+  "if (Test-Path $iconSrc) { $iconDst = Join-Path $gameDir 'TaskBarHeroSpeedIcons'; if (-not (Test-Path $iconDst)) { New-Item -ItemType Directory -Path $iconDst | Out-Null }; Copy-Item -Force -Recurse (Join-Path $iconSrc '*') $iconDst; Write-Host 'TaskBarHeroSpeedIcons installed.' }" ^
+  "$nameTable = Join-Path $src 'TaskBarHeroSpeedItemNames.zh-Hans.tsv';" ^
+  "if (Test-Path $nameTable) { Copy-Item -Force $nameTable (Join-Path $gameDir 'TaskBarHeroSpeedItemNames.zh-Hans.tsv'); Write-Host 'TaskBarHeroSpeedItemNames.zh-Hans.tsv installed.' }" ^
   "$targetIni = Join-Path $gameDir 'TaskBarHeroSpeed.ini';" ^
   "if (-not (Test-Path $targetIni)) { Copy-Item -Force (Join-Path $src 'TaskBarHeroSpeed.ini') $targetIni; Write-Host 'TaskBarHeroSpeed.ini installed.' } else { Write-Host 'Existing TaskBarHeroSpeed.ini preserved.' }" ^
   "Set-Content -Encoding ASCII -Path (Join-Path $src 'TaskBarHeroSpeedInstallPath.txt') -Value $gameDir;" ^

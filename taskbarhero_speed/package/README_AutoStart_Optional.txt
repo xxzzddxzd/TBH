@@ -24,4 +24,4 @@ Manual mode, if you know the TaskBarHero install folder:
 To uninstall AutoStart mode, close the game and run Uninstall-AutoStart.bat.
 Manual uninstall: delete winhttp.dll from the TaskBarHero.exe folder.
 
-For most users, Inject.bat is easier.
+For most users, start-win.bat is easier.

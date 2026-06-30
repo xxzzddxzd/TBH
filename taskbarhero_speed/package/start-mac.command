@@ -36,7 +36,7 @@ find_taskbarhero_process() {
       awk 'BEGIN{IGNORECASE=1}
            /TaskBarHero\.exe/ &&
            !/TaskBarHeroSpeedInject\.exe/ &&
-           !/Inject-CrossOver-macOS/ {
+           !/start-mac\.command/ {
              sub(/^[[:space:]]+/, "", $0);
              print;
              exit

@@ -159,8 +159,8 @@ dist/TaskBarHeroSpeedPatch-Windows.zip
 
 发布包内必须包含两个热注入入口：
 
-- `Inject.bat`：原生 Windows 使用，自动查找正在运行的 `TaskBarHero.exe`。
-- `Inject-CrossOver-macOS.command`：macOS/CrossOver 使用，先从 macOS 进程列表发现正在运行的 `TaskBarHero.exe`，再推断 CrossOver bottle 和游戏目录；不要写死本机 CrossOver/Steam 路径。
+- `start-win.bat`：原生 Windows 使用，自动查找正在运行的 `TaskBarHero.exe`。
+- `start-mac.command`：macOS/CrossOver 使用，先从 macOS 进程列表发现正在运行的 `TaskBarHero.exe`，再推断 CrossOver bottle 和游戏目录；不要写死本机 CrossOver/Steam 路径。
 
 `package_windows.sh` 负责复制这两个入口到 `dist/TaskBarHeroSpeedPatch-Windows/` 并打进 zip。修改发布脚本时要重新运行本节命令确认 zip 内文件齐全。
 

@@ -5,6 +5,7 @@
 
 #define TARGET_PROCESS "TaskBarHero.exe"
 #define TARGET_DLL "TaskBarHeroSpeed.dll"
+#define MIN_VALID_REMOTE_MODULE 0x10000UL
 #ifndef PROCESS_QUERY_LIMITED_INFORMATION
 #define PROCESS_QUERY_LIMITED_INFORMATION 0x1000
 #endif
@@ -141,6 +142,37 @@ static int file_exists(const char *path)
     return attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
+static void ensure_game_config(const char *game_dir)
+{
+    char default_config[MAX_PATH];
+    char target_config[MAX_PATH];
+
+    if (!game_dir || !game_dir[0] || !g_base_dir[0]) return;
+
+    wsprintfA(target_config, "%s\\TaskBarHeroSpeed.ini", game_dir);
+    target_config[sizeof(target_config) - 1] = 0;
+    if (file_exists(target_config)) {
+        log_line("Game config preserved: %s", target_config);
+        return;
+    }
+
+    wsprintfA(default_config, "%s\\TaskBarHeroSpeed.ini", g_base_dir);
+    default_config[sizeof(default_config) - 1] = 0;
+    if (!file_exists(default_config)) {
+        log_line("Default config not found: %s", default_config);
+        return;
+    }
+
+    if (CopyFileA(default_config, target_config, TRUE)) {
+        log_line("Game config installed: %s", target_config);
+    } else {
+        log_line("Game config install failed: %s -> %s error=%lu",
+                 default_config,
+                 target_config,
+                 GetLastError());
+    }
+}
+
 static int get_process_image_path(DWORD pid, char *path, DWORD path_size)
 {
     DWORD size = path_size;
@@ -257,6 +289,7 @@ static int select_versioned_dll(DWORD pid, char *dll_path)
                  TARGET_DLL);
         return 0;
     }
+    ensure_game_config(game_dir);
 
     sanitize_filename_component(version, safe_version, sizeof(safe_version));
     tick = GetTickCount();
@@ -332,7 +365,20 @@ static int inject_dll(DWORD pid, const char *dll_path)
         return 5;
     }
 
-    WaitForSingleObject(thread, 10000);
+    DWORD wait_result = WaitForSingleObject(thread, 30000);
+    if (wait_result == WAIT_TIMEOUT) {
+        log_line("LoadLibraryA timed out in target process after 30000ms");
+        CloseHandle(thread);
+        CloseHandle(process);
+        return 7;
+    }
+    if (wait_result == WAIT_FAILED) {
+        log_line("WaitForSingleObject failed, error=%lu", GetLastError());
+        CloseHandle(thread);
+        VirtualFreeEx(process, remote_path, 0, MEM_RELEASE);
+        CloseHandle(process);
+        return 8;
+    }
 
     DWORD remote_result = 0;
     GetExitCodeThread(thread, &remote_result);
@@ -343,6 +389,12 @@ static int inject_dll(DWORD pid, const char *dll_path)
     if (!remote_result) {
         log_line("LoadLibraryA returned NULL in target process");
         return 6;
+    }
+    if (remote_result == STILL_ACTIVE ||
+        remote_result < MIN_VALID_REMOTE_MODULE) {
+        log_line("LoadLibraryA returned suspicious module 0x%lx in target process",
+                 remote_result);
+        return 9;
     }
 
     log_line("Injected %s into %s pid=%lu module=0x%lx",

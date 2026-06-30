@@ -4,9 +4,9 @@
 #include <stdarg.h>
 
 #define TBHS_SUPPORTED_GAME_VERSION "1.00.21"
-#define TBHS_PLUGIN_VERSION "0.4.0"
-#define TBHS_PLUGIN_SUBVERSION "3"
-#define TBHS_PLUGIN_DISPLAY_VERSION "0.4.0.3"
+#define TBHS_PLUGIN_VERSION "1.00.21"
+#define TBHS_PLUGIN_SUBVERSION "404"
+#define TBHS_PLUGIN_DISPLAY_VERSION "1.00.21.404"
 #define SPEED_DEFAULT 5.0f
 #define EXP_MULTIPLIER_DEFAULT 1.0f
 #define CUBE_EXP_MULTIPLIER_DEFAULT 10.0f
@@ -55,13 +55,18 @@
 #define RVA_UI_CUBE_ON_DESTROY 0xA20D60ULL
 #define RVA_UI_CUBE_AUTOFILL 0xA22150ULL /* UI_Cube auto-fill current recipe */
 #define RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL /* UI_RemakeStash inventory -> stash batch button */
+#define RVA_CUBE_TYPEINFO 0x5DC88E0ULL /* uz.Cube_TypeInfo */
+#define RVA_CUBE_SELECT_RECIPE_TYPE 0x8A0950ULL /* uz.Cube.imr(ERecipeType) selects current recipe */
 #define RVA_UI_MANAGER_TYPEINFO 0x5E3D880ULL /* np<UIManager>_TypeInfo */
-#define RVA_UI_MANAGER_SINGLETON_TYPEINFO 0x5DC4860ULL /* np<UIManager> generic TypeInfo used by gea() */
-#define RVA_NP_GET_INSTANCE 0x298ECF0ULL /* np<T>.gea() singleton getter */
+#define RVA_MASTER_DATA_SINGLETON_TYPEINFO 0x5E40568ULL /* np<bam>_TypeInfo; bam holds itemInfoData */
+#define RVA_ITEM_CACHE_BY_UNIQUE_ID 0x909D00ULL /* uz.uc.izf(ulong) returns uz.uc.ua item cache */
+#define RVA_ITEM_CACHE_STORE_TYPEINFO 0x5DC9198ULL /* uz.uc_TypeInfo owns live item cache dictionary */
+#define RVA_ITEM_CACHE_GET_MANUAL_LOCK 0x901180ULL /* uz.uc.ua.iws() manual lock flag */
+#define RVA_ITEM_CACHE_SET_MANUAL_LOCK 0x903480ULL /* uz.uc.ua.iyj/klu(bool) sets manual lock */
 #define RVA_CUBE_SET_USE_STORAGE 0x8A3050ULL
 #define RVA_CUBE_SET_SYNTHESIS_TYPE 0x89F690ULL
-#define RVA_CUBE_SELECT_RECIPE 0x8AA8D0ULL
 #define RVA_CUBE_CLEAR_CURRENT_RECIPE 0x8AD760ULL /* Cube clear current recipe slots */
+#define RVA_CUBE_AUTOFILL_CURRENT_RECIPE 0x941B40ULL /* backend auto-fill dispatcher used by UI_Cube.kzn */
 #define RVA_CUBE_TRIGGER_CURRENT_RECIPE 0x8A3F00ULL
 #define RVA_STAGE_BOX_REFRESH_AUTO_OPEN 0xA29490ULL /* StageBox::lkc refreshes auto-open cd */
 #define RVA_AUTO_CHEST_OPEN_MOVE_NEXT 0xA31D30ULL /* StageBox AutoChestOpenAsync MoveNext */
@@ -72,6 +77,8 @@
 #define RVA_BOX_REWARD_SELECT 0x975850ULL /* vy::BoxData(int) selects concrete reward from stage box key */
 #define RVA_DICT_TRY_GET_VALUE 0x2D09070ULL /* Dictionary<EBoxType, List<BoxData>>.TryGetValue */
 #define RVA_BOX_REWARD_TRY_GET_METHODINFO 0x5DDAE18ULL /* MethodInfo used by box reward dictionary */
+#define RVA_BOX_DATA_GET_REWARD_ITEM_ID 0x967670ULL
+#define RVA_BOX_DATA_GET_REWARD_ITEM_UNIQUE_ID 0x967690ULL
 #define RVA_IL2CPP_GC_WRITE_BARRIER 0x58F760ULL /* write barrier used after managed reference stores */
 #define RVA_OPEN_BOX_STATS 0x9EC280ULL /* yw::kor(EBoxType) returns auto-open max/reduce seconds */
 #define RVA_DROP_ROLL_PROCESS 0x891400ULL
@@ -83,8 +90,24 @@
 
 #define STAGE_DATA_STAGE_LIST_OFFSET 56
 #define STAGE_DATA_CURRENT_CACHE_OFFSET 136
+#define UI_MANAGER_UI_HERO_OFFSET 0xB0
 #define UI_MANAGER_UI_CUBE_OFFSET 0xD8
 #define UI_MANAGER_UI_NEW_STASH_OFFSET 0xE8
+#define CUBE_CURRENT_RECIPE_OFFSET 0x140
+#define ITEM_DATA_ITEM_LIST_OFFSET 0x20
+#define ITEM_INFO_ITEM_KEY_OFFSET 0x30
+#define ITEM_INFO_ITEM_TYPE_OFFSET 0x34
+#define ITEM_INFO_GRADE_OFFSET 0x38
+#define ITEM_INFO_GEAR_TYPE_OFFSET 0x40
+#define ITEM_INFO_NAME_KEY_OFFSET 0x50
+#define ITEM_INFO_ICON_PATH_OFFSET 0x78
+#define UI_HERO_INVENTORY_SLOTS_OFFSET 0x78
+#define UI_REMAKE_STASH_SLOT_LIST_OFFSET 0x60
+#define ITEM_SLOT_ITEM_CACHE_OFFSET 0xB8
+#define ITEM_CACHE_ITEM_INFO_OFFSET 0x10
+#define ITEM_CACHE_EQUIP_CLASS_OFFSET 0x30
+#define IL2CPP_STRING_LENGTH_OFFSET 0x10
+#define IL2CPP_STRING_CHARS_OFFSET 0x14
 #define STAGE_BOX_BOX_TYPE_OFFSET 0x38
 #define STAGE_BOX_AUTO_OPEN_DURATION_OFFSET 0x108
 #define STAGE_BOX_AUTO_OPEN_SECONDS_OFFSET 0x10C
@@ -97,6 +120,12 @@
 #define IL2CPP_LIST_SIZE_OFFSET 24
 #define IL2CPP_ARRAY_LENGTH_OFFSET 24
 #define IL2CPP_ARRAY_DATA_OFFSET 32
+#define IL2CPP_DICT_ENTRIES_OFFSET 24
+#define IL2CPP_DICT_COUNT_OFFSET 32
+#define IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET 0
+#define IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET 8
+#define IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET 16
+#define IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE 24
 #define ESTAGE_TYPE_NORMAL 0
 #define ESTAGE_TYPE_ACTBOSS 1
 
@@ -105,9 +134,14 @@
 #define OVERLAY_WINDOW_TITLE "TaskBarHero Overlay"
 #define OVERLAY_OLD_WINDOW_TITLE "TaskBarHero Speed"
 #define OVERLAY_WIDTH 684
-#define OVERLAY_HEIGHT 278
-#define OVERLAY_LOG_LINE_COUNT 8
-#define OVERLAY_LOG_LINE_SIZE 160
+#define OVERLAY_HEIGHT 430
+#define OVERLAY_LOG_LINE_COUNT 128
+#define OVERLAY_LOG_VISIBLE_LINES 8
+#define OVERLAY_LOG_LINE_SIZE 220
+#define OVERLAY_LOG_BOX_LEFT 76
+#define OVERLAY_LOG_BOX_TOP 304
+#define OVERLAY_LOG_BOX_WIDTH 590
+#define OVERLAY_LOG_BOX_HEIGHT 112
 #define OVERLAY_BUTTON_MIN 1001
 #define OVERLAY_BUTTON_MINUS5 1002
 #define OVERLAY_BUTTON_MINUS1 1003
@@ -133,17 +167,46 @@
 #define OVERLAY_LABEL_CUBE_MULTIPLIER 1023
 #define OVERLAY_BUTTON_CUBE_PLUS 1024
 #define OVERLAY_BUTTON_SYNTH_TOGGLE 1025
-#define OVERLAY_BUTTON_SYNTH_GRADE_MINUS 1026
-#define OVERLAY_LABEL_SYNTH_GRADE 1027
-#define OVERLAY_BUTTON_SYNTH_GRADE_PLUS 1028
 #define OVERLAY_BUTTON_SYNTH_STORAGE 1029
+#define OVERLAY_BUTTON_ITEM_LOCK_LIST 1030
+#define OVERLAY_BUTTON_ITEM_LOCK_HIGH_GRADE 1031
+#define OVERLAY_BUTTON_ITEM_LOCK_COIN 1032
+#define OVERLAY_BUTTON_ITEM_LOCK_MANUAL 1033
+#define OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP 1034
+#define ITEM_LOCK_LIST_CLASS_PREFIX "TaskBarHeroItemLockList_"
+#define ITEM_LOCK_LIST_CONTROL_TYPE 2001
+#define ITEM_LOCK_LIST_CONTROL_GRADE 2002
+#define ITEM_LOCK_LIST_CONTROL_LIST 2003
+#define ITEM_LOCK_LIST_CONTROL_OK 2004
+#define ITEM_LOCK_LIST_CONTROL_CANCEL 2005
+#define ITEM_LOCK_LIST_CONTROL_STATUS 2006
+#define ITEM_LOCK_LIST_CONTROL_CLEAR 2007
+#define ITEM_LOCK_LIST_CONTROL_CLASS 2008
+#define ITEM_LOCK_LIST_CONTROL_SEARCH 2009
+#define ITEM_LOCK_LIST_TIMER_REFRESH 1
+#define ITEM_LOCK_LIST_ROW_HEIGHT 32
+#define ITEM_LOCK_LIST_ICON_SIZE 22
+#define ITEM_LOCK_ICON_DIR_NAME "TaskBarHeroSpeedIcons"
+#define ITEM_LOCK_ICON_TRANSPARENT_KEY RGB(255, 0, 255)
+#define ITEM_LOCK_NAME_TABLE_FILE "TaskBarHeroSpeedItemNames.zh-Hans.tsv"
+#define ITEM_LOCK_MARKET_TOP_FILE "TaskBarHeroSpeedMarketTop100.tsv"
+#define AUTO_ITEM_LOCK_NAME_MAX 8192
+#define AUTO_ITEM_LOCK_NAME_FILE_MAX_BYTES 1048576
 #define AUTO_PORTAL_INTERVAL_MIN_MS 5000
 #define AUTO_PORTAL_INTERVAL_MAX_MS 3600000
 #define AUTO_OPEN_BOX_SECONDS 5
 #define AUTO_SYNTHESIS_INTERVAL_MS 3000
+#define AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS 2000
 #define AUTO_SYNTHESIS_STASH_DELAY_MS 3000
 #define AUTO_SYNTHESIS_FILL_DELAY_MS 3000
 #define AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000
+#define AUTO_SYNTHESIS_RESULT_WATCH_MS 5000
+#define BOX_REWARD_RESULT_WATCH_MS 4000
+#define ACTBOSS_BOX_ITEM_KEY 930801
+#define ACTBOSS_CACHE_WATCH_MS 15000
+#define ACTBOSS_CACHE_WATCH_COOLDOWN_MS 2500
+#define ACTBOSS_CACHE_WATCH_SCAN_INTERVAL_MS 250
+#define ACTBOSS_CACHE_WATCH_MAX_IDS 32768
 #define AUTO_SYNTHESIS_PHASE_IDLE 0
 #define AUTO_SYNTHESIS_PHASE_WAIT_STASH 1
 #define AUTO_SYNTHESIS_PHASE_WAIT_FILL 2
@@ -154,10 +217,41 @@
 #define AUTO_SWITCH_WAIT_NONE 0
 #define AUTO_SWITCH_WAIT_NORMAL_DROP 1
 #define AUTO_SWITCH_WAIT_BOSS_DROP 2
-#define ERECIPE_TYPE_SYNTHESIS 1
+#define ERECIPE_SYNTHESIS 1
 #define EITEM_SYNTHESIS_GEAR 0
 #define EGRADE_BEYOND 6
+#define EGRADE_CELESTIAL 7
+#define EGRADE_DIVINE 8
 #define EGRADE_COSMIC 9
+#define AUTO_ITEM_LOCK_MAX_ITEMS 8192
+#define AUTO_ITEM_LOCK_MAX_SELECTED 2048
+#define AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS 512
+#define AUTO_ITEM_LOCK_COIN_MIN 160000
+#define AUTO_ITEM_LOCK_COIN_MAX 160020
+#define EITEM_TYPE_STAGEBOX 0
+#define EITEM_TYPE_MATERIAL 1
+#define EITEM_TYPE_GEAR 2
+#define EGRADE_NONE 10
+#define EEQUIP_CLASS_UNKNOWN -1
+#define EEQUIP_CLASS_ALL 0
+#define EEQUIP_CLASS_KNIGHT 1
+#define EEQUIP_CLASS_RANGER 2
+#define EEQUIP_CLASS_SORCERER 3
+#define EEQUIP_CLASS_PRIEST 4
+#define EEQUIP_CLASS_HUNTER 5
+#define EEQUIP_CLASS_SLAYER 6
+#define EGEAR_TYPE_SWORD 1
+#define EGEAR_TYPE_BOW 2
+#define EGEAR_TYPE_STAFF 3
+#define EGEAR_TYPE_SCEPTER 4
+#define EGEAR_TYPE_CROSSBOW 5
+#define EGEAR_TYPE_AXE 6
+#define EGEAR_TYPE_SHIELD 7
+#define EGEAR_TYPE_ARROW 8
+#define EGEAR_TYPE_ORB 9
+#define EGEAR_TYPE_TOME 10
+#define EGEAR_TYPE_BOLT 11
+#define EGEAR_TYPE_HATCHET 12
 #define OVERLAY_COLOR_BG RGB(28, 24, 20)
 #define OVERLAY_COLOR_PANEL RGB(42, 35, 29)
 #define OVERLAY_COLOR_PANEL_2 RGB(34, 30, 25)
@@ -179,19 +273,7 @@
 typedef void *(*resolve_icall_t)(const char *name);
 typedef float (*unity_time_get_t)(void);
 typedef void (*unity_time_set_t)(float value);
-typedef struct UnityRefreshRate {
-    unsigned int numerator;
-    unsigned int denominator;
-} UnityRefreshRate;
-typedef int (*unity_screen_get_int_t)(void);
-typedef void (*unity_screen_set_bool_t)(int value);
-typedef void (*unity_screen_set_int_t)(int value);
-typedef void (*unity_screen_set_resolution_bool3_t)(int width, int height, int fullscreen);
-typedef void (*unity_screen_set_resolution_bool4_t)(int width, int height, int fullscreen, int preferred_refresh_rate);
-typedef void (*unity_screen_set_resolution_mode4_t)(int width, int height, int mode, int preferred_refresh_rate);
-typedef void (*unity_screen_set_resolution_injected_t)(int width, int height, int mode, UnityRefreshRate *preferred_refresh_rate);
 typedef void *(__fastcall *singleton_get_instance_t)(void *type_info);
-typedef void *(__fastcall *np_get_instance_t)(void *type_info);
 typedef int (__fastcall *stagecache_get_int_t)(void *stage_cache);
 typedef int (__fastcall *stage_enter_exact_key_t)(void *stage_manager, unsigned int stage_key, void *method);
 typedef __int64 (__fastcall *stage_set_current_cache_t)(void *stage_cache);
@@ -201,6 +283,8 @@ typedef __int64 (__fastcall *give_reward_item_t)(unsigned int item_key, void *ca
 typedef __int64 (__fastcall *reward_add_item_t)(unsigned int item_key, void *payload, int count, int notify, void *method);
 typedef int (__fastcall *box_count_get_t)(unsigned int box_type, void *method);
 typedef __int64 (__fastcall *box_reward_select_t)(void *box_table, unsigned int item_key, void *context);
+typedef int (__fastcall *box_data_get_int_t)(void *box_data, void *method);
+typedef void *(__fastcall *box_data_get_string_t)(void *box_data, void *method);
 typedef unsigned char (__fastcall *dict_try_get_value_t)(void *dict, unsigned int key, void **out_value, void *method);
 typedef __int64 (__fastcall *gc_write_barrier_t)(void *slot, void *obj);
 typedef __int64 (__fastcall *open_box_stats_t)(void *account_status, int box_type, void *method);
@@ -213,10 +297,14 @@ typedef __int64 (__fastcall *ui_cube_instance_t)(void *ui_cube, void *method);
 typedef __int64 (__fastcall *ui_remake_stash_action_t)(void *ui_stash, void *method);
 typedef __int64 (__fastcall *cube_set_bool_t)(char value, void *method);
 typedef __int64 (__fastcall *cube_set_int_t)(int value, void *method);
-typedef __int64 (__fastcall *cube_select_recipe_t)(int recipe_type, int synthesis_type, int grade, int index, void *method);
 typedef __int64 (__fastcall *cube_clear_current_recipe_t)(void *method);
+typedef unsigned char (__fastcall *cube_select_recipe_t)(int recipe_type, void *method);
+typedef __int64 (__fastcall *cube_autofill_current_recipe_t)(void *recipe, void *method);
 typedef __int64 (__fastcall *cube_trigger_current_recipe_t)(void *method);
 typedef __int64 (__fastcall *auto_chest_open_move_next_t)(void *state_machine, void *method);
+typedef void *(__fastcall *item_cache_by_unique_id_t)(unsigned __int64 unique_id);
+typedef unsigned char (__fastcall *item_cache_get_manual_lock_t)(void *item_cache);
+typedef __int64 (__fastcall *item_cache_set_manual_lock_t)(void *item_cache, unsigned char locked);
 
 typedef struct DropObservationContext {
     volatile LONG active;
@@ -255,6 +343,28 @@ typedef struct ChestDropStats {
     unsigned int drop_count;
 } ChestDropStats;
 
+typedef struct AutoItemLockInfo {
+    unsigned int item_id;
+    int item_type;
+    int grade;
+    int equip_class;
+    char name_key[96];
+    char display_name[160];
+    char icon_path[160];
+    HBITMAP icon_bitmap;
+    int icon_bitmap_status;
+} AutoItemLockInfo;
+
+typedef struct AutoItemLockNameEntry {
+    char key[96];
+    char name[160];
+} AutoItemLockNameEntry;
+
+typedef struct OverlayLogEntry {
+    char line[OVERLAY_LOG_LINE_SIZE];
+    int grade;
+} OverlayLogEntry;
+
 typedef void *HINTERNET_LOCAL;
 typedef HINTERNET_LOCAL (WINAPI *pWinHttpOpen)(
     LPCWSTR, DWORD, LPCWSTR, LPCWSTR, DWORD);
@@ -271,19 +381,27 @@ typedef struct HookPatch {
     void *trampoline;
 } HookPatch;
 
+typedef BOOL (WINAPI *transparent_blt_t)(HDC, int, int, int, int,
+                                         HDC, int, int, int, int, UINT);
+
 static HMODULE g_self_module;
 #ifndef TBHS_STANDALONE_DLL
 static HMODULE g_real_winhttp;
 #endif
 static char g_base_dir[MAX_PATH];
 static char g_game_dir[MAX_PATH];
+static char g_config_dir[MAX_PATH];
 static char g_log_path[MAX_PATH];
+static char g_item_log_path[MAX_PATH];
 static char g_chest_stats_path[MAX_PATH];
 static char g_detected_game_version[32];
 static char g_config_target_game_version[32];
 static char g_config_plugin_version[32];
 static char g_config_plugin_subversion[16];
 static volatile LONG g_initialized;
+static HMODULE g_msimg32;
+static transparent_blt_t g_transparent_blt;
+static int g_transparent_blt_checked;
 
 static float g_speed = SPEED_DEFAULT;
 static float g_speed_min = 1.0f;
@@ -293,7 +411,6 @@ static int g_background_apply = 0;
 static int g_overlay_enabled = 1;
 static int g_overlay_x = 20;
 static int g_overlay_y = 80;
-static int g_force_game_title_bar_enabled = 1;
 static DWORD g_apply_interval_ms = 1000;
 static int g_auto_portal_enabled = 1;
 static DWORD g_auto_portal_interval_ms = 60000;
@@ -312,8 +429,32 @@ static int g_keep_boxdata_after_select_enabled = 0;
 static int g_force_box_reward_select_config_enabled = 0;
 static int g_keep_boxdata_after_select_config_enabled = 0;
 static int g_auto_synthesis_enabled = 0;
-static int g_auto_synthesis_grade = EGRADE_BEYOND;
 static int g_auto_synthesis_use_storage = 1;
+static int g_auto_item_lock_enabled = 1;
+static int g_item_lock_condition_high_grade = 1;
+static int g_item_lock_condition_coin = 1;
+static int g_item_lock_condition_market_top = 1;
+static AutoItemLockInfo g_auto_item_lock_catalog[AUTO_ITEM_LOCK_MAX_ITEMS];
+static int g_auto_item_lock_catalog_count = 0;
+static DWORD g_auto_item_lock_last_catalog_log_tick = 0;
+static DWORD g_auto_item_lock_last_catalog_try_tick = 0;
+static volatile LONG g_auto_item_lock_catalog_version = 0;
+static AutoItemLockNameEntry g_auto_item_lock_name_table[AUTO_ITEM_LOCK_NAME_MAX];
+static int g_auto_item_lock_name_count = 0;
+static int g_auto_item_lock_names_loaded = 0;
+static unsigned int g_auto_item_lock_selected_ids[AUTO_ITEM_LOCK_MAX_SELECTED];
+static int g_auto_item_lock_selected_count = 0;
+static unsigned int g_auto_item_lock_market_top_ids[AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS];
+static int g_auto_item_lock_market_top_count = 0;
+static unsigned int g_auto_item_lock_temp_ids[AUTO_ITEM_LOCK_MAX_SELECTED];
+static int g_auto_item_lock_temp_count = 0;
+static volatile LONG g_auto_item_lock_pending = 0;
+static unsigned int g_auto_item_lock_pending_item_id = 0;
+static unsigned __int64 g_auto_item_lock_pending_unique_id = 0;
+static char g_auto_item_lock_pending_unique_key[64];
+static DWORD g_auto_item_lock_pending_tick = 0;
+static DWORD g_auto_item_lock_last_try_tick = 0;
+static volatile LONG g_manual_item_lock_pending = 0;
 static volatile LONG g_speed_dirty = 1;
 
 static HMODULE g_game_assembly;
@@ -321,17 +462,7 @@ static resolve_icall_t g_resolve_icall;
 static unity_time_get_t g_real_get_delta_time;
 static unity_time_get_t g_real_get_time_scale;
 static unity_time_set_t g_real_set_time_scale;
-static unity_screen_get_int_t g_screen_get_width;
-static unity_screen_get_int_t g_screen_get_height;
-static unity_screen_set_bool_t g_screen_set_fullscreen;
-static unity_screen_set_int_t g_screen_set_fullscreen_mode;
-static unity_screen_set_resolution_bool3_t g_screen_set_resolution_bool3;
-static unity_screen_set_resolution_bool4_t g_screen_set_resolution_bool4;
-static unity_screen_set_resolution_mode4_t g_screen_set_resolution_mode4;
-static unity_screen_set_resolution_injected_t g_screen_set_resolution_injected;
-static DWORD g_last_windowed_apply_tick;
 static DWORD g_game_thread_id;
-static int g_windowed_logged;
 
 static HookPatch g_hook_delta_time;
 static HookPatch g_hook_get_time_scale;
@@ -359,15 +490,29 @@ static HWND g_overlay_label;
 static HWND g_overlay_exp_multiplier_label;
 static HWND g_overlay_cube_multiplier_label;
 static HWND g_overlay_synth_button;
-static HWND g_overlay_synth_grade_label;
 static HWND g_overlay_synth_storage_button;
+static HWND g_overlay_item_lock_high_grade_button;
+static HWND g_overlay_item_lock_coin_button;
+static HWND g_overlay_item_lock_market_top_button;
+static HWND g_overlay_item_lock_manual_button;
 static HWND g_overlay_boss_button;
 static HWND g_overlay_actboss_button;
 static HWND g_overlay_auto_switch_button;
 static HWND g_overlay_lock_button;
+static HWND g_overlay_item_lock_list_button;
 static HWND g_overlay_lock_interval_label;
 static HWND g_overlay_lock_stage_label;
 static HWND g_overlay_chest_intervals_label;
+static HWND g_item_lock_list_hwnd;
+static HWND g_item_lock_type_combo;
+static HWND g_item_lock_grade_combo;
+static HWND g_item_lock_class_label;
+static HWND g_item_lock_class_combo;
+static HWND g_item_lock_search_edit;
+static HWND g_item_lock_listbox;
+static HWND g_item_lock_status_label;
+static WNDPROC g_item_lock_listbox_old_proc;
+static LONG g_item_lock_list_catalog_version_seen;
 static HFONT g_overlay_font;
 static HFONT g_overlay_font_bold;
 static HBRUSH g_overlay_bg_brush;
@@ -416,8 +561,23 @@ static ui_cube_instance_t g_real_ui_cube_on_destroy;
 static volatile LONG_PTR g_cached_ui_cube;
 static DWORD g_auto_synthesis_next_tick;
 static DWORD g_auto_synthesis_step_tick;
+static DWORD g_auto_synthesis_result_watch_until;
 static int g_auto_synthesis_phase;
+static volatile LONG g_auto_synthesis_pending;
+static volatile LONG g_auto_synthesis_result_pending;
 static DWORD g_last_auto_synthesis_log_tick;
+static DWORD g_box_reward_result_watch_until;
+static volatile LONG g_box_reward_result_pending;
+static unsigned int g_box_reward_expected_item_id;
+static unsigned int g_box_reward_box_item_key;
+static volatile LONG g_actboss_cache_watch_active;
+static DWORD g_actboss_cache_watch_until;
+static DWORD g_actboss_cache_watch_last_begin_tick;
+static DWORD g_actboss_cache_watch_last_scan_tick;
+static unsigned __int64 g_actboss_cache_watch_seen_ids[ACTBOSS_CACHE_WATCH_MAX_IDS];
+static int g_actboss_cache_watch_seen_count;
+static int g_actboss_cache_watch_logged_count;
+static int g_actboss_cache_watch_synthesis_requested;
 static DWORD g_last_open_box_stats_log_tick;
 static DWORD g_last_auto_chest_open_cd_log_tick;
 static int g_open_box_stats_hook_installed;
@@ -426,9 +586,10 @@ static unsigned int g_cached_boxdata_item_by_type[3];
 static DropObservationContext g_drop_observation;
 static volatile LONG g_drop_log_spin;
 static volatile LONG g_drop_log_version;
-static char g_drop_log_lines[OVERLAY_LOG_LINE_COUNT][OVERLAY_LOG_LINE_SIZE];
+static OverlayLogEntry g_drop_log_entries[OVERLAY_LOG_LINE_COUNT];
 static int g_drop_log_next;
 static int g_drop_log_count;
+static int g_drop_log_scroll;
 static ChestDropStats g_normal_chest_stats;
 static ChestDropStats g_boss_chest_stats;
 static volatile LONG g_chest_interval_version;
@@ -440,6 +601,11 @@ static DWORD g_last_cube_exp_log_tick;
 static RECT g_previous_overlay_rect;
 static int g_previous_overlay_position_valid;
 static volatile LONG g_closed_overlay_count;
+
+static int install_box_reward_select_hook(HMODULE game_assembly);
+static void restore_box_reward_select_hook(HMODULE game_assembly);
+static int box_reward_select_hook_needed(void);
+static void update_box_reward_select_hook(HMODULE game_assembly);
 
 static const unsigned char k_original_give_reward[] = {
     0x48, 0x89, 0x5C, 0x24, 0x08,
@@ -538,6 +704,12 @@ static void *mem_copy_local(void *dst, const void *src, SIZE_T n)
     const unsigned char *s = (const unsigned char *)src;
     for (SIZE_T i = 0; i < n; i++) d[i] = s[i];
     return dst;
+}
+
+static void zero_memory_local(void *dst, SIZE_T n)
+{
+    unsigned char *d = (unsigned char *)dst;
+    for (SIZE_T i = 0; i < n; i++) d[i] = 0;
 }
 
 static int mem_equal_local(const void *left, const void *right, SIZE_T n)
@@ -667,13 +839,6 @@ static int multiplier_x100(float value)
     return v < 0 ? 0 : v;
 }
 
-static int clamp_auto_synthesis_grade(int grade)
-{
-    if (grade < EGRADE_BEYOND) return EGRADE_BEYOND;
-    if (grade > EGRADE_COSMIC) return EGRADE_COSMIC;
-    return grade;
-}
-
 static int float_x10000(float value)
 {
     int scaled;
@@ -707,10 +872,84 @@ static int memory_range_readable(const void *ptr, SIZE_T bytes)
     return end <= region_end;
 }
 
+static int read_il2cpp_string_utf8(void *string_obj, char *buf, int buflen)
+{
+    int len;
+    WCHAR *chars;
+    int written;
+    SIZE_T bytes;
+
+    if (!buf || buflen <= 0) return 0;
+    buf[0] = 0;
+    if (!string_obj ||
+        !memory_range_readable(string_obj,
+                               IL2CPP_STRING_CHARS_OFFSET + sizeof(WCHAR))) {
+        return 0;
+    }
+    len = *(int *)((unsigned char *)string_obj + IL2CPP_STRING_LENGTH_OFFSET);
+    if (len < 0 || len > 4096) return 0;
+    if (!len) return 1;
+    chars = (WCHAR *)((unsigned char *)string_obj + IL2CPP_STRING_CHARS_OFFSET);
+    bytes = (SIZE_T)len * sizeof(WCHAR);
+    if (!memory_range_readable(chars, bytes)) return 0;
+    written = WideCharToMultiByte(CP_UTF8, 0, chars, len,
+                                  buf, buflen - 1, NULL, NULL);
+    if (written <= 0) return 0;
+    buf[written] = 0;
+    return 1;
+}
+
 static void log_line(const char *fmt, ...);
+static void append_overlay_event(const char *fmt, ...);
+static void append_overlay_item_event(const char *action,
+                                      unsigned int item_id,
+                                      int locked);
 static void trim(char *s);
+static void clean_item_display_text(const char *src, char *dst, int dst_size);
 static void auto_switch_on_chest_drop(unsigned int box_type);
 static void save_config(void);
+static int read_il2cpp_string_utf8(void *string_obj, char *buf, int buflen);
+static void load_auto_item_lock_ids(const char *text);
+static void save_auto_item_lock_ids(char *buf, int buflen);
+static void load_auto_item_lock_market_top_ids(void);
+static void update_item_lock_list_button(void);
+static void update_item_lock_condition_buttons(void);
+static void open_item_lock_list_window(void);
+static const char *auto_item_lock_class_name(int equip_class);
+static int auto_item_lock_catalog_class_from_gear_type(int gear_type);
+static const char *auto_item_lock_type_name(int item_type);
+static const char *auto_item_lock_grade_name(int grade);
+static COLORREF auto_item_lock_grade_color(int grade);
+static int auto_item_lock_catalog_copy(unsigned int item_id,
+                                       AutoItemLockInfo *out_info);
+static int lookup_auto_item_lock_localized_name(const char *key,
+                                                char *buf,
+                                                int buflen);
+static int auto_item_lock_item_matches_conditions(unsigned int item_id,
+                                                  int item_type,
+                                                  int grade);
+static int load_auto_item_lock_catalog_from_game(void);
+static void *get_item_cache_dictionary(uintptr_t base);
+static void queue_manual_item_lock_request(void);
+static void begin_box_reward_result_watch(unsigned int box_item_key,
+                                          unsigned int expected_item_id);
+static void maybe_handle_box_reward_add(unsigned int item_id,
+                                        unsigned int result_low,
+                                        unsigned int result_high);
+static void maybe_handle_auto_synthesis_reward_add(unsigned int item_id,
+                                                   unsigned int result_low,
+                                                   unsigned int result_high);
+static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,
+                                                     unsigned int result_low,
+                                                     unsigned int result_high,
+                                                     int box_pending_before,
+                                                     int synth_pending_before);
+static int handle_box_reward_select_item(unsigned int box_item_key,
+                                         unsigned int reward_item_id,
+                                         const char *reward_unique_key);
+static int handle_box_reward_auto_item_lock(unsigned int box_item_key,
+                                            unsigned int reward_item_id,
+                                            const char *reward_unique_key);
 
 static const char *box_type_name(unsigned int box_type)
 {
@@ -737,6 +976,11 @@ static int item_key_to_box_type(unsigned int item_key, unsigned int *box_type)
         return 1;
     }
     return 0;
+}
+
+static int item_key_is_stage_box_candidate(unsigned int item_key)
+{
+    return item_key >= 900000 && item_key < 1000000;
 }
 
 static int auto_portal_interval_seconds(void)
@@ -782,6 +1026,51 @@ static void reset_auto_synthesis_state(void)
     g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
     g_auto_synthesis_next_tick = 0;
     g_auto_synthesis_step_tick = 0;
+    g_auto_synthesis_result_watch_until = 0;
+    InterlockedExchange(&g_auto_synthesis_pending, 0);
+    InterlockedExchange(&g_auto_synthesis_result_pending, 0);
+}
+
+static void request_auto_synthesis_after_box_open(unsigned int box_item_key,
+                                                  unsigned int selected_item)
+{
+    unsigned int box_type = 0;
+    DWORD now;
+
+    if (!g_auto_synthesis_enabled) return;
+    if (!item_key_is_stage_box_candidate(box_item_key)) return;
+    if (!item_key_to_box_type(box_item_key, &box_type)) box_type = 3;
+
+    now = GetTickCount();
+    InterlockedExchange(&g_auto_synthesis_pending, 1);
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_IDLE) {
+        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS;
+    }
+    log_line("auto synthesis requested after box open: type=%s box_item=%u selected_item=%u delay=%lu active_phase=%d",
+             box_type_name(box_type),
+             box_item_key,
+             selected_item,
+             (unsigned long)AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS,
+             g_auto_synthesis_phase);
+}
+
+static void maybe_request_auto_synthesis_from_reward_item(unsigned int item_key,
+                                                          const char *source)
+{
+    unsigned int box_type = 0;
+
+    if (!g_auto_synthesis_enabled) return;
+    if (g_drop_observation.active &&
+        g_drop_observation.thread_id == GetCurrentThreadId()) {
+        return;
+    }
+    if (!item_key_is_stage_box_candidate(item_key)) return;
+    if (!item_key_to_box_type(item_key, &box_type)) box_type = 3;
+    log_line("auto synthesis reward fallback: source=%s type=%s item_key=%u",
+             source ? source : "-",
+             box_type_name(box_type),
+             item_key);
+    request_auto_synthesis_after_box_open(item_key, 0);
 }
 
 static void set_auto_synthesis_enabled(int enabled)
@@ -789,17 +1078,7 @@ static void set_auto_synthesis_enabled(int enabled)
     g_auto_synthesis_enabled = enabled ? 1 : 0;
     reset_auto_synthesis_state();
     log_line("auto synthesis %s", g_auto_synthesis_enabled ? "enabled" : "disabled");
-    save_config();
-}
-
-static void adjust_auto_synthesis_grade(int delta)
-{
-    int grade = g_auto_synthesis_grade + delta;
-    if (grade < EGRADE_BEYOND) grade = EGRADE_COSMIC;
-    if (grade > EGRADE_COSMIC) grade = EGRADE_BEYOND;
-    g_auto_synthesis_grade = grade;
-    reset_auto_synthesis_state();
-    log_line("auto synthesis grade set by overlay: %d", g_auto_synthesis_grade);
+    update_box_reward_select_hook(g_game_assembly);
     save_config();
 }
 
@@ -913,6 +1192,285 @@ static void append_float_line(char *buf, int buflen, const char *key, float valu
     }
     line[sizeof(line) - 1] = 0;
     append_text_local(buf, buflen, line);
+}
+
+static int auto_item_lock_id_index(const unsigned int *ids,
+                                   int count,
+                                   unsigned int item_id)
+{
+    int i;
+
+    for (i = 0; i < count; ++i) {
+        if (ids[i] == item_id) return i;
+    }
+    return -1;
+}
+
+static int auto_item_lock_selected(unsigned int item_id)
+{
+    return auto_item_lock_id_index(g_auto_item_lock_selected_ids,
+                                   g_auto_item_lock_selected_count,
+                                   item_id) >= 0;
+}
+
+static int auto_item_lock_market_top_selected(unsigned int item_id)
+{
+    return auto_item_lock_id_index(g_auto_item_lock_market_top_ids,
+                                   g_auto_item_lock_market_top_count,
+                                   item_id) >= 0;
+}
+
+static int auto_item_lock_is_coin_item(unsigned int item_id)
+{
+    return item_id >= AUTO_ITEM_LOCK_COIN_MIN &&
+           item_id <= AUTO_ITEM_LOCK_COIN_MAX;
+}
+
+static int auto_item_lock_item_matches_conditions(unsigned int item_id,
+                                                  int item_type,
+                                                  int grade)
+{
+    if (!item_id) return 0;
+    if (auto_item_lock_selected(item_id)) return 1;
+    if (g_item_lock_condition_market_top &&
+        auto_item_lock_market_top_selected(item_id)) {
+        return 1;
+    }
+    if (g_item_lock_condition_coin && auto_item_lock_is_coin_item(item_id)) {
+        return 1;
+    }
+    if (g_item_lock_condition_high_grade &&
+        (item_type == EITEM_TYPE_GEAR || item_type == EITEM_TYPE_MATERIAL) &&
+        (grade == EGRADE_DIVINE || grade == EGRADE_COSMIC)) {
+        return 1;
+    }
+    return 0;
+}
+
+static int auto_item_lock_catalog_lookup(unsigned int item_id,
+                                         int *out_type,
+                                         int *out_grade,
+                                         int *out_class)
+{
+    int i;
+
+    if (!item_id) return 0;
+    for (i = 0; i < g_auto_item_lock_catalog_count; ++i) {
+        AutoItemLockInfo *info = &g_auto_item_lock_catalog[i];
+        if (info->item_id != item_id) continue;
+        if (out_type) *out_type = info->item_type;
+        if (out_grade) *out_grade = info->grade;
+        if (out_class) *out_class = info->equip_class;
+        return 1;
+    }
+    return 0;
+}
+
+static int auto_item_lock_catalog_copy(unsigned int item_id,
+                                       AutoItemLockInfo *out_info)
+{
+    int i;
+
+    if (!item_id || !out_info) return 0;
+    for (i = 0; i < g_auto_item_lock_catalog_count; ++i) {
+        AutoItemLockInfo *info = &g_auto_item_lock_catalog[i];
+        if (info->item_id != item_id) continue;
+        *out_info = *info;
+        return 1;
+    }
+    return 0;
+}
+
+static int auto_item_lock_reward_matches_conditions(unsigned int item_id)
+{
+    int item_type = -1;
+    int grade = -1;
+
+    if (!item_id) return 0;
+    if (auto_item_lock_selected(item_id)) return 1;
+    if (g_item_lock_condition_market_top &&
+        auto_item_lock_market_top_selected(item_id)) {
+        return 1;
+    }
+    if (g_item_lock_condition_coin && auto_item_lock_is_coin_item(item_id)) {
+        return 1;
+    }
+    if (!g_item_lock_condition_high_grade) return 0;
+    if (!auto_item_lock_catalog_lookup(item_id,
+                                       &item_type,
+                                       &grade,
+                                       NULL) &&
+        g_game_assembly &&
+        g_game_thread_id &&
+        GetCurrentThreadId() == g_game_thread_id) {
+        load_auto_item_lock_catalog_from_game();
+        auto_item_lock_catalog_lookup(item_id,
+                                      &item_type,
+                                      &grade,
+                                      NULL);
+    }
+    return auto_item_lock_item_matches_conditions(item_id, item_type, grade);
+}
+
+static void auto_item_lock_set_id(unsigned int *ids,
+                                  int *count,
+                                  unsigned int item_id,
+                                  int selected)
+{
+    int index;
+
+    if (!ids || !count || !item_id) return;
+    index = auto_item_lock_id_index(ids, *count, item_id);
+    if (selected) {
+        if (index >= 0 || *count >= AUTO_ITEM_LOCK_MAX_SELECTED) return;
+        ids[(*count)++] = item_id;
+        return;
+    }
+    if (index < 0) return;
+    for (; index < *count - 1; ++index) {
+        ids[index] = ids[index + 1];
+    }
+    (*count)--;
+}
+
+static void load_auto_item_lock_ids(const char *text)
+{
+    const char *p = text;
+    unsigned int value;
+
+    g_auto_item_lock_selected_count = 0;
+    while (p && *p) {
+        while (*p == ' ' || *p == '\t' || *p == ',' || *p == ';') p++;
+        value = 0;
+        while (*p >= '0' && *p <= '9') {
+            value = value * 10u + (unsigned int)(*p - '0');
+            p++;
+        }
+        if (value) {
+            auto_item_lock_set_id(g_auto_item_lock_selected_ids,
+                                  &g_auto_item_lock_selected_count,
+                                  value,
+                                  1);
+        }
+        while (*p && *p != ',' && *p != ';') p++;
+    }
+}
+
+static void save_auto_item_lock_ids(char *buf, int buflen)
+{
+    char item[32];
+    int i;
+
+    append_text_local(buf, buflen, "auto_item_lock_ids=");
+    for (i = 0; i < g_auto_item_lock_selected_count; ++i) {
+        if (i) append_text_local(buf, buflen, ",");
+        wsprintfA(item, "%u", g_auto_item_lock_selected_ids[i]);
+        item[sizeof(item) - 1] = 0;
+        append_text_local(buf, buflen, item);
+    }
+    append_text_local(buf, buflen, "\r\n");
+}
+
+static void auto_item_lock_add_market_top_id(unsigned int item_id)
+{
+    if (!item_id) return;
+    if (auto_item_lock_id_index(g_auto_item_lock_market_top_ids,
+                                g_auto_item_lock_market_top_count,
+                                item_id) >= 0) {
+        return;
+    }
+    if (g_auto_item_lock_market_top_count >= AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS) {
+        return;
+    }
+    g_auto_item_lock_market_top_ids[g_auto_item_lock_market_top_count++] = item_id;
+}
+
+static int load_auto_item_lock_market_top_file(const char *path)
+{
+    HANDLE file;
+    DWORD size;
+    DWORD read = 0;
+    char *data;
+    DWORD pos = 0;
+    int loaded_before = g_auto_item_lock_market_top_count;
+
+    if (!path || !path[0]) return 0;
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) return 0;
+    size = GetFileSize(file, NULL);
+    if (size == INVALID_FILE_SIZE || size == 0 || size > 1048576) {
+        CloseHandle(file);
+        return 0;
+    }
+    data = (char *)HeapAlloc(GetProcessHeap(), 0, (SIZE_T)size + 1);
+    if (!data) {
+        CloseHandle(file);
+        return 0;
+    }
+    if (!ReadFile(file, data, size, &read, NULL)) {
+        HeapFree(GetProcessHeap(), 0, data);
+        CloseHandle(file);
+        return 0;
+    }
+    CloseHandle(file);
+    data[read] = 0;
+
+    while (pos < read &&
+           g_auto_item_lock_market_top_count < AUTO_ITEM_LOCK_MARKET_TOP_MAX_IDS) {
+        DWORD line_start = pos;
+        unsigned int item_id = 0;
+        while (pos < read && data[pos] != '\n') pos++;
+        if (pos < read && data[pos] == '\n') pos++;
+        while (line_start < read &&
+               (data[line_start] == ' ' || data[line_start] == '\t' ||
+                data[line_start] == '\r')) {
+            line_start++;
+        }
+        if (line_start >= read ||
+            data[line_start] == '#' ||
+            data[line_start] < '0' ||
+            data[line_start] > '9') {
+            continue;
+        }
+        while (line_start < read &&
+               data[line_start] >= '0' &&
+               data[line_start] <= '9') {
+            item_id = item_id * 10u + (unsigned int)(data[line_start] - '0');
+            line_start++;
+        }
+        auto_item_lock_add_market_top_id(item_id);
+    }
+    HeapFree(GetProcessHeap(), 0, data);
+    return g_auto_item_lock_market_top_count - loaded_before;
+}
+
+static void load_auto_item_lock_market_top_ids(void)
+{
+    char path[MAX_PATH];
+    int loaded = 0;
+
+    g_auto_item_lock_market_top_count = 0;
+    if (g_base_dir[0]) {
+        wsprintfA(path, "%s\\%s", g_base_dir, ITEM_LOCK_MARKET_TOP_FILE);
+        path[sizeof(path) - 1] = 0;
+        loaded += load_auto_item_lock_market_top_file(path);
+    }
+    if (!loaded && g_config_dir[0] &&
+        lstrcmpiA(g_config_dir, g_base_dir) != 0) {
+        wsprintfA(path, "%s\\%s", g_config_dir, ITEM_LOCK_MARKET_TOP_FILE);
+        path[sizeof(path) - 1] = 0;
+        loaded += load_auto_item_lock_market_top_file(path);
+    }
+
+    if (loaded) {
+        log_line("market top item lock list loaded: ids=%d file=%s",
+                 g_auto_item_lock_market_top_count,
+                 ITEM_LOCK_MARKET_TOP_FILE);
+    } else {
+        log_line("market top item lock list not found: %s",
+                 ITEM_LOCK_MARKET_TOP_FILE);
+    }
 }
 
 static void append_chest_stats_lines(char *buf,
@@ -1141,33 +1699,253 @@ static void unlock_drop_log(void)
     InterlockedExchange(&g_drop_log_spin, 0);
 }
 
-static void append_overlay_log_line(const char *line)
+static void append_overlay_log_line_with_grade(const char *line, int grade)
 {
     lock_drop_log();
-    lstrcpynA(g_drop_log_lines[g_drop_log_next], line, OVERLAY_LOG_LINE_SIZE);
+    lstrcpynA(g_drop_log_entries[g_drop_log_next].line,
+              line,
+              OVERLAY_LOG_LINE_SIZE);
+    g_drop_log_entries[g_drop_log_next].line[OVERLAY_LOG_LINE_SIZE - 1] = 0;
+    g_drop_log_entries[g_drop_log_next].grade = grade;
     g_drop_log_next = (g_drop_log_next + 1) % OVERLAY_LOG_LINE_COUNT;
     if (g_drop_log_count < OVERLAY_LOG_LINE_COUNT) g_drop_log_count++;
+    g_drop_log_scroll = 0;
     unlock_drop_log();
     InterlockedIncrement(&g_drop_log_version);
+    if (g_overlay_hwnd) {
+        InvalidateRect(g_overlay_hwnd, NULL, FALSE);
+    }
+}
+
+static void TBHS_UNUSED append_overlay_log_line(const char *line)
+{
+    append_overlay_log_line_with_grade(line, -1);
+}
+
+static void append_loaded_item_log_line(const char *line, int grade)
+{
+    if (!line || !line[0]) return;
+    lock_drop_log();
+    lstrcpynA(g_drop_log_entries[g_drop_log_next].line,
+              line,
+              OVERLAY_LOG_LINE_SIZE);
+    g_drop_log_entries[g_drop_log_next].line[OVERLAY_LOG_LINE_SIZE - 1] = 0;
+    g_drop_log_entries[g_drop_log_next].grade = grade;
+    g_drop_log_next = (g_drop_log_next + 1) % OVERLAY_LOG_LINE_COUNT;
+    if (g_drop_log_count < OVERLAY_LOG_LINE_COUNT) g_drop_log_count++;
+    g_drop_log_scroll = 0;
+    unlock_drop_log();
+}
+
+static void persist_item_log_entry(const char *line, int grade)
+{
+    HANDLE file;
+    DWORD written = 0;
+    char record[OVERLAY_LOG_LINE_SIZE + 32];
+
+    if (!line || !line[0] || !g_item_log_path[0]) return;
+    wsprintfA(record, "%d\t%s\r\n", grade, line);
+    record[sizeof(record) - 1] = 0;
+    file = CreateFileA(g_item_log_path,
+                       FILE_APPEND_DATA,
+                       FILE_SHARE_READ,
+                       NULL,
+                       OPEN_ALWAYS,
+                       FILE_ATTRIBUTE_NORMAL,
+                       NULL);
+    if (file == INVALID_HANDLE_VALUE) return;
+    WriteFile(file, record, (DWORD)lstrlenA(record), &written, NULL);
+    CloseHandle(file);
+}
+
+static void load_item_log_history(void)
+{
+    HANDLE file;
+    DWORD size;
+    DWORD read = 0;
+    char *data;
+    DWORD pos = 0;
+
+    if (!g_item_log_path[0]) return;
+    file = CreateFileA(g_item_log_path,
+                       GENERIC_READ,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE,
+                       NULL,
+                       OPEN_EXISTING,
+                       FILE_ATTRIBUTE_NORMAL,
+                       NULL);
+    if (file == INVALID_HANDLE_VALUE) return;
+    size = GetFileSize(file, NULL);
+    if (size == INVALID_FILE_SIZE || size == 0 || size > (1024 * 1024)) {
+        CloseHandle(file);
+        return;
+    }
+    data = (char *)HeapAlloc(GetProcessHeap(), 0, (SIZE_T)size + 1);
+    if (!data) {
+        CloseHandle(file);
+        return;
+    }
+    if (!ReadFile(file, data, size, &read, NULL)) read = 0;
+    CloseHandle(file);
+    data[read] = 0;
+
+    while (pos < read) {
+        DWORD line_start = pos;
+        DWORD line_end;
+        DWORD text_start;
+        int grade = -1;
+        char line[OVERLAY_LOG_LINE_SIZE];
+        int sign = 1;
+
+        while (pos < read && data[pos] != '\n') pos++;
+        line_end = pos;
+        if (pos < read && data[pos] == '\n') pos++;
+        while (line_end > line_start &&
+               (data[line_end - 1] == '\r' || data[line_end - 1] == '\n')) {
+            line_end--;
+        }
+        if (line_end <= line_start) continue;
+
+        text_start = line_start;
+        if (data[text_start] == '-') {
+            sign = -1;
+            text_start++;
+        }
+        if (text_start < line_end &&
+            data[text_start] >= '0' &&
+            data[text_start] <= '9') {
+            grade = 0;
+            while (text_start < line_end &&
+                   data[text_start] >= '0' &&
+                   data[text_start] <= '9') {
+                grade = grade * 10 + (int)(data[text_start] - '0');
+                text_start++;
+            }
+            grade *= sign;
+            if (text_start < line_end && data[text_start] == '\t') {
+                text_start++;
+            } else {
+                grade = -1;
+                text_start = line_start;
+            }
+        }
+        if (line_end <= text_start) continue;
+        {
+            DWORD copy_len = line_end - text_start;
+            DWORD j;
+            if (copy_len >= OVERLAY_LOG_LINE_SIZE) {
+                copy_len = OVERLAY_LOG_LINE_SIZE - 1;
+            }
+            for (j = 0; j < copy_len; ++j) {
+                line[j] = data[text_start + j];
+            }
+            line[copy_len] = 0;
+        }
+        append_loaded_item_log_line(line, grade);
+    }
+    HeapFree(GetProcessHeap(), 0, data);
+    InterlockedIncrement(&g_drop_log_version);
+}
+
+static int point_in_drop_log_box(POINT pt)
+{
+    RECT box;
+
+    box.left = OVERLAY_LOG_BOX_LEFT;
+    box.top = OVERLAY_LOG_BOX_TOP;
+    box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
+    box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+    return PtInRect(&box, pt) ? 1 : 0;
+}
+
+static void adjust_drop_log_scroll(int delta)
+{
+    int max_scroll;
+    int changed = 0;
+
+    if (!delta) return;
+    lock_drop_log();
+    max_scroll = g_drop_log_count > OVERLAY_LOG_VISIBLE_LINES ?
+                 g_drop_log_count - OVERLAY_LOG_VISIBLE_LINES : 0;
+    g_drop_log_scroll += delta;
+    if (g_drop_log_scroll < 0) g_drop_log_scroll = 0;
+    if (g_drop_log_scroll > max_scroll) g_drop_log_scroll = max_scroll;
+    changed = 1;
+    unlock_drop_log();
+
+    if (changed && g_overlay_hwnd) {
+        RECT box;
+        box.left = OVERLAY_LOG_BOX_LEFT;
+        box.top = OVERLAY_LOG_BOX_TOP;
+        box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
+        box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+        InvalidateRect(g_overlay_hwnd, &box, FALSE);
+    }
 }
 
 static void append_overlay_event(const char *fmt, ...)
 {
-    SYSTEMTIME st;
-    char message[OVERLAY_LOG_LINE_SIZE];
-    char line[OVERLAY_LOG_LINE_SIZE];
-    va_list ap;
+    (void)fmt;
+}
 
-    va_start(ap, fmt);
-    wvsprintfA(message, fmt, ap);
-    message[sizeof(message) - 1] = 0;
-    va_end(ap);
+static void append_overlay_item_event(const char *action,
+                                      unsigned int item_id,
+                                      int locked)
+{
+    SYSTEMTIME st;
+    AutoItemLockInfo info;
+    char name[160];
+    char line[OVERLAY_LOG_LINE_SIZE];
+    int grade = -1;
+    int item_type = -1;
+
+    if (!item_id) return;
+    zero_memory_local(&info, sizeof(info));
+    name[0] = 0;
+    if (!auto_item_lock_catalog_copy(item_id, &info) &&
+        g_game_assembly &&
+        g_game_thread_id &&
+        GetCurrentThreadId() == g_game_thread_id) {
+        load_auto_item_lock_catalog_from_game();
+        auto_item_lock_catalog_copy(item_id, &info);
+    }
+    if (info.item_id == item_id) {
+        grade = info.grade;
+        item_type = info.item_type;
+        if (info.display_name[0]) {
+            lstrcpynA(name, info.display_name, sizeof(name));
+        } else if (info.name_key[0]) {
+            clean_item_display_text(info.name_key, name, sizeof(name));
+        }
+    }
+    if (!name[0]) {
+        char generated_key[64];
+        wsprintfA(generated_key, "ItemName_%u", item_id);
+        generated_key[sizeof(generated_key) - 1] = 0;
+        lookup_auto_item_lock_localized_name(generated_key,
+                                            name,
+                                            sizeof(name));
+    }
+    if (!name[0]) {
+        wsprintfA(name, "item %u", item_id);
+        name[sizeof(name) - 1] = 0;
+    }
 
     GetLocalTime(&st);
-    wsprintfA(line, "%02u:%02u:%02u %s",
-              st.wHour, st.wMinute, st.wSecond, message);
+    wsprintfA(line,
+              "[%u.%u %02u:%02u] [%s]->[%s][%s]%s %s",
+              st.wMonth,
+              st.wDay,
+              st.wHour,
+              st.wMinute,
+              action ? action : "-",
+              auto_item_lock_grade_name(grade),
+              auto_item_lock_type_name(item_type),
+              name,
+              locked ? "（已锁定）" : "（未锁定）");
     line[sizeof(line) - 1] = 0;
-    append_overlay_log_line(line);
+    append_overlay_log_line_with_grade(line, grade);
+    persist_item_log_entry(line, grade);
 }
 
 static int display_stage_no_from_key(int stage_key, int stage_no)
@@ -1326,9 +2104,15 @@ static void init_paths(void)
             lstrcpyA(g_game_dir, g_base_dir);
         }
     }
+    lstrcpynA(g_config_dir, g_game_dir[0] ? g_game_dir : g_base_dir,
+              sizeof(g_config_dir));
     wsprintfA(g_log_path, "%s\\TaskBarHeroSpeed.log", g_base_dir);
     g_log_path[sizeof(g_log_path) - 1] = 0;
-    wsprintfA(g_chest_stats_path, "%s\\TaskBarHeroChestStats.txt", g_base_dir);
+    wsprintfA(g_item_log_path, "%s\\TaskBarHeroSpeedItemLog.tsv",
+              g_config_dir[0] ? g_config_dir : g_base_dir);
+    g_item_log_path[sizeof(g_item_log_path) - 1] = 0;
+    wsprintfA(g_chest_stats_path, "%s\\TaskBarHeroChestStats.txt",
+              g_config_dir[0] ? g_config_dir : g_base_dir);
     g_chest_stats_path[sizeof(g_chest_stats_path) - 1] = 0;
 }
 
@@ -1350,8 +2134,9 @@ static void trim(char *s)
 static void load_config(void)
 {
     char path[MAX_PATH];
-    wsprintfA(path, "%s\\TaskBarHeroSpeed.ini", g_base_dir);
+    wsprintfA(path, "%s\\TaskBarHeroSpeed.ini", g_config_dir);
     path[sizeof(path) - 1] = 0;
+    log_line("config path: %s", path);
 
     HANDLE file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -1418,9 +2203,6 @@ static void load_config(void)
         } else if (lstrcmpiA(line, "overlay_y") == 0) {
             int v = parse_int_local(eq);
             if (v >= -2000 && v <= 4000) g_overlay_y = v;
-        } else if (lstrcmpiA(line, "force_game_title_bar") == 0 ||
-                   lstrcmpiA(line, "force_title_bar") == 0) {
-            g_force_game_title_bar_enabled = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "background_apply") == 0) {
             g_background_apply = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "apply_interval_ms") == 0) {
@@ -1458,13 +2240,25 @@ static void load_config(void)
         } else if (lstrcmpiA(line, "auto_synthesis") == 0 ||
                    lstrcmpiA(line, "auto_gear_synthesis") == 0) {
             g_auto_synthesis_enabled = parse_int_local(eq) ? 1 : 0;
-        } else if (lstrcmpiA(line, "auto_synthesis_grade") == 0 ||
-                   lstrcmpiA(line, "auto_gear_synthesis_grade") == 0) {
-            g_auto_synthesis_grade =
-                clamp_auto_synthesis_grade(parse_int_local(eq));
         } else if (lstrcmpiA(line, "auto_synthesis_use_storage") == 0 ||
                    lstrcmpiA(line, "auto_synthesis_storage") == 0) {
             g_auto_synthesis_use_storage = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "auto_item_lock") == 0 ||
+                   lstrcmpiA(line, "auto_lock_item") == 0) {
+            g_auto_item_lock_enabled = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "item_lock_condition_high_grade") == 0 ||
+                   lstrcmpiA(line, "auto_item_lock_high_grade") == 0) {
+            g_item_lock_condition_high_grade = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "item_lock_condition_coin") == 0 ||
+                   lstrcmpiA(line, "auto_item_lock_coin") == 0) {
+            g_item_lock_condition_coin = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "item_lock_condition_market_top") == 0 ||
+                   lstrcmpiA(line, "auto_item_lock_market_top") == 0 ||
+                   lstrcmpiA(line, "item_lock_condition_price_top") == 0) {
+            g_item_lock_condition_market_top = parse_int_local(eq) ? 1 : 0;
+        } else if (lstrcmpiA(line, "auto_item_lock_ids") == 0 ||
+                   lstrcmpiA(line, "auto_lock_item_ids") == 0) {
+            load_auto_item_lock_ids(eq);
         } else if (lstrcmpiA(line, "free_actboss_enter") == 0) {
             g_free_actboss_enter_enabled = parse_int_local(eq) ? 1 : 0;
         } else if (lstrcmpiA(line, "exp_multiplier") == 0 ||
@@ -1492,7 +2286,6 @@ static void load_config(void)
     set_speed_value(g_speed);
     g_exp_multiplier = clamp_exp_multiplier(g_exp_multiplier);
     g_cube_exp_multiplier = clamp_exp_multiplier(g_cube_exp_multiplier);
-    g_auto_synthesis_grade = clamp_auto_synthesis_grade(g_auto_synthesis_grade);
     if (g_auto_restart_locked && g_auto_restart_stage_key <= 0) {
         g_auto_restart_locked = 0;
     }
@@ -1505,7 +2298,7 @@ static void load_config(void)
     int sx = speed_x100();
     int expx = multiplier_x100(g_exp_multiplier);
     int cubex = multiplier_x100(g_cube_exp_multiplier);
-    log_line("config loaded: plugin=%s.%s target_game=%s speed=%d.%02d step=%d.%02d exp=%d.%02d cube_exp=%d.%02d overlay=%d force_game_title_bar=%d background_apply=%d interval=%lu auto_portal=%d/%lu direct_boss=%d actboss_boss=%d auto_switch=%d auto_synthesis=%d grade=%d storage=%d free_actboss_enter=%d drop_hooks=%d force_drop_roll=%d reward_trace_hooks=%d force_box_reward_select=%d keep_boxdata_after_select=%d",
+    log_line("config loaded: plugin=%s.%s target_game=%s speed=%d.%02d step=%d.%02d exp=%d.%02d cube_exp=%d.%02d overlay=%d background_apply=%d interval=%lu auto_portal=%d/%lu direct_boss=%d actboss_boss=%d auto_switch=%d auto_synthesis=%d storage=%d auto_item_lock=%d high_grade=%d coin=%d market_top=%d market_ids=%d ids=%d free_actboss_enter=%d drop_hooks=%d force_drop_roll=%d reward_trace_hooks=%d force_box_reward_select=%d keep_boxdata_after_select=%d",
              g_config_plugin_version[0] ? g_config_plugin_version : TBHS_PLUGIN_VERSION,
              g_config_plugin_subversion[0] ? g_config_plugin_subversion : TBHS_PLUGIN_SUBVERSION,
              g_config_target_game_version[0] ? g_config_target_game_version : TBHS_SUPPORTED_GAME_VERSION,
@@ -1514,14 +2307,19 @@ static void load_config(void)
              (int)(g_speed_step * 100.0f) % 100,
              expx / 100, expx % 100,
              cubex / 100, cubex % 100,
-             g_overlay_enabled, g_force_game_title_bar_enabled,
+             g_overlay_enabled,
              g_background_apply, (unsigned long)g_apply_interval_ms,
              g_auto_portal_enabled, (unsigned long)g_auto_portal_interval_ms,
              g_direct_boss_enabled, g_actboss_boss_enabled,
              g_auto_switch_enabled,
              g_auto_synthesis_enabled,
-             g_auto_synthesis_grade,
              g_auto_synthesis_use_storage,
+             g_auto_item_lock_enabled,
+             g_item_lock_condition_high_grade,
+             g_item_lock_condition_coin,
+             g_item_lock_condition_market_top,
+             g_auto_item_lock_market_top_count,
+             g_auto_item_lock_selected_count,
              g_free_actboss_enter_enabled,
              g_drop_hooks_enabled,
              g_force_drop_roll_rate_enabled,
@@ -1533,12 +2331,12 @@ static void load_config(void)
 static void save_config(void)
 {
     char path[MAX_PATH];
-    char buf[4096];
+    char buf[32768];
     HANDLE file;
     DWORD written = 0;
 
-    if (!g_base_dir[0]) return;
-    wsprintfA(path, "%s\\TaskBarHeroSpeed.ini", g_base_dir);
+    if (!g_config_dir[0]) return;
+    wsprintfA(path, "%s\\TaskBarHeroSpeed.ini", g_config_dir);
     path[sizeof(path) - 1] = 0;
 
     buf[0] = 0;
@@ -1559,7 +2357,6 @@ static void save_config(void)
     append_int_line(buf, sizeof(buf), "overlay", g_overlay_enabled);
     append_int_line(buf, sizeof(buf), "overlay_x", g_overlay_x);
     append_int_line(buf, sizeof(buf), "overlay_y", g_overlay_y);
-    append_int_line(buf, sizeof(buf), "force_game_title_bar", g_force_game_title_bar_enabled);
     append_text_local(buf, sizeof(buf), "\r\n");
 
     append_int_line(buf, sizeof(buf), "auto_portal", g_auto_portal_enabled);
@@ -1576,8 +2373,12 @@ static void save_config(void)
     append_int_line(buf, sizeof(buf), "actboss_boss", g_actboss_boss_enabled);
     append_int_line(buf, sizeof(buf), "auto_switch", g_auto_switch_enabled);
     append_int_line(buf, sizeof(buf), "auto_synthesis", g_auto_synthesis_enabled);
-    append_int_line(buf, sizeof(buf), "auto_synthesis_grade", g_auto_synthesis_grade);
     append_int_line(buf, sizeof(buf), "auto_synthesis_use_storage", g_auto_synthesis_use_storage);
+    append_int_line(buf, sizeof(buf), "auto_item_lock", g_auto_item_lock_enabled);
+    append_int_line(buf, sizeof(buf), "item_lock_condition_high_grade", g_item_lock_condition_high_grade);
+    append_int_line(buf, sizeof(buf), "item_lock_condition_coin", g_item_lock_condition_coin);
+    append_int_line(buf, sizeof(buf), "item_lock_condition_market_top", g_item_lock_condition_market_top);
+    save_auto_item_lock_ids(buf, sizeof(buf));
     append_int_line(buf, sizeof(buf), "free_actboss_enter", g_free_actboss_enter_enabled);
     append_text_local(buf, sizeof(buf), "\r\n");
 
@@ -1685,6 +2486,146 @@ static int validate_runtime_versions(void)
     return 1;
 }
 
+#define TBHS_TRAMPOLINE_MAX_DISTANCE 0x70000000ULL
+#define TBHS_TRAMPOLINE_MIN_ADDRESS 0x10000ULL
+
+static uintptr_t align_down_address(uintptr_t value, uintptr_t alignment)
+{
+    if (!alignment) return value;
+    return value & ~(alignment - 1);
+}
+
+static void *try_alloc_executable_at(uintptr_t address, SIZE_T size)
+{
+    if (address < TBHS_TRAMPOLINE_MIN_ADDRESS) return NULL;
+    return VirtualAlloc((void *)address,
+                        size,
+                        MEM_COMMIT | MEM_RESERVE,
+                        PAGE_EXECUTE_READWRITE);
+}
+
+static void *alloc_executable_near(void *target, SIZE_T size)
+{
+    SYSTEM_INFO si;
+    uintptr_t granularity = 0x10000;
+    uintptr_t target_addr = (uintptr_t)target;
+    uintptr_t start;
+    uintptr_t max_delta;
+
+    GetSystemInfo(&si);
+    if (si.dwAllocationGranularity) {
+        granularity = (uintptr_t)si.dwAllocationGranularity;
+    }
+    start = align_down_address(target_addr, granularity);
+    max_delta = TBHS_TRAMPOLINE_MAX_DISTANCE -
+                (TBHS_TRAMPOLINE_MAX_DISTANCE % granularity);
+
+    for (uintptr_t delta = 0;; delta += granularity) {
+        void *mem;
+        uintptr_t candidate;
+
+        if (start >= delta) {
+            candidate = start - delta;
+            mem = try_alloc_executable_at(candidate, size);
+            if (mem) return mem;
+        }
+
+        if (delta != 0 && start <= ~(uintptr_t)0 - delta) {
+            candidate = start + delta;
+            mem = try_alloc_executable_at(candidate, size);
+            if (mem) return mem;
+        }
+
+        if (delta >= max_delta || max_delta - delta < granularity) {
+            break;
+        }
+    }
+
+    log_line("near trampoline allocation failed for target=%p size=%lu; trying fallback",
+             target,
+             (unsigned long)size);
+    return VirtualAlloc(NULL,
+                        size,
+                        MEM_COMMIT | MEM_RESERVE,
+                        PAGE_EXECUTE_READWRITE);
+}
+
+static int32_t read_i32_local(const unsigned char *p)
+{
+    uint32_t value =
+        (uint32_t)p[0] |
+        ((uint32_t)p[1] << 8) |
+        ((uint32_t)p[2] << 16) |
+        ((uint32_t)p[3] << 24);
+    return (int32_t)value;
+}
+
+static void write_i32_local(unsigned char *p, int32_t value)
+{
+    uint32_t encoded = (uint32_t)value;
+    p[0] = (unsigned char)(encoded & 0xFFu);
+    p[1] = (unsigned char)((encoded >> 8) & 0xFFu);
+    p[2] = (unsigned char)((encoded >> 16) & 0xFFu);
+    p[3] = (unsigned char)((encoded >> 24) & 0xFFu);
+}
+
+static uintptr_t add_i32_to_address(uintptr_t address, int32_t offset)
+{
+    if (offset >= 0) {
+        return address + (uintptr_t)offset;
+    }
+    return address - (uintptr_t)(-(int64_t)offset);
+}
+
+static int displacement32_from_to(uintptr_t from, uintptr_t to, int32_t *out)
+{
+    if (to >= from) {
+        uintptr_t diff = to - from;
+        if (diff > 0x7FFFFFFFULL) return 0;
+        *out = (int32_t)diff;
+        return 1;
+    } else {
+        uintptr_t diff = from - to;
+        if (diff > 0x80000000ULL) return 0;
+        *out = (int32_t)(-(int64_t)diff);
+        return 1;
+    }
+}
+
+static int relocate_trampoline_rip_relative(unsigned char *trampoline,
+                                            unsigned char *source,
+                                            SIZE_T stolen_size)
+{
+    int relocated = 0;
+
+    for (SIZE_T offset = 0; offset + 7 <= stolen_size; offset++) {
+        if (source[offset] == 0x80 && source[offset + 1] == 0x3D) {
+            int32_t old_disp = read_i32_local(source + offset + 2);
+            uintptr_t original_next = (uintptr_t)(source + offset + 7);
+            uintptr_t relocated_next = (uintptr_t)(trampoline + offset + 7);
+            uintptr_t referenced = add_i32_to_address(original_next, old_disp);
+            int32_t new_disp;
+
+            if (!displacement32_from_to(relocated_next, referenced, &new_disp)) {
+                log_line("trampoline RIP relocation out of range: source=%p trampoline=%p offset=%lu ref=%p",
+                         source,
+                         trampoline,
+                         (unsigned long)offset,
+                         (void *)referenced);
+                return 0;
+            }
+            write_i32_local(trampoline + offset + 2, new_disp);
+            relocated = 1;
+            offset += 6;
+        }
+    }
+
+    if (relocated) {
+        FlushInstructionCache(GetCurrentProcess(), trampoline, stolen_size);
+    }
+    return 1;
+}
+
 static int write_absolute_jump(void *target, void *detour, HookPatch *hook)
 {
     unsigned char patch[12];
@@ -1768,9 +2709,9 @@ static int write_absolute_jump_with_trampoline(void *target,
         return 0;
     }
 
-    trampoline = (unsigned char *)VirtualAlloc(NULL, stolen_size + sizeof(jump_back),
-                                               MEM_COMMIT | MEM_RESERVE,
-                                               PAGE_EXECUTE_READWRITE);
+    trampoline = (unsigned char *)alloc_executable_near(
+        target,
+        stolen_size + sizeof(jump_back));
     if (!trampoline) {
         log_line("VirtualAlloc trampoline failed, error=%lu", GetLastError());
         return 0;
@@ -1778,6 +2719,10 @@ static int write_absolute_jump_with_trampoline(void *target,
 
     resume = (void *)((unsigned char *)target + stolen_size);
     mem_copy_local(trampoline, target, stolen_size);
+    if (!relocate_trampoline_rip_relative(trampoline, (unsigned char *)target, stolen_size)) {
+        VirtualFree(trampoline, 0, MEM_RELEASE);
+        return 0;
+    }
     jump_back[0] = 0x48;
     jump_back[1] = 0xB8;
     mem_copy_local(&jump_back[2], &resume, sizeof(resume));
@@ -1829,9 +2774,9 @@ static int write_absolute_jump_with_trampoline_preserve_rax(void *target,
         return 0;
     }
 
-    trampoline = (unsigned char *)VirtualAlloc(NULL, stolen_size + sizeof(jump_back),
-                                               MEM_COMMIT | MEM_RESERVE,
-                                               PAGE_EXECUTE_READWRITE);
+    trampoline = (unsigned char *)alloc_executable_near(
+        target,
+        stolen_size + sizeof(jump_back));
     if (!trampoline) {
         log_line("VirtualAlloc preserve-rax trampoline failed, error=%lu",
                  GetLastError());
@@ -1840,6 +2785,10 @@ static int write_absolute_jump_with_trampoline_preserve_rax(void *target,
 
     resume = (void *)((unsigned char *)target + stolen_size);
     mem_copy_local(trampoline, target, stolen_size);
+    if (!relocate_trampoline_rip_relative(trampoline, (unsigned char *)target, stolen_size)) {
+        VirtualFree(trampoline, 0, MEM_RELEASE);
+        return 0;
+    }
     jump_back[0] = 0x49;
     jump_back[1] = 0xBB;
     mem_copy_local(&jump_back[2], &resume, sizeof(resume));
@@ -2467,6 +3416,7 @@ static __int64 __fastcall hook_give_reward_item(unsigned int item_key,
         log_line("reward item request: item_key=%u callback=%p method=%p",
                  item_key, callback, method);
     }
+    maybe_request_auto_synthesis_from_reward_item(item_key, "give_reward");
     if (!g_real_give_reward_item) return 0;
     result = g_real_give_reward_item(item_key, callback, method);
     if (callback_patched &&
@@ -2490,6 +3440,8 @@ static __int64 __fastcall hook_reward_add_item(unsigned int item_key,
     __int64 result;
     unsigned int low;
     unsigned int high;
+    int box_pending_before;
+    int synth_pending_before;
 
     if (g_reward_trace_hooks_enabled) {
         log_line("reward add request: item_key=%u payload=%p count=%d notify=%d method=%p",
@@ -2499,10 +3451,13 @@ static __int64 __fastcall hook_reward_add_item(unsigned int item_key,
                  notify,
                  method);
     }
+    maybe_request_auto_synthesis_from_reward_item(item_key, "reward_add");
     if (!g_real_reward_add_item) return 0;
     result = g_real_reward_add_item(item_key, payload, count, notify, method);
     low = (unsigned int)(result & 0xFFFFFFFFu);
     high = (unsigned int)(((unsigned __int64)result >> 32) & 0xFFFFFFFFu);
+    box_pending_before = g_box_reward_result_pending ? 1 : 0;
+    synth_pending_before = g_auto_synthesis_result_pending ? 1 : 0;
     if (g_drop_observation.active &&
         g_drop_observation.thread_id == GetCurrentThreadId()) {
         g_drop_observation.reward_add_seen = 1;
@@ -2522,6 +3477,9 @@ static __int64 __fastcall hook_reward_add_item(unsigned int item_key,
                      payload);
         }
     }
+    maybe_handle_box_reward_add(item_key, low, high);
+    maybe_handle_auto_synthesis_reward_add(item_key, low, high);
+    maybe_handle_manual_synthesis_reward_add(item_key, low, high, box_pending_before, synth_pending_before);
     if (g_reward_trace_hooks_enabled) {
         log_line("reward add result: item_key=%u result_high=0x%08lX result_low=0x%08lX low=%u high=%u success=%d",
                  item_key,
@@ -2775,12 +3733,697 @@ static int keep_boxdata_available(void *box_table,
 }
 #endif
 
+typedef struct ManualItemLockStats {
+    int scanned;
+    int matched;
+    int locked;
+    int already_locked;
+    int skipped;
+} ManualItemLockStats;
+
+static int auto_item_lock_read_cache_info(void *item_cache,
+                                          unsigned int *out_item_id,
+                                          int *out_item_type,
+                                          int *out_grade,
+                                          int *out_equip_class)
+{
+    void *item_info;
+
+    if (!item_cache ||
+        !memory_range_readable(item_cache,
+                               ITEM_CACHE_EQUIP_CLASS_OFFSET + sizeof(int))) {
+        return 0;
+    }
+    item_info = *(void **)((unsigned char *)item_cache +
+                           ITEM_CACHE_ITEM_INFO_OFFSET);
+    if (!item_info ||
+        !memory_range_readable(item_info,
+                               ITEM_INFO_ICON_PATH_OFFSET + sizeof(void *))) {
+        return 0;
+    }
+    if (out_item_id) {
+        *out_item_id = *(unsigned int *)((unsigned char *)item_info +
+                                         ITEM_INFO_ITEM_KEY_OFFSET);
+    }
+    if (out_item_type) {
+        *out_item_type = *(int *)((unsigned char *)item_info +
+                                  ITEM_INFO_ITEM_TYPE_OFFSET);
+    }
+    if (out_grade) {
+        *out_grade = *(int *)((unsigned char *)item_info +
+                              ITEM_INFO_GRADE_OFFSET);
+    }
+    if (out_equip_class) {
+        *out_equip_class = *(int *)((unsigned char *)item_cache +
+                                    ITEM_CACHE_EQUIP_CLASS_OFFSET);
+    }
+    return 1;
+}
+
+static int auto_item_lock_apply_cache_now(void *item_cache,
+                                          unsigned int item_id,
+                                          const char *source,
+                                          int *out_already_locked)
+{
+    uintptr_t base;
+    item_cache_get_manual_lock_t get_manual_lock;
+    item_cache_set_manual_lock_t set_manual_lock;
+    unsigned char was_locked;
+    unsigned char now_locked;
+
+    if (out_already_locked) *out_already_locked = 0;
+    if (!g_game_assembly || !item_cache) return 0;
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return 0;
+
+    base = (uintptr_t)g_game_assembly;
+    get_manual_lock =
+        (item_cache_get_manual_lock_t)(base + RVA_ITEM_CACHE_GET_MANUAL_LOCK);
+    set_manual_lock =
+        (item_cache_set_manual_lock_t)(base + RVA_ITEM_CACHE_SET_MANUAL_LOCK);
+
+    if (!memory_range_readable((void *)get_manual_lock, 12) ||
+        !memory_range_readable((void *)set_manual_lock, 12)) {
+        log_line("ITEM LOCK skipped: lock functions unavailable");
+        return 0;
+    }
+
+    was_locked = get_manual_lock(item_cache) ? 1 : 0;
+    if (out_already_locked) *out_already_locked = was_locked ? 1 : 0;
+    if (!was_locked) {
+        set_manual_lock(item_cache, 1);
+        now_locked = get_manual_lock(item_cache) ? 1 : 0;
+    } else {
+        now_locked = 1;
+    }
+
+    if (now_locked) {
+        log_line("%s item lock sent: item_id=%u cache=%p already=%d",
+                 source ? source : "manual",
+                 item_id,
+                 item_cache,
+                 was_locked ? 1 : 0);
+        return 1;
+    }
+
+    log_line("%s item lock failed: item_id=%u cache=%p",
+             source ? source : "manual",
+             item_id,
+             item_cache);
+    return 0;
+}
+
+static int try_auto_item_lock_now(unsigned int item_id,
+                                  unsigned __int64 unique_id,
+                                  const char *unique_key)
+{
+    uintptr_t base;
+    void *item_cache;
+    item_cache_by_unique_id_t cache_by_unique_id;
+    item_cache_get_manual_lock_t get_manual_lock;
+    item_cache_set_manual_lock_t set_manual_lock;
+    unsigned char was_locked = 0;
+    unsigned char now_locked = 0;
+    char unique_id_text[32];
+
+    if (!g_game_assembly || !unique_id) return 0;
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return 0;
+
+    base = (uintptr_t)g_game_assembly;
+    cache_by_unique_id =
+        (item_cache_by_unique_id_t)(base + RVA_ITEM_CACHE_BY_UNIQUE_ID);
+    get_manual_lock =
+        (item_cache_get_manual_lock_t)(base + RVA_ITEM_CACHE_GET_MANUAL_LOCK);
+    set_manual_lock =
+        (item_cache_set_manual_lock_t)(base + RVA_ITEM_CACHE_SET_MANUAL_LOCK);
+
+    if (!memory_range_readable((void *)cache_by_unique_id, 12) ||
+        !memory_range_readable((void *)get_manual_lock, 12) ||
+        !memory_range_readable((void *)set_manual_lock, 12)) {
+        log_line("AUTO ITEM LOCK skipped: lock functions unavailable");
+        return 0;
+    }
+
+    item_cache = cache_by_unique_id(unique_id);
+    if (!item_cache) return 0;
+
+    was_locked = get_manual_lock(item_cache) ? 1 : 0;
+    if (!was_locked) {
+        set_manual_lock(item_cache, 1);
+        now_locked = get_manual_lock(item_cache) ? 1 : 0;
+    } else {
+        now_locked = 1;
+    }
+
+    format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+    if (now_locked) {
+        log_line("AUTO ITEM LOCK sent: item_id=%u unique_key=%s unique_id=%s cache=%p already=%d",
+                 item_id,
+                 unique_key && unique_key[0] ? unique_key : "-",
+                 unique_id_text,
+                 item_cache,
+                 was_locked ? 1 : 0);
+        append_overlay_event("LOCK ITEM %u", item_id);
+        return 1;
+    }
+
+    log_line("AUTO ITEM LOCK failed: item_id=%u unique_key=%s unique_id=%s cache=%p",
+             item_id,
+             unique_key && unique_key[0] ? unique_key : "-",
+             unique_id_text,
+             item_cache);
+    return 0;
+}
+
+static void queue_auto_item_lock_request(unsigned int item_id,
+                                         const char *unique_key)
+{
+    unsigned __int64 unique_id = unique_key ? parse_u64_local(unique_key) : 0;
+    char unique_id_text[32];
+
+    g_auto_item_lock_pending_item_id = item_id;
+    g_auto_item_lock_pending_unique_id = unique_id;
+    g_auto_item_lock_pending_unique_key[0] = 0;
+    if (unique_key) {
+        lstrcpynA(g_auto_item_lock_pending_unique_key,
+                  unique_key,
+                  sizeof(g_auto_item_lock_pending_unique_key));
+    }
+    g_auto_item_lock_pending_tick = GetTickCount();
+    g_auto_item_lock_last_try_tick = 0;
+    InterlockedExchange(&g_auto_item_lock_pending, 1);
+
+    format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+    log_line("AUTO ITEM LOCK pending: item_id=%u unique_key=%s unique_id=%s",
+             item_id,
+             g_auto_item_lock_pending_unique_key[0] ?
+                 g_auto_item_lock_pending_unique_key : "-",
+             unique_id_text);
+    append_overlay_event("LOCK ITEM pending %u", item_id);
+    if (try_auto_item_lock_now(item_id, unique_id, unique_key)) {
+        InterlockedExchange(&g_auto_item_lock_pending, 0);
+    }
+}
+
+static void begin_box_reward_result_watch(unsigned int box_item_key,
+                                          unsigned int expected_item_id)
+{
+    if (!item_key_is_stage_box_candidate(box_item_key)) return;
+    g_box_reward_box_item_key = box_item_key;
+    g_box_reward_expected_item_id = expected_item_id;
+    g_box_reward_result_watch_until = GetTickCount() + BOX_REWARD_RESULT_WATCH_MS;
+    InterlockedExchange(&g_box_reward_result_pending, 1);
+}
+
+static void maybe_handle_box_reward_add(unsigned int item_id,
+                                        unsigned int result_low,
+                                        unsigned int result_high)
+{
+    DWORD now;
+    unsigned __int64 unique_id;
+    char unique_key[32];
+    int locked = 0;
+
+    if (!item_id || result_high == 0xFFFFFFFFu) return;
+    if (!g_box_reward_result_pending) return;
+
+    now = GetTickCount();
+    if (!g_box_reward_result_watch_until ||
+        (LONG)(now - g_box_reward_result_watch_until) > 0) {
+        InterlockedExchange(&g_box_reward_result_pending, 0);
+        g_box_reward_result_watch_until = 0;
+        g_box_reward_expected_item_id = 0;
+        g_box_reward_box_item_key = 0;
+        return;
+    }
+    if (item_key_is_stage_box_candidate(item_id)) return;
+    if (g_box_reward_expected_item_id &&
+        g_box_reward_expected_item_id != item_id) {
+        return;
+    }
+    if (InterlockedExchange(&g_box_reward_result_pending, 0) == 0) return;
+    g_box_reward_result_watch_until = 0;
+    g_box_reward_expected_item_id = 0;
+    g_box_reward_box_item_key = 0;
+
+    if (g_auto_item_lock_enabled &&
+        auto_item_lock_reward_matches_conditions(item_id)) {
+        unique_id = ((unsigned __int64)result_high << 32) |
+                    (unsigned __int64)result_low;
+        format_u64_local(unique_key, sizeof(unique_key), unique_id);
+        queue_auto_item_lock_request(item_id, unique_key);
+        locked = 1;
+    }
+    append_overlay_item_event("开箱", item_id, locked);
+}
+
+static void maybe_handle_auto_synthesis_reward_add(unsigned int item_id,
+                                                   unsigned int result_low,
+                                                   unsigned int result_high)
+{
+    DWORD now;
+    unsigned __int64 unique_id;
+    char unique_key[32];
+    int locked = 0;
+
+    if (!item_id || result_high == 0xFFFFFFFFu) return;
+    if (!g_auto_synthesis_result_pending) return;
+    if (item_key_is_stage_box_candidate(item_id)) return;
+
+    now = GetTickCount();
+    if (!g_auto_synthesis_result_watch_until ||
+        (LONG)(now - g_auto_synthesis_result_watch_until) > 0) {
+        InterlockedExchange(&g_auto_synthesis_result_pending, 0);
+        g_auto_synthesis_result_watch_until = 0;
+        return;
+    }
+    if (InterlockedExchange(&g_auto_synthesis_result_pending, 0) == 0) return;
+    g_auto_synthesis_result_watch_until = 0;
+
+    if (g_auto_item_lock_enabled &&
+        auto_item_lock_reward_matches_conditions(item_id)) {
+        unique_id = ((unsigned __int64)result_high << 32) |
+                    (unsigned __int64)result_low;
+        format_u64_local(unique_key, sizeof(unique_key), unique_id);
+        queue_auto_item_lock_request(item_id, unique_key);
+        locked = 1;
+    }
+    append_overlay_item_event("合成", item_id, locked);
+}
+
+static void maybe_handle_manual_synthesis_reward_add(unsigned int item_id,
+                                                     unsigned int result_low,
+                                                     unsigned int result_high,
+                                                     int box_pending_before,
+                                                     int synth_pending_before)
+{
+    unsigned __int64 unique_id;
+    char unique_key[32];
+    int item_type = -1;
+    int grade = -1;
+    int catalog_found;
+    int locked = 0;
+
+    if (!item_id || result_high == 0xFFFFFFFFu) return;
+    if (box_pending_before || synth_pending_before) return;
+    if (!g_cached_ui_cube) return;
+    if (g_drop_observation.active &&
+        g_drop_observation.thread_id == GetCurrentThreadId()) {
+        return;
+    }
+    if (item_key_is_stage_box_candidate(item_id)) return;
+
+    catalog_found = auto_item_lock_catalog_lookup(item_id,
+                                                  &item_type,
+                                                  &grade,
+                                                  NULL);
+    if (!catalog_found &&
+        g_game_assembly &&
+        g_game_thread_id &&
+        GetCurrentThreadId() == g_game_thread_id) {
+        load_auto_item_lock_catalog_from_game();
+        catalog_found = auto_item_lock_catalog_lookup(item_id,
+                                                      &item_type,
+                                                      &grade,
+                                                      NULL);
+    }
+    if (catalog_found &&
+        item_type != EITEM_TYPE_GEAR && item_type != EITEM_TYPE_MATERIAL) {
+        return;
+    }
+
+    unique_id = ((unsigned __int64)result_high << 32) |
+                (unsigned __int64)result_low;
+    format_u64_local(unique_key, sizeof(unique_key), unique_id);
+    if (g_auto_item_lock_enabled &&
+        auto_item_lock_item_matches_conditions(item_id, item_type, grade)) {
+        queue_auto_item_lock_request(item_id, unique_key);
+        locked = 1;
+    }
+    append_overlay_item_event("合成", item_id, locked);
+    log_line("manual synthesis item event: item_id=%u result_key=%s grade=%d type=%d locked=%d",
+             item_id,
+             unique_key,
+             grade,
+             item_type,
+             locked);
+}
+
+static void reset_actboss_cache_watch(void)
+{
+    InterlockedExchange(&g_actboss_cache_watch_active, 0);
+    g_actboss_cache_watch_until = 0;
+    g_actboss_cache_watch_last_scan_tick = 0;
+    g_actboss_cache_watch_seen_count = 0;
+    g_actboss_cache_watch_logged_count = 0;
+    g_actboss_cache_watch_synthesis_requested = 0;
+}
+
+static int actboss_cache_watch_has_seen_id(unsigned __int64 unique_id)
+{
+    int i;
+
+    if (!unique_id) return 1;
+    for (i = 0; i < g_actboss_cache_watch_seen_count; ++i) {
+        if (g_actboss_cache_watch_seen_ids[i] == unique_id) return 1;
+    }
+    return 0;
+}
+
+static int actboss_cache_watch_remember_id(unsigned __int64 unique_id)
+{
+    if (!unique_id) return 0;
+    if (actboss_cache_watch_has_seen_id(unique_id)) return 1;
+    if (g_actboss_cache_watch_seen_count >= ACTBOSS_CACHE_WATCH_MAX_IDS) {
+        return 0;
+    }
+    g_actboss_cache_watch_seen_ids[g_actboss_cache_watch_seen_count++] =
+        unique_id;
+    return 1;
+}
+
+static void snapshot_actboss_cache_watch_ids(void)
+{
+    uintptr_t base;
+    void *dict;
+    void *entries;
+    int count;
+    int array_len;
+    int i;
+
+    g_actboss_cache_watch_seen_count = 0;
+    if (!g_game_assembly) return;
+    base = (uintptr_t)g_game_assembly;
+    dict = get_item_cache_dictionary(base);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return;
+    }
+    count = *(int *)((unsigned char *)dict + IL2CPP_DICT_COUNT_OFFSET);
+    if (count <= 0 || count > 200000) return;
+    entries = *(void **)((unsigned char *)dict + IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        return;
+    }
+    array_len = *(int *)((unsigned char *)entries + IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 || count > array_len) return;
+
+    for (i = 0; i < count; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        unsigned __int64 unique_id;
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) continue;
+        unique_id = *(unsigned __int64 *)(entry +
+                                          IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET);
+        if (!actboss_cache_watch_remember_id(unique_id)) break;
+    }
+}
+
+static void begin_actboss_cache_watch_from_stage_box(void *stage_box,
+                                                     const char *source)
+{
+    unsigned char *box;
+    int box_type;
+    int enabled;
+    float duration;
+    DWORD now;
+
+    if (!stage_box ||
+        !memory_range_readable(stage_box,
+                               STAGE_BOX_AUTO_OPEN_ENABLED_OFFSET +
+                                   sizeof(unsigned char))) {
+        return;
+    }
+
+    box = (unsigned char *)stage_box;
+    box_type = *(int *)(box + STAGE_BOX_BOX_TYPE_OFFSET);
+    if (box_type != 2) return;
+    enabled = *(unsigned char *)(box + STAGE_BOX_AUTO_OPEN_ENABLED_OFFSET) ? 1 : 0;
+    if (!enabled) return;
+    duration = *(float *)(box + STAGE_BOX_AUTO_OPEN_DURATION_OFFSET);
+    if (!(duration > 0.0f) ||
+        duration > ((float)AUTO_OPEN_BOX_SECONDS + 0.5f)) {
+        return;
+    }
+
+    now = GetTickCount();
+    if (g_actboss_cache_watch_active &&
+        (LONG)(now - g_actboss_cache_watch_until) < 0) {
+        return;
+    }
+    if (g_actboss_cache_watch_last_begin_tick &&
+        (DWORD)(now - g_actboss_cache_watch_last_begin_tick) <
+            ACTBOSS_CACHE_WATCH_COOLDOWN_MS) {
+        return;
+    }
+
+    reset_actboss_cache_watch();
+    snapshot_actboss_cache_watch_ids();
+    g_actboss_cache_watch_until = now + ACTBOSS_CACHE_WATCH_MS;
+    g_actboss_cache_watch_last_begin_tick = now;
+    InterlockedExchange(&g_actboss_cache_watch_active, 1);
+    log_line("actboss cache watch started: source=%s duration=%ds baseline=%d window_ms=%lu",
+             source ? source : "unknown",
+             (int)(duration + 0.5f),
+             g_actboss_cache_watch_seen_count,
+             (unsigned long)ACTBOSS_CACHE_WATCH_MS);
+}
+
+static void maybe_handle_actboss_cache_watch_from_game_thread(void)
+{
+    uintptr_t base;
+    DWORD now;
+    void *dict;
+    void *entries;
+    int count;
+    int array_len;
+    int i;
+
+    if (!g_actboss_cache_watch_active) return;
+    if (!g_game_assembly) {
+        reset_actboss_cache_watch();
+        return;
+    }
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+
+    now = GetTickCount();
+    if (!g_actboss_cache_watch_until ||
+        (LONG)(now - g_actboss_cache_watch_until) > 0) {
+        log_line("actboss cache watch ended: logged=%d seen=%d",
+                 g_actboss_cache_watch_logged_count,
+                 g_actboss_cache_watch_seen_count);
+        reset_actboss_cache_watch();
+        return;
+    }
+    if (g_actboss_cache_watch_last_scan_tick &&
+        (DWORD)(now - g_actboss_cache_watch_last_scan_tick) <
+            ACTBOSS_CACHE_WATCH_SCAN_INTERVAL_MS) {
+        return;
+    }
+    g_actboss_cache_watch_last_scan_tick = now;
+
+    base = (uintptr_t)g_game_assembly;
+    dict = get_item_cache_dictionary(base);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return;
+    }
+    count = *(int *)((unsigned char *)dict + IL2CPP_DICT_COUNT_OFFSET);
+    if (count <= 0 || count > 200000) return;
+    entries = *(void **)((unsigned char *)dict + IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        return;
+    }
+    array_len = *(int *)((unsigned char *)entries + IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 || count > array_len) return;
+
+    for (i = 0; i < count; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        unsigned __int64 unique_id;
+        void *item_cache;
+        unsigned int item_id = 0;
+        int item_type = -1;
+        int grade = -1;
+        int equip_class = -1;
+        int locked = 0;
+        int already_locked = 0;
+        char unique_id_text[32];
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) continue;
+        unique_id = *(unsigned __int64 *)(entry +
+                                          IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET);
+        if (actboss_cache_watch_has_seen_id(unique_id)) continue;
+        if (!actboss_cache_watch_remember_id(unique_id)) continue;
+
+        item_cache = *(void **)(entry +
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET);
+        if (!auto_item_lock_read_cache_info(item_cache,
+                                            &item_id,
+                                            &item_type,
+                                            &grade,
+                                            &equip_class)) {
+            continue;
+        }
+        if (!item_id || item_key_is_stage_box_candidate(item_id)) continue;
+
+        if (g_auto_item_lock_enabled &&
+            auto_item_lock_item_matches_conditions(item_id,
+                                                   item_type,
+                                                   grade) &&
+            auto_item_lock_apply_cache_now(item_cache, item_id, "actboss cache watch",
+                                           &already_locked)) {
+            locked = 1;
+        }
+        if (!g_actboss_cache_watch_synthesis_requested) {
+            request_auto_synthesis_after_box_open(ACTBOSS_BOX_ITEM_KEY, ACTBOSS_BOX_ITEM_KEY);
+            g_actboss_cache_watch_synthesis_requested = 1;
+        }
+        append_overlay_item_event("开箱", item_id, locked);
+        g_actboss_cache_watch_logged_count++;
+
+        format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+        log_line("actboss cache item event: item_id=%u unique_id=%s grade=%d type=%d class=%d locked=%d already=%d",
+                 item_id,
+                 unique_id_text,
+                 grade,
+                 item_type,
+                 equip_class,
+                 locked,
+                 already_locked);
+    }
+}
+
+static int read_boxdata_reward_fields(void *box_data,
+                                      unsigned int *out_reward_item_id,
+                                      char *out_reward_unique_key,
+                                      int unique_key_len)
+{
+    uintptr_t base;
+    box_data_get_int_t get_reward_item_id;
+    box_data_get_string_t get_reward_item_unique_id;
+    void *unique_key_obj = NULL;
+    unsigned int reward_item_id = 0;
+
+    if (out_reward_item_id) *out_reward_item_id = 0;
+    if (out_reward_unique_key && unique_key_len > 0) {
+        out_reward_unique_key[0] = 0;
+    }
+    if (!box_data || !memory_range_readable(box_data, 0x18)) return 0;
+
+    if (g_game_assembly) {
+        base = (uintptr_t)g_game_assembly;
+        get_reward_item_id =
+            (box_data_get_int_t)(base + RVA_BOX_DATA_GET_REWARD_ITEM_ID);
+        get_reward_item_unique_id =
+            (box_data_get_string_t)(base + RVA_BOX_DATA_GET_REWARD_ITEM_UNIQUE_ID);
+        if (memory_range_readable((void *)get_reward_item_id, 12)) {
+            reward_item_id = (unsigned int)get_reward_item_id(box_data, NULL);
+        }
+        if (memory_range_readable((void *)get_reward_item_unique_id, 12)) {
+            unique_key_obj = get_reward_item_unique_id(box_data, NULL);
+        }
+        if (unique_key_obj && out_reward_unique_key && unique_key_len > 0) {
+            read_il2cpp_string_utf8(unique_key_obj,
+                                    out_reward_unique_key,
+                                    unique_key_len);
+        }
+    }
+
+    if (!reward_item_id && memory_range_readable(box_data, 0x78)) {
+        reward_item_id = *(unsigned int *)((unsigned char *)box_data + 0x68);
+    }
+    if ((!out_reward_unique_key || !out_reward_unique_key[0]) &&
+        memory_range_readable(box_data, 0x78)) {
+        unique_key_obj = *(void **)((unsigned char *)box_data + 0x70);
+        if (unique_key_obj && out_reward_unique_key && unique_key_len > 0) {
+            read_il2cpp_string_utf8(unique_key_obj,
+                                    out_reward_unique_key,
+                                    unique_key_len);
+        }
+    }
+
+    if (out_reward_item_id) *out_reward_item_id = reward_item_id;
+    return reward_item_id ||
+           (out_reward_unique_key && out_reward_unique_key[0]);
+}
+
+static int handle_box_reward_select_item(unsigned int box_item_key,
+                                         unsigned int reward_item_id,
+                                         const char *reward_unique_key)
+{
+    int locked = 0;
+
+    if (!item_key_is_stage_box_candidate(box_item_key)) return 0;
+    if (!reward_item_id || item_key_is_stage_box_candidate(reward_item_id)) return 0;
+
+    if (g_auto_item_lock_enabled &&
+        auto_item_lock_reward_matches_conditions(reward_item_id) &&
+        reward_unique_key && reward_unique_key[0]) {
+        queue_auto_item_lock_request(reward_item_id, reward_unique_key);
+        locked = 1;
+    }
+
+    append_overlay_item_event("开箱", reward_item_id, locked);
+    log_line("box reward item event: box_item=%u reward_item=%u reward_key=%s locked=%d",
+             box_item_key,
+             reward_item_id,
+             reward_unique_key && reward_unique_key[0] ? reward_unique_key : "-",
+             locked);
+
+    InterlockedExchange(&g_box_reward_result_pending, 0);
+    g_box_reward_result_watch_until = 0;
+    g_box_reward_expected_item_id = 0;
+    g_box_reward_box_item_key = 0;
+    return 1;
+}
+
+static int TBHS_UNUSED handle_box_reward_auto_item_lock(unsigned int box_item_key,
+                                                        unsigned int reward_item_id,
+                                                        const char *reward_unique_key)
+{
+    if (!g_auto_item_lock_enabled || !reward_item_id) return 0;
+    if (!auto_item_lock_reward_matches_conditions(reward_item_id)) return 0;
+    log_line("AUTO ITEM LOCK matched: box_item=%u reward_item=%u reward_key=%s",
+             box_item_key,
+             reward_item_id,
+             reward_unique_key && reward_unique_key[0] ? reward_unique_key : "-");
+    queue_auto_item_lock_request(reward_item_id, reward_unique_key);
+    return 1;
+}
+
 static __int64 __fastcall hook_box_reward_select(void *box_table,
                                                  unsigned int item_key,
                                                  void *context)
 {
     __int64 result;
     unsigned int selected_item = 0;
+    unsigned int reward_item_id = 0;
+    char reward_unique_key[64];
 #if ENABLE_FORCE_BOX_REWARD_SELECT
     unsigned int forced_item = 0;
     int forced_count = 0;
@@ -2788,13 +4431,14 @@ static __int64 __fastcall hook_box_reward_select(void *box_table,
     int readable = 0;
 
     if (g_reward_trace_hooks_enabled &&
-        item_key >= 900000 && item_key < 940000) {
+        item_key >= 900000 && item_key < 1000000) {
         log_line("box reward select request: item_key=%u table=%p context=%p",
                  item_key,
                  box_table,
                  context);
     }
     if (!g_real_box_reward_select) return 0;
+    begin_box_reward_result_watch(item_key, 0);
     result = g_real_box_reward_select(box_table, item_key, context);
 #if ENABLE_FORCE_BOX_REWARD_SELECT
     if (!result) {
@@ -2812,10 +4456,14 @@ static __int64 __fastcall hook_box_reward_select(void *box_table,
         }
     }
 #endif
-    readable = memory_range_readable((void *)result, 0x58);
+    reward_unique_key[0] = 0;
+    readable = memory_range_readable((void *)result, 0x78);
     if (readable) {
         selected_item = *(unsigned int *)((unsigned char *)result + 0x54);
+        read_boxdata_reward_fields((void *)result, &reward_item_id, reward_unique_key, sizeof(reward_unique_key));
         cache_boxdata_candidate(item_key, (void *)result, selected_item);
+        request_auto_synthesis_after_box_open(item_key, selected_item);
+        handle_box_reward_select_item(item_key, reward_item_id, reward_unique_key);
     }
 #if ENABLE_FORCE_BOX_REWARD_SELECT
     if (readable) {
@@ -2823,12 +4471,14 @@ static __int64 __fastcall hook_box_reward_select(void *box_table,
     }
 #endif
     if (g_reward_trace_hooks_enabled &&
-        item_key >= 900000 && item_key < 940000) {
-        log_line("box reward select result: item_key=%u result=%p readable=%d selected_item=%u",
+        item_key >= 900000 && item_key < 1000000) {
+        log_line("box reward select result: item_key=%u result=%p readable=%d selected_item=%u reward_item=%u reward_key=%s",
                  item_key,
                  (void *)result,
                  readable,
-                 selected_item);
+                 selected_item,
+                 reward_item_id,
+                 reward_unique_key[0] ? reward_unique_key : "-");
     }
     return result;
 }
@@ -2959,6 +4609,7 @@ static __int64 __fastcall hook_auto_chest_open_move_next(void *state_machine,
                                AUTO_CHEST_OPEN_STATE_STAGE_BOX_OFFSET);
     }
     clamp_stage_box_auto_open_cd(stage_box, "timer");
+    begin_actboss_cache_watch_from_stage_box(stage_box, "timer");
     if (g_real_auto_chest_open_move_next) {
         return g_real_auto_chest_open_move_next(state_machine, method);
     }
@@ -3774,6 +5425,27 @@ static void restore_box_reward_select_hook(HMODULE game_assembly)
                                  "box reward select");
 }
 
+static int box_reward_select_hook_needed(void)
+{
+    return g_reward_trace_hooks_enabled ||
+           g_force_box_reward_select_enabled ||
+           g_keep_boxdata_after_select_enabled ||
+           g_auto_synthesis_enabled ||
+           g_auto_item_lock_enabled;
+}
+
+static void update_box_reward_select_hook(HMODULE game_assembly)
+{
+    if (!game_assembly) return;
+    if (box_reward_select_hook_needed()) {
+        if (!install_box_reward_select_hook(game_assembly)) {
+            log_line("box reward select hook not installed");
+        }
+    } else {
+        restore_box_reward_select_hook(game_assembly);
+    }
+}
+
 static void restore_optional_reward_trace_hooks(HMODULE game_assembly)
 {
     restore_box_count_hook(game_assembly);
@@ -3816,6 +5488,7 @@ static void invalidate_overlay_button(HWND button);
 static void update_boss_button(void);
 static void update_auto_switch_button(void);
 static void update_auto_synthesis_buttons(void);
+static void update_item_lock_list_button(void);
 
 static LONG auto_switch_waiting_for(void)
 {
@@ -3931,23 +5604,108 @@ static void update_auto_switch_button(void)
 
 static void update_auto_synthesis_buttons(void)
 {
-    char text[32];
-
     if (g_overlay_synth_button) {
         SetWindowTextA(g_overlay_synth_button,
                        g_auto_synthesis_enabled ? "synth:on" : "synth:off");
         invalidate_overlay_button(g_overlay_synth_button);
-    }
-    if (g_overlay_synth_grade_label) {
-        wsprintfA(text, "g%d", g_auto_synthesis_grade);
-        text[sizeof(text) - 1] = 0;
-        SetWindowTextA(g_overlay_synth_grade_label, text);
     }
     if (g_overlay_synth_storage_button) {
         SetWindowTextA(g_overlay_synth_storage_button,
                        g_auto_synthesis_use_storage ? "store:on" : "store:off");
         invalidate_overlay_button(g_overlay_synth_storage_button);
     }
+}
+
+static void update_item_lock_list_button(void)
+{
+    WCHAR text[64];
+
+    if (!g_overlay_item_lock_list_button) return;
+    wsprintfW(text, L"\x9501\x5B9A\x6E05\x5355(%d)",
+              g_auto_item_lock_selected_count);
+    SetWindowTextW(g_overlay_item_lock_list_button, text);
+    invalidate_overlay_button(g_overlay_item_lock_list_button);
+}
+
+static void update_item_lock_condition_buttons(void)
+{
+    if (g_overlay_item_lock_high_grade_button) {
+        SetWindowTextW(g_overlay_item_lock_high_grade_button,
+                       g_item_lock_condition_high_grade ?
+                       L"G8/G9\x88C5\x5907\x6750\x6599:on" :
+                       L"G8/G9\x88C5\x5907\x6750\x6599:off");
+        invalidate_overlay_button(g_overlay_item_lock_high_grade_button);
+    }
+    if (g_overlay_item_lock_coin_button) {
+        SetWindowTextW(g_overlay_item_lock_coin_button,
+                       g_item_lock_condition_coin ?
+                       L"\x786C\x5E01:on" :
+                       L"\x786C\x5E01:off");
+        invalidate_overlay_button(g_overlay_item_lock_coin_button);
+    }
+    if (g_overlay_item_lock_market_top_button) {
+        WCHAR text[64];
+        wsprintfW(text,
+                  g_item_lock_condition_market_top ?
+                  L"\x9AD8\x4EF7Top100(%d):on" :
+                  L"\x9AD8\x4EF7Top100(%d):off",
+                  g_auto_item_lock_market_top_count);
+        SetWindowTextW(g_overlay_item_lock_market_top_button, text);
+        invalidate_overlay_button(g_overlay_item_lock_market_top_button);
+    }
+    if (g_overlay_item_lock_manual_button) {
+        SetWindowTextW(g_overlay_item_lock_manual_button,
+                       InterlockedCompareExchange(&g_manual_item_lock_pending, 0, 0) ?
+                       L"\x9501\x5B9A\x4E2D" :
+                       L"\x624B\x52A8\x9501\x5B9A");
+        invalidate_overlay_button(g_overlay_item_lock_manual_button);
+    }
+}
+
+static void set_item_lock_condition_high_grade(int enabled)
+{
+    g_item_lock_condition_high_grade = enabled ? 1 : 0;
+    log_line("item lock condition high grade %s",
+             g_item_lock_condition_high_grade ? "enabled" : "disabled");
+    append_overlay_event("LOCK G8/G9 %s",
+                         g_item_lock_condition_high_grade ? "ON" : "OFF");
+    update_item_lock_condition_buttons();
+    save_config();
+}
+
+static void set_item_lock_condition_coin(int enabled)
+{
+    g_item_lock_condition_coin = enabled ? 1 : 0;
+    log_line("item lock condition coin %s",
+             g_item_lock_condition_coin ? "enabled" : "disabled");
+    append_overlay_event("LOCK COIN %s",
+                         g_item_lock_condition_coin ? "ON" : "OFF");
+    update_item_lock_condition_buttons();
+    save_config();
+}
+
+static void set_item_lock_condition_market_top(int enabled)
+{
+    g_item_lock_condition_market_top = enabled ? 1 : 0;
+    if (g_item_lock_condition_market_top &&
+        g_auto_item_lock_market_top_count <= 0) {
+        load_auto_item_lock_market_top_ids();
+    }
+    log_line("item lock condition market top %s ids=%d",
+             g_item_lock_condition_market_top ? "enabled" : "disabled",
+             g_auto_item_lock_market_top_count);
+    append_overlay_event("LOCK TOP100 %s",
+                         g_item_lock_condition_market_top ? "ON" : "OFF");
+    update_item_lock_condition_buttons();
+    save_config();
+}
+
+static void queue_manual_item_lock_request(void)
+{
+    InterlockedExchange(&g_manual_item_lock_pending, 1);
+    log_line("manual item lock requested from overlay");
+    append_overlay_event("MANUAL LOCK requested");
+    update_item_lock_condition_buttons();
 }
 
 static int chest_countdown_due(const ChestDropStats *stats)
@@ -4047,10 +5805,8 @@ static void queue_auto_restart_request(LONG request)
     InterlockedExchange(&g_auto_restart_request, request);
     if (request == AUTO_RESTART_REQUEST_LOCK) {
         log_line("auto restart lock requested from overlay");
-        append_overlay_event("LOCK REQUESTED");
     } else {
         log_line("auto restart unlock requested from overlay");
-        append_overlay_event("UNLOCK REQUESTED");
     }
 }
 
@@ -4203,6 +5959,504 @@ static void *il2cpp_list_get_local(void *list, int index)
     return *(void **)((unsigned char *)items + IL2CPP_ARRAY_DATA_OFFSET + ((uintptr_t)index * sizeof(void *)));
 }
 
+static const char *auto_item_lock_type_name(int item_type)
+{
+    switch (item_type) {
+    case EITEM_TYPE_STAGEBOX: return "关卡宝箱";
+    case EITEM_TYPE_MATERIAL: return "材料";
+    case EITEM_TYPE_GEAR: return "装备";
+    default: return "未知";
+    }
+}
+
+static const char *auto_item_lock_grade_name(int grade)
+{
+    switch (grade) {
+    case 0: return "普通";
+    case 1: return "罕见";
+    case 2: return "稀有";
+    case 3: return "传奇";
+    case 4: return "不朽";
+    case 5: return "至宝";
+    case 6: return "超凡";
+    case 7: return "天界";
+    case EGRADE_DIVINE: return "神圣";
+    case EGRADE_COSMIC: return "宇宙";
+    case EGRADE_NONE: return "无";
+    default: return "未知";
+    }
+}
+
+static char ascii_upper_local(char c)
+{
+    if (c >= 'a' && c <= 'z') return (char)(c - ('a' - 'A'));
+    return c;
+}
+
+static int starts_with_i_ascii(const char *s, const char *prefix)
+{
+    while (*prefix) {
+        if (!*s) return 0;
+        if (ascii_upper_local(*s++) != ascii_upper_local(*prefix++)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static const char *last_path_component_local(const char *text)
+{
+    const char *last = text;
+
+    if (!text) return "";
+    for (const char *p = text; *p; ++p) {
+        if (*p == '/' || *p == '\\' || *p == '.') {
+            last = p + 1;
+        }
+    }
+    return last;
+}
+
+static void clean_item_display_text(const char *src, char *dst, int dst_size)
+{
+    const char *p;
+    int out = 0;
+    int last_space = 1;
+
+    if (!dst || dst_size <= 0) return;
+    dst[0] = 0;
+    if (!src || !src[0]) return;
+
+    p = last_path_component_local(src);
+    if (starts_with_i_ascii(p, "item_name_")) p += 10;
+    else if (starts_with_i_ascii(p, "itemname_")) p += 9;
+    else if (starts_with_i_ascii(p, "item_")) p += 5;
+    else if (starts_with_i_ascii(p, "name_")) p += 5;
+
+    for (; *p && out < dst_size - 1; ++p) {
+        char c = *p;
+        if (c == '_' || c == '-' || c == '.') {
+            if (!last_space && out < dst_size - 1) {
+                dst[out++] = ' ';
+                last_space = 1;
+            }
+            continue;
+        }
+        dst[out++] = c;
+        last_space = c == ' ' || c == '\t';
+    }
+    while (out > 0 && dst[out - 1] == ' ') out--;
+    dst[out] = 0;
+}
+
+static void copy_auto_item_lock_name_field(char *dst,
+                                           int dst_size,
+                                           const char *src,
+                                           int len)
+{
+    int out = 0;
+
+    if (!dst || dst_size <= 0) return;
+    dst[0] = 0;
+    while (len > 0 &&
+           (src[len - 1] == '\r' || src[len - 1] == '\n' ||
+            src[len - 1] == ' ' || src[len - 1] == '\t')) {
+        len--;
+    }
+    while (len > 0 && (*src == ' ' || *src == '\t')) {
+        src++;
+        len--;
+    }
+    while (len > 0 && out < dst_size - 1) {
+        dst[out++] = *src++;
+        len--;
+    }
+    dst[out] = 0;
+}
+
+static int load_auto_item_lock_name_table_file(const char *path)
+{
+    HANDLE file;
+    DWORD size;
+    DWORD read = 0;
+    char *data;
+    DWORD pos = 0;
+    int loaded_before = g_auto_item_lock_name_count;
+
+    if (!path || !path[0]) return 0;
+    file = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) return 0;
+    size = GetFileSize(file, NULL);
+    if (size == INVALID_FILE_SIZE || size == 0 ||
+        size > AUTO_ITEM_LOCK_NAME_FILE_MAX_BYTES) {
+        CloseHandle(file);
+        return 0;
+    }
+
+    data = (char *)HeapAlloc(GetProcessHeap(), 0, (SIZE_T)size + 1);
+    if (!data) {
+        CloseHandle(file);
+        return 0;
+    }
+    if (!ReadFile(file, data, size, &read, NULL)) {
+        HeapFree(GetProcessHeap(), 0, data);
+        CloseHandle(file);
+        return 0;
+    }
+    CloseHandle(file);
+    data[read] = 0;
+
+    while (pos < read && g_auto_item_lock_name_count < AUTO_ITEM_LOCK_NAME_MAX) {
+        DWORD line_start = pos;
+        DWORD line_end;
+        DWORD tab = 0;
+        int has_tab = 0;
+        int key_len;
+        int name_len;
+        AutoItemLockNameEntry *entry;
+
+        while (pos < read && data[pos] != '\n') pos++;
+        line_end = pos;
+        if (pos < read && data[pos] == '\n') pos++;
+        while (line_end > line_start &&
+               (data[line_end - 1] == '\r' || data[line_end - 1] == '\n')) {
+            line_end--;
+        }
+        for (tab = line_start; tab < line_end; ++tab) {
+            if (data[tab] == '\t') {
+                has_tab = 1;
+                break;
+            }
+        }
+        if (!has_tab || tab == line_start || tab + 1 >= line_end) continue;
+        key_len = (int)(tab - line_start);
+        if (key_len == 3 && mem_equal_local(data + line_start, "key", 3)) {
+            continue;
+        }
+        name_len = (int)(line_end - tab - 1);
+        entry = &g_auto_item_lock_name_table[g_auto_item_lock_name_count];
+        copy_auto_item_lock_name_field(entry->key,
+                                       sizeof(entry->key),
+                                       data + line_start,
+                                       key_len);
+        copy_auto_item_lock_name_field(entry->name,
+                                       sizeof(entry->name),
+                                       data + tab + 1,
+                                       name_len);
+        if (entry->key[0] && entry->name[0]) {
+            g_auto_item_lock_name_count++;
+        }
+    }
+
+    HeapFree(GetProcessHeap(), 0, data);
+    if (g_auto_item_lock_name_count > loaded_before) {
+        log_line("auto item lock zh-Hans names loaded: count=%d source=%s",
+                 g_auto_item_lock_name_count - loaded_before,
+                 path);
+        return 1;
+    }
+    return 0;
+}
+
+static int load_auto_item_lock_name_table(const char *dir)
+{
+    char path[MAX_PATH];
+
+    if (!dir || !dir[0]) return 0;
+    wsprintfA(path, "%s\\%s", dir, ITEM_LOCK_NAME_TABLE_FILE);
+    path[sizeof(path) - 1] = 0;
+    return load_auto_item_lock_name_table_file(path);
+}
+
+static void ensure_auto_item_lock_localized_names_loaded(void)
+{
+    if (g_auto_item_lock_names_loaded) return;
+    g_auto_item_lock_names_loaded = 1;
+    g_auto_item_lock_name_count = 0;
+    if (load_auto_item_lock_name_table(g_base_dir)) return;
+    if (g_game_dir[0] && lstrcmpiA(g_game_dir, g_base_dir) != 0) {
+        load_auto_item_lock_name_table(g_game_dir);
+    }
+}
+
+static int lookup_auto_item_lock_localized_name(const char *key,
+                                                char *buf,
+                                                int buflen)
+{
+    int i;
+
+    if (!key || !key[0] || !buf || buflen <= 0) return 0;
+    ensure_auto_item_lock_localized_names_loaded();
+    for (i = 0; i < g_auto_item_lock_name_count; ++i) {
+        if (lstrcmpA(g_auto_item_lock_name_table[i].key, key) == 0) {
+            lstrcpynA(buf, g_auto_item_lock_name_table[i].name, buflen);
+            buf[buflen - 1] = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void auto_item_lock_make_display_name(AutoItemLockInfo *info)
+{
+    char generated_key[64];
+
+    if (!info) return;
+    info->display_name[0] = 0;
+    if (lookup_auto_item_lock_localized_name(info->name_key,
+                                            info->display_name,
+                                            sizeof(info->display_name))) {
+        return;
+    }
+    wsprintfA(generated_key, "ItemName_%u", info->item_id);
+    generated_key[sizeof(generated_key) - 1] = 0;
+    if (lookup_auto_item_lock_localized_name(generated_key,
+                                            info->display_name,
+                                            sizeof(info->display_name))) {
+        return;
+    }
+    clean_item_display_text(info->name_key,
+                            info->display_name,
+                            sizeof(info->display_name));
+    if (!info->display_name[0]) {
+        clean_item_display_text(info->icon_path,
+                                info->display_name,
+                                sizeof(info->display_name));
+    }
+    if (!info->display_name[0]) {
+        wsprintfA(info->display_name, "item %u", info->item_id);
+        info->display_name[sizeof(info->display_name) - 1] = 0;
+    }
+}
+
+static COLORREF auto_item_lock_grade_color(int grade)
+{
+    switch (grade) {
+    case 0: return RGB(178, 188, 196);
+    case 1: return RGB(112, 201, 132);
+    case 2: return RGB(90, 166, 234);
+    case 3: return RGB(180, 118, 230);
+    case 4: return RGB(236, 130, 92);
+    case 5: return RGB(231, 101, 157);
+    case EGRADE_BEYOND: return RGB(88, 206, 214);
+    case EGRADE_CELESTIAL: return RGB(124, 203, 255);
+    case EGRADE_DIVINE: return RGB(226, 180, 72);
+    case EGRADE_COSMIC: return RGB(134, 162, 235);
+    case EGRADE_NONE: return OVERLAY_COLOR_MUTED;
+    default: return OVERLAY_COLOR_TEXT;
+    }
+}
+
+static void auto_item_lock_icon_cue_text(const AutoItemLockInfo *info,
+                                         char *buf,
+                                         int buflen)
+{
+    const char *source;
+    int out = 0;
+
+    if (!buf || buflen <= 0) return;
+    buf[0] = 0;
+    source = info && info->display_name[0] ? info->display_name :
+             info && info->icon_path[0] ? last_path_component_local(info->icon_path) : "";
+    for (const char *p = source; *p && out < buflen - 1; ++p) {
+        char c = *p;
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9')) {
+            buf[out++] = ascii_upper_local(c);
+            if (out >= 2) break;
+        }
+    }
+    if (!out) {
+        buf[out++] = '?';
+    }
+    buf[out] = 0;
+}
+
+static void auto_item_lock_format_item_label(const AutoItemLockInfo *info,
+                                             char *buf,
+                                             int buflen)
+{
+    if (!buf || buflen <= 0) return;
+    if (!info) {
+        lstrcpynA(buf, "", buflen);
+        return;
+    }
+    if (info->display_name[0]) {
+        if (info->item_type == EITEM_TYPE_GEAR) {
+            wsprintfA(buf, "%s  #%u  [%s] [%s] [%s]",
+                      info->display_name,
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type),
+                      auto_item_lock_class_name(info->equip_class));
+        } else {
+            wsprintfA(buf, "%s  #%u  [%s] [%s]",
+                      info->display_name,
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type));
+        }
+    } else if (info->name_key[0]) {
+        if (info->item_type == EITEM_TYPE_GEAR) {
+            wsprintfA(buf, "%s  #%u  [%s] [%s] [%s]",
+                      info->name_key,
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type),
+                      auto_item_lock_class_name(info->equip_class));
+        } else {
+            wsprintfA(buf, "%s  #%u  [%s] [%s]",
+                      info->name_key,
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type));
+        }
+    } else {
+        if (info->item_type == EITEM_TYPE_GEAR) {
+            wsprintfA(buf, "#%u  [%s] [%s] [%s]",
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type),
+                      auto_item_lock_class_name(info->equip_class));
+        } else {
+            wsprintfA(buf, "#%u  [%s] [%s]",
+                      info->item_id,
+                      auto_item_lock_grade_name(info->grade),
+                      auto_item_lock_type_name(info->item_type));
+        }
+    }
+    buf[buflen - 1] = 0;
+}
+
+static void *get_master_data_instance(uintptr_t base)
+{
+    void **type_slot = (void **)(base + RVA_MASTER_DATA_SINGLETON_TYPEINFO);
+    void *type_info;
+    void *instance;
+    void *static_fields;
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) {
+        return NULL;
+    }
+    type_info = *type_slot;
+    if (!type_info ||
+        !memory_range_readable(type_info,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)type_info +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (static_fields && memory_range_readable(static_fields, sizeof(void *))) {
+        instance = *(void **)static_fields;
+        if (instance &&
+            memory_range_readable(instance,
+                                  ITEM_DATA_ITEM_LIST_OFFSET + sizeof(void *))) {
+            return instance;
+        }
+    }
+    return NULL;
+}
+
+static void *get_item_cache_dictionary(uintptr_t base)
+{
+    void **type_slot = (void **)(base + RVA_ITEM_CACHE_STORE_TYPEINFO);
+    void *type_info;
+    void *static_fields;
+    void *dict;
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
+    type_info = *type_slot;
+    if (!type_info ||
+        !memory_range_readable(type_info,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)type_info +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (!static_fields || !memory_range_readable(static_fields, sizeof(void *))) {
+        return NULL;
+    }
+    dict = *(void **)static_fields;
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return NULL;
+    }
+    return dict;
+}
+
+static int load_auto_item_lock_catalog_from_game(void)
+{
+    uintptr_t base;
+    void *item_data;
+    void *list;
+    int count;
+    int loaded = 0;
+    int i;
+    DWORD now;
+
+    if (!g_game_assembly) return 0;
+    base = (uintptr_t)g_game_assembly;
+    item_data = get_master_data_instance(base);
+    if (!item_data) {
+        log_line("auto item lock catalog load failed: master data np<bam> unavailable");
+        return 0;
+    }
+    list = *(void **)((unsigned char *)item_data + ITEM_DATA_ITEM_LIST_OFFSET);
+    count = il2cpp_list_size_local(list);
+    if (count <= 0) {
+        log_line("auto item lock catalog load failed: itemInfoData list unavailable or empty");
+        return 0;
+    }
+
+    for (i = 0; i < count && loaded < AUTO_ITEM_LOCK_MAX_ITEMS; ++i) {
+        void *item = il2cpp_list_get_local(list, i);
+        AutoItemLockInfo *info = &g_auto_item_lock_catalog[loaded];
+        void *name_key;
+        void *icon_path_obj;
+        int gear_type = 0;
+
+        if (!item ||
+            !memory_range_readable(item,
+                                   ITEM_INFO_ICON_PATH_OFFSET + sizeof(void *))) {
+            continue;
+        }
+        info->item_id = *(unsigned int *)((unsigned char *)item +
+                                          ITEM_INFO_ITEM_KEY_OFFSET);
+        info->item_type = *(int *)((unsigned char *)item +
+                                   ITEM_INFO_ITEM_TYPE_OFFSET);
+        info->grade = *(int *)((unsigned char *)item + ITEM_INFO_GRADE_OFFSET);
+        gear_type = *(int *)((unsigned char *)item +
+                             ITEM_INFO_GEAR_TYPE_OFFSET);
+        info->equip_class = auto_item_lock_catalog_class_from_gear_type(
+            info->item_type == EITEM_TYPE_GEAR ? gear_type : 0);
+        info->name_key[0] = 0;
+        info->display_name[0] = 0;
+        info->icon_path[0] = 0;
+        info->icon_bitmap = NULL;
+        info->icon_bitmap_status = 0;
+        name_key = *(void **)((unsigned char *)item + ITEM_INFO_NAME_KEY_OFFSET);
+        read_il2cpp_string_utf8(name_key, info->name_key, sizeof(info->name_key));
+        icon_path_obj = *(void **)((unsigned char *)item + ITEM_INFO_ICON_PATH_OFFSET);
+        read_il2cpp_string_utf8(icon_path_obj, info->icon_path, sizeof(info->icon_path));
+        auto_item_lock_make_display_name(info);
+        if (!info->item_id) continue;
+        loaded++;
+    }
+
+    g_auto_item_lock_catalog_count = loaded;
+    InterlockedIncrement(&g_auto_item_lock_catalog_version);
+    now = GetTickCount();
+    if (!g_auto_item_lock_last_catalog_log_tick ||
+        now - g_auto_item_lock_last_catalog_log_tick > 10000) {
+        log_line("auto item lock catalog loaded: items=%d source=np<bam>.itemInfoData",
+                 g_auto_item_lock_catalog_count);
+        g_auto_item_lock_last_catalog_log_tick = now;
+    }
+    return loaded;
+}
+
 static void *get_stage_cache_list(uintptr_t base)
 {
     void *stage_data_type = *(void **)(base + RVA_STAGE_DATA_TYPEINFO);
@@ -4250,30 +6504,10 @@ static void *get_stage_manager_instance(uintptr_t base)
 
 static void *get_ui_manager_instance(uintptr_t base)
 {
-    void **singleton_type_slot =
-        (void **)(base + RVA_UI_MANAGER_SINGLETON_TYPEINFO);
-    np_get_instance_t get_instance =
-        (np_get_instance_t)(base + RVA_NP_GET_INSTANCE);
     void **type_slot = (void **)(base + RVA_UI_MANAGER_TYPEINFO);
-    void *singleton_type;
     void *ui_manager_type;
     void *static_fields;
     void *ui_manager;
-
-    if (memory_range_readable(singleton_type_slot, sizeof(void *)) &&
-        memory_range_readable((void *)get_instance, 12)) {
-        singleton_type = *singleton_type_slot;
-        if (singleton_type &&
-            memory_range_readable(singleton_type,
-                                  IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
-            ui_manager = get_instance(singleton_type);
-            if (ui_manager &&
-                memory_range_readable(ui_manager,
-                                      UI_MANAGER_UI_NEW_STASH_OFFSET + sizeof(void *))) {
-                return ui_manager;
-            }
-        }
-    }
 
     if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
     ui_manager_type = *type_slot;
@@ -4296,7 +6530,62 @@ static void *get_ui_manager_instance(uintptr_t base)
     return ui_manager;
 }
 
-static void *get_ui_cube_instance(uintptr_t base)
+static void *get_cube_static_fields(uintptr_t base)
+{
+    void **type_slot = (void **)(base + RVA_CUBE_TYPEINFO);
+    void *type_info;
+    void *static_fields;
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
+    type_info = *type_slot;
+    if (!type_info ||
+        !memory_range_readable(type_info,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)type_info +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (!static_fields ||
+        !memory_range_readable(static_fields,
+                               CUBE_CURRENT_RECIPE_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    return static_fields;
+}
+
+static void *get_cube_current_recipe(uintptr_t base)
+{
+    void *static_fields = get_cube_static_fields(base);
+    void *current_recipe;
+
+    if (!static_fields) return NULL;
+    current_recipe = *(void **)((unsigned char *)static_fields +
+                                CUBE_CURRENT_RECIPE_OFFSET);
+    if (!current_recipe ||
+        !memory_range_readable(current_recipe, 0xD8)) {
+        return NULL;
+    }
+    return current_recipe;
+}
+
+static void *ensure_cube_current_recipe(uintptr_t base)
+{
+    cube_select_recipe_t select_recipe;
+    void *current_recipe;
+
+    current_recipe = get_cube_current_recipe(base);
+    if (current_recipe) return current_recipe;
+
+    select_recipe =
+        (cube_select_recipe_t)(base + RVA_CUBE_SELECT_RECIPE_TYPE);
+    if (!memory_range_readable((void *)select_recipe, 12)) {
+        return NULL;
+    }
+    select_recipe(ERECIPE_SYNTHESIS, NULL);
+    return get_cube_current_recipe(base);
+}
+
+static TBHS_UNUSED void *get_ui_cube_instance(uintptr_t base)
 {
     void *ui_cube = (void *)g_cached_ui_cube;
     void *ui_manager;
@@ -4316,6 +6605,23 @@ static void *get_ui_cube_instance(uintptr_t base)
     }
     g_cached_ui_cube = (LONG_PTR)ui_cube;
     return ui_cube;
+}
+
+static void *get_ui_hero_instance(uintptr_t base)
+{
+    void *ui_manager = get_ui_manager_instance(base);
+    void *ui_hero;
+
+    if (!ui_manager ||
+        !memory_range_readable(ui_manager,
+                               UI_MANAGER_UI_HERO_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    ui_hero = *(void **)((unsigned char *)ui_manager + UI_MANAGER_UI_HERO_OFFSET);
+    if (!ui_hero || !memory_range_readable(ui_hero, sizeof(void *) * 4)) {
+        return NULL;
+    }
+    return ui_hero;
 }
 
 static void *get_ui_new_stash_instance(uintptr_t base)
@@ -4565,21 +6871,17 @@ static int lock_auto_restart_stage_from_current(void)
     current_stage = get_current_stage_cache(base);
     if (!current_stage) {
         log_line("auto restart lock failed: current stage cache unavailable");
-        append_overlay_event("LOCK FAILED current stage unavailable");
         return 0;
     }
     if (!get_current_stage_target(base, current_stage,
                                   &act, &difficulty, &stage_type, &stage_no, &stage_key)
         || stage_key <= 0) {
         log_line("auto restart lock failed: current stage key unavailable");
-        append_overlay_event("LOCK FAILED current stage key unavailable");
         return 0;
     }
     if (stage_type != ESTAGE_TYPE_NORMAL) {
         log_line("auto restart lock failed: only normal stages are supported, type=%d stage_no=%d",
                  stage_type, stage_no);
-        append_overlay_event("LOCK FAILED normal stages only type=%d",
-                             stage_type);
         return 0;
     }
     find_stage_enter_key_for_stage_key(base, act, difficulty,
@@ -4602,9 +6904,6 @@ static int lock_auto_restart_stage_from_current(void)
     log_line("auto restart locked: act=%d difficulty=%d type=%d stage_no=%d stage_key=%d restart_key=%d previous_stage_no=%d",
              act, difficulty, stage_type, stage_no, stage_key,
              enter_key, previous_stage_no);
-    append_overlay_event("LOCKED %d-%d diff=%d key=%d",
-                         act, display_stage_no_from_key(stage_key, stage_no),
-                         difficulty, stage_key);
     save_config();
     return 1;
 }
@@ -4627,13 +6926,11 @@ static void unlock_auto_restart_stage(void)
     g_last_auto_portal_tick = 0;
     g_last_auto_stage_drift_tick = 0;
     log_line("auto restart unlocked");
-    if (was_locked) {
-        append_overlay_event("UNLOCKED %d-%d diff=%d key=%d",
-                             act, display_stage_no_from_key(stage_key, stage_no),
-                             difficulty, stage_key);
-    } else {
-        append_overlay_event("UNLOCKED");
-    }
+    (void)was_locked;
+    (void)act;
+    (void)difficulty;
+    (void)stage_no;
+    (void)stage_key;
     save_config();
 }
 
@@ -4721,7 +7018,6 @@ static void maybe_auto_restart_current_stage_from_game_thread(void)
     stage_manager = get_stage_manager_instance(base);
     if (!stage_manager) {
         log_line("auto restart skipped: StageManager instance unavailable");
-        append_overlay_event("AUTO RETURN FAILED StageManager unavailable");
         return;
     }
     enter_stage_exact =
@@ -4751,32 +7047,271 @@ static void maybe_auto_restart_current_stage_from_game_thread(void)
              locked_stage, (long)result,
              after_act, after_difficulty, after_stage_type,
              after_stage_no, after_stage_key);
-    append_overlay_event("AUTO RETURN %s %d-%d current=%d-%d key=%d after=%d-%d",
-                         reason,
-                         g_auto_restart_act,
-                         display_stage_no_from_key(g_auto_restart_stage_key,
-                                                   g_auto_restart_stage_no),
-                         current_act,
-                         display_stage_no_from_key(current_stage_key,
-                                                   current_stage_no),
-                         restart_key,
-                         after_act,
-                         display_stage_no_from_key(after_stage_key,
-                                                   after_stage_no));
+}
+
+static void maybe_load_auto_item_lock_catalog_from_game_thread(void)
+{
+    DWORD now;
+
+    if (g_auto_item_lock_catalog_count > 0) return;
+    if (!(g_item_lock_list_hwnd && IsWindow(g_item_lock_list_hwnd))) return;
+    if (!g_game_assembly) return;
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+
+    now = GetTickCount();
+    if (g_auto_item_lock_last_catalog_try_tick &&
+        (DWORD)(now - g_auto_item_lock_last_catalog_try_tick) < 2000) {
+        return;
+    }
+    g_auto_item_lock_last_catalog_try_tick = now;
+    load_auto_item_lock_catalog_from_game();
+}
+
+static void maybe_auto_item_lock_from_game_thread(void)
+{
+    DWORD now;
+    unsigned int item_id;
+    unsigned __int64 unique_id;
+    char unique_key[64];
+    char unique_id_text[32];
+
+    if (!g_game_assembly) return;
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+    if (!g_auto_item_lock_pending) return;
+
+    now = GetTickCount();
+    if (g_auto_item_lock_last_try_tick &&
+        (DWORD)(now - g_auto_item_lock_last_try_tick) < 500) {
+        return;
+    }
+    g_auto_item_lock_last_try_tick = now;
+
+    item_id = g_auto_item_lock_pending_item_id;
+    unique_id = g_auto_item_lock_pending_unique_id;
+    unique_key[0] = 0;
+    lstrcpynA(unique_key,
+              g_auto_item_lock_pending_unique_key,
+              sizeof(unique_key));
+
+    if (!unique_id) {
+        log_line("AUTO ITEM LOCK canceled: missing unique id for item_id=%u unique_key=%s",
+                 item_id,
+                 unique_key[0] ? unique_key : "-");
+        InterlockedExchange(&g_auto_item_lock_pending, 0);
+        return;
+    }
+
+    if (try_auto_item_lock_now(item_id, unique_id, unique_key)) {
+        InterlockedExchange(&g_auto_item_lock_pending, 0);
+        return;
+    }
+
+    if (g_auto_item_lock_pending_tick &&
+        (DWORD)(now - g_auto_item_lock_pending_tick) > 15000) {
+        format_u64_local(unique_id_text, sizeof(unique_id_text), unique_id);
+        log_line("AUTO ITEM LOCK expired: item_id=%u unique_key=%s unique_id=%s",
+                 item_id,
+                 unique_key[0] ? unique_key : "-",
+                 unique_id_text);
+        append_overlay_event("LOCK ITEM expired %u", item_id);
+        InterlockedExchange(&g_auto_item_lock_pending, 0);
+    }
+}
+
+static void manual_item_lock_cache_if_match(void *item_cache,
+                                            const char *source,
+                                            ManualItemLockStats *stats)
+{
+    unsigned int item_id = 0;
+    int item_type = -1;
+    int grade = -1;
+    int already_locked = 0;
+
+    if (!stats) return;
+    if (!item_cache) {
+        stats->skipped++;
+        return;
+    }
+    stats->scanned++;
+    if (!auto_item_lock_read_cache_info(item_cache,
+                                        &item_id,
+                                        &item_type,
+                                        &grade,
+                                        NULL)) {
+        stats->skipped++;
+        return;
+    }
+    if (!auto_item_lock_item_matches_conditions(item_id, item_type, grade)) {
+        return;
+    }
+    stats->matched++;
+    if (auto_item_lock_apply_cache_now(item_cache,
+                                       item_id,
+                                       source,
+                                       &already_locked)) {
+        if (already_locked) {
+            stats->already_locked++;
+        } else {
+            stats->locked++;
+        }
+    } else {
+        stats->skipped++;
+    }
+}
+
+static void manual_item_lock_scan_slot_list(void *slot_list,
+                                            const char *source,
+                                            ManualItemLockStats *stats)
+{
+    int count;
+    int i;
+
+    if (!stats) return;
+    count = il2cpp_list_size_local(slot_list);
+    for (i = 0; i < count; ++i) {
+        void *slot = il2cpp_list_get_local(slot_list, i);
+        void *item_cache;
+
+        if (!slot ||
+            !memory_range_readable(slot,
+                                   ITEM_SLOT_ITEM_CACHE_OFFSET + sizeof(void *))) {
+            stats->skipped++;
+            continue;
+        }
+        item_cache = *(void **)((unsigned char *)slot +
+                                ITEM_SLOT_ITEM_CACHE_OFFSET);
+        manual_item_lock_cache_if_match(item_cache, source, stats);
+    }
+}
+
+static void manual_item_lock_scan_item_cache_dictionary(const char *source,
+                                                        ManualItemLockStats *stats)
+{
+    uintptr_t base;
+    uintptr_t type_slot_address;
+    void *dict;
+    void *entries;
+    int count;
+    int array_len;
+    int i;
+
+    if (!stats || !g_game_assembly) return;
+    base = (uintptr_t)g_game_assembly;
+    type_slot_address = base + RVA_ITEM_CACHE_STORE_TYPEINFO;
+    if (!memory_range_readable((void *)type_slot_address, sizeof(void *))) {
+        return;
+    }
+
+    dict = get_item_cache_dictionary(base);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return;
+    }
+    count = *(int *)((unsigned char *)dict + IL2CPP_DICT_COUNT_OFFSET);
+    if (count <= 0 || count > 200000) return;
+
+    entries = *(void **)((unsigned char *)dict + IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        return;
+    }
+    array_len = *(int *)((unsigned char *)entries + IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 || count > array_len) return;
+
+    for (i = 0; i < count; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        void *item_cache;
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_U64_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) continue;
+        item_cache = *(void **)(entry +
+                                IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET);
+        manual_item_lock_cache_if_match(item_cache, source, stats);
+    }
+}
+
+static void manual_item_lock_from_game_thread(void)
+{
+    uintptr_t base;
+    void *ui_hero = NULL;
+    void *ui_stash = NULL;
+    void *cache_dict = NULL;
+    void *inventory_slots = NULL;
+    void *stash_slots = NULL;
+    ManualItemLockStats stats;
+
+    if (!g_game_assembly) return;
+    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
+    if (!InterlockedExchange(&g_manual_item_lock_pending, 0)) return;
+
+    stats.scanned = 0;
+    stats.matched = 0;
+    stats.locked = 0;
+    stats.already_locked = 0;
+    stats.skipped = 0;
+
+    base = (uintptr_t)g_game_assembly;
+    cache_dict = get_item_cache_dictionary(base);
+    if (cache_dict) {
+        manual_item_lock_scan_item_cache_dictionary("manual item cache", &stats);
+    } else {
+        ui_hero = get_ui_hero_instance(base);
+        if (ui_hero &&
+            memory_range_readable(ui_hero,
+                                  UI_HERO_INVENTORY_SLOTS_OFFSET + sizeof(void *))) {
+            inventory_slots = *(void **)((unsigned char *)ui_hero +
+                                         UI_HERO_INVENTORY_SLOTS_OFFSET);
+            manual_item_lock_scan_slot_list(inventory_slots, "manual inventory", &stats);
+        }
+
+        ui_stash = get_ui_new_stash_instance(base);
+        if (ui_stash &&
+            memory_range_readable(ui_stash,
+                                  UI_REMAKE_STASH_SLOT_LIST_OFFSET + sizeof(void *))) {
+            stash_slots = *(void **)((unsigned char *)ui_stash +
+                                     UI_REMAKE_STASH_SLOT_LIST_OFFSET);
+            manual_item_lock_scan_slot_list(stash_slots, "manual stash", &stats);
+        }
+    }
+
+    log_line("manual item lock done: inventory=%p stash=%p cache_dict=%p scanned=%d matched=%d locked=%d already=%d skipped=%d",
+             inventory_slots,
+             stash_slots,
+             cache_dict,
+             stats.scanned,
+             stats.matched,
+             stats.locked,
+             stats.already_locked,
+             stats.skipped);
+    append_overlay_event("MANUAL LOCK %d/%d already %d",
+                         stats.locked,
+                         stats.matched,
+                         stats.already_locked);
+    update_item_lock_condition_buttons();
 }
 
 static void maybe_auto_synthesis_from_game_thread(void)
 {
     uintptr_t base;
     DWORD now;
-    void *ui_cube;
+    void *current_recipe;
     void *ui_stash;
     ui_remake_stash_action_t inventory_to_stash;
     cube_set_bool_t set_use_storage;
     cube_set_int_t set_synthesis_type;
-    cube_select_recipe_t select_recipe;
     cube_clear_current_recipe_t clear_current_recipe;
-    ui_cube_instance_t autofill;
+    cube_autofill_current_recipe_t autofill_current_recipe;
     cube_trigger_current_recipe_t trigger_current_recipe;
 
     if (!g_auto_synthesis_enabled || !g_game_assembly) {
@@ -4796,12 +7331,9 @@ static void maybe_auto_synthesis_from_game_thread(void)
             (ui_remake_stash_action_t)(base + RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH);
         if (ui_stash && memory_range_readable((void *)inventory_to_stash, 12)) {
             inventory_to_stash(ui_stash, NULL);
-            log_line("auto synthesis stash move sent: ui_stash=%p grade=%d fill_delay=%lu",
+            log_line("auto synthesis stash move sent: ui_stash=%p fill_delay=%lu",
                      ui_stash,
-                     g_auto_synthesis_grade,
                      (unsigned long)AUTO_SYNTHESIS_FILL_DELAY_MS);
-            append_overlay_event("SYNTH g%d stash",
-                                 g_auto_synthesis_grade);
         } else {
             log_line("auto synthesis stash move skipped: UI_NewStash or function unavailable");
         }
@@ -4814,23 +7346,29 @@ static void maybe_auto_synthesis_from_game_thread(void)
     if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_FILL) {
         if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
 
-        ui_cube = get_ui_cube_instance(base);
-        autofill = (ui_cube_instance_t)(base + RVA_UI_CUBE_AUTOFILL);
-        if (!ui_cube || !memory_range_readable((void *)autofill, 12)) {
+        current_recipe = ensure_cube_current_recipe(base);
+        autofill_current_recipe =
+            (cube_autofill_current_recipe_t)(base + RVA_CUBE_AUTOFILL_CURRENT_RECIPE);
+        if (!current_recipe ||
+            !memory_range_readable((void *)autofill_current_recipe, 12)) {
             g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
             g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-            log_line("auto synthesis autofill skipped: UI_Cube or function unavailable");
+            if (!current_recipe) {
+                InterlockedExchange(&g_auto_synthesis_pending, 1);
+            }
+            log_line("auto synthesis autofill skipped: Cube current recipe or function unavailable");
             return;
         }
-        autofill(ui_cube, NULL);
+        set_synthesis_type = (cube_set_int_t)(base + RVA_CUBE_SET_SYNTHESIS_TYPE);
+        if (memory_range_readable((void *)set_synthesis_type, 12)) {
+            set_synthesis_type(EITEM_SYNTHESIS_GEAR, NULL);
+        }
+        autofill_current_recipe(current_recipe, NULL);
         g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER;
         g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_TRIGGER_DELAY_MS;
-        log_line("auto synthesis autofill sent: ui=%p grade=%d trigger_delay=%lu",
-                 ui_cube,
-                 g_auto_synthesis_grade,
+        log_line("auto synthesis autofill sent: recipe=%p trigger_delay=%lu",
+                 current_recipe,
                  (unsigned long)AUTO_SYNTHESIS_TRIGGER_DELAY_MS);
-        append_overlay_event("SYNTH g%d fill",
-                             g_auto_synthesis_grade);
         return;
     }
 
@@ -4848,11 +7386,11 @@ static void maybe_auto_synthesis_from_game_thread(void)
         trigger_current_recipe(NULL);
         g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
         g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-        log_line("auto synthesis trigger sent: grade=%d storage=%d",
-                 g_auto_synthesis_grade,
+        g_auto_synthesis_result_watch_until =
+            now + AUTO_SYNTHESIS_RESULT_WATCH_MS;
+        InterlockedExchange(&g_auto_synthesis_result_pending, 1);
+        log_line("auto synthesis trigger sent: storage=%d",
                  g_auto_synthesis_use_storage);
-        append_overlay_event("SYNTH g%d trigger",
-                             g_auto_synthesis_grade);
         return;
     }
 
@@ -4860,31 +7398,32 @@ static void maybe_auto_synthesis_from_game_thread(void)
         (LONG)(now - g_auto_synthesis_next_tick) < 0) {
         return;
     }
+    if (!g_auto_synthesis_pending ||
+        InterlockedExchange(&g_auto_synthesis_pending, 0) == 0) {
+        g_auto_synthesis_next_tick = 0;
+        return;
+    }
 
-    ui_cube = get_ui_cube_instance(base);
-    if (!ui_cube) {
+    current_recipe = ensure_cube_current_recipe(base);
+    if (!current_recipe) {
         if (!g_last_auto_synthesis_log_tick ||
             (DWORD)(now - g_last_auto_synthesis_log_tick) >= 10000) {
-            log_line("auto synthesis waiting: UI_Cube unavailable");
-            append_overlay_event("SYNTH wait Cube UI");
+            log_line("auto synthesis waiting: Cube current recipe unavailable");
             g_last_auto_synthesis_log_tick = now;
         }
         g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+        InterlockedExchange(&g_auto_synthesis_pending, 1);
         return;
     }
 
     set_use_storage = (cube_set_bool_t)(base + RVA_CUBE_SET_USE_STORAGE);
     set_synthesis_type = (cube_set_int_t)(base + RVA_CUBE_SET_SYNTHESIS_TYPE);
-    select_recipe = (cube_select_recipe_t)(base + RVA_CUBE_SELECT_RECIPE);
     clear_current_recipe =
         (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
-    autofill = (ui_cube_instance_t)(base + RVA_UI_CUBE_AUTOFILL);
 
     if (!memory_range_readable((void *)set_use_storage, 12) ||
         !memory_range_readable((void *)set_synthesis_type, 12) ||
-        !memory_range_readable((void *)select_recipe, 12) ||
-        !memory_range_readable((void *)clear_current_recipe, 12) ||
-        !memory_range_readable((void *)autofill, 12)) {
+        !memory_range_readable((void *)clear_current_recipe, 12)) {
         g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
         log_line("auto synthesis skipped: synthesis functions unavailable");
         return;
@@ -4892,11 +7431,6 @@ static void maybe_auto_synthesis_from_game_thread(void)
 
     set_use_storage((char)(g_auto_synthesis_use_storage ? 1 : 0), NULL);
     set_synthesis_type(EITEM_SYNTHESIS_GEAR, NULL);
-    select_recipe(ERECIPE_TYPE_SYNTHESIS,
-                  EITEM_SYNTHESIS_GEAR,
-                  clamp_auto_synthesis_grade(g_auto_synthesis_grade),
-                  0,
-                  NULL);
     clear_current_recipe(NULL);
 
     if (g_auto_synthesis_use_storage) {
@@ -4907,18 +7441,13 @@ static void maybe_auto_synthesis_from_game_thread(void)
         g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;
     }
     g_auto_synthesis_next_tick = 0;
-    log_line("auto synthesis clear sent: ui=%p grade=%d storage=%d next_delay=%lu",
-             ui_cube,
-             g_auto_synthesis_grade,
+    log_line("auto synthesis clear sent: recipe=%p storage=%d next_delay=%lu",
+             current_recipe,
              g_auto_synthesis_use_storage,
              (unsigned long)(g_auto_synthesis_use_storage ?
-                             AUTO_SYNTHESIS_STASH_DELAY_MS :
-                             AUTO_SYNTHESIS_FILL_DELAY_MS));
-    append_overlay_event("SYNTH g%d clear",
-                         g_auto_synthesis_grade);
+                 AUTO_SYNTHESIS_STASH_DELAY_MS :
+                 AUTO_SYNTHESIS_FILL_DELAY_MS));
 }
-
-static void enforce_game_title_bar(void);
 
 static void apply_speed_from_game_thread(void)
 {
@@ -4933,8 +7462,11 @@ static void apply_speed_from_game_thread(void)
         g_real_set_time_scale(g_speed);
     }
     process_auto_restart_request_from_game_thread();
-    enforce_game_title_bar();
     maybe_auto_switch_from_game_thread();
+    maybe_load_auto_item_lock_catalog_from_game_thread();
+    maybe_auto_item_lock_from_game_thread();
+    manual_item_lock_from_game_thread();
+    maybe_handle_actboss_cache_watch_from_game_thread();
     maybe_auto_synthesis_from_game_thread();
     maybe_auto_restart_current_stage_from_game_thread();
 }
@@ -5023,6 +7555,128 @@ static void destroy_overlay_style(void)
     g_overlay_accent_pen = NULL;
 }
 
+static void release_auto_item_lock_icon_bitmaps(void)
+{
+    int i;
+
+    for (i = 0; i < g_auto_item_lock_catalog_count; ++i) {
+        AutoItemLockInfo *info = &g_auto_item_lock_catalog[i];
+        if (info->icon_bitmap) {
+            DeleteObject(info->icon_bitmap);
+            info->icon_bitmap = NULL;
+        }
+        info->icon_bitmap_status = 0;
+    }
+    if (g_msimg32) {
+        FreeLibrary(g_msimg32);
+        g_msimg32 = NULL;
+    }
+    g_transparent_blt = NULL;
+    g_transparent_blt_checked = 0;
+}
+
+static void draw_overlay_log_text_utf8(HDC hdc, const char *text, RECT *row)
+{
+    WCHAR wide[OVERLAY_LOG_LINE_SIZE];
+    int written;
+
+    if (!text || !row) return;
+    written = MultiByteToWideChar(CP_UTF8, 0, text, -1,
+                                  wide, OVERLAY_LOG_LINE_SIZE);
+    if (written <= 0) {
+        written = MultiByteToWideChar(CP_ACP, 0, text, -1,
+                                      wide, OVERLAY_LOG_LINE_SIZE);
+    }
+    if (written <= 0) return;
+    wide[OVERLAY_LOG_LINE_SIZE - 1] = 0;
+    DrawTextW(hdc, wide, -1, row,
+              DT_LEFT | DT_VCENTER | DT_SINGLELINE |
+              DT_END_ELLIPSIS | DT_NOPREFIX);
+}
+
+static void draw_overlay_drop_log(HDC hdc)
+{
+    OverlayLogEntry entries[OVERLAY_LOG_LINE_COUNT];
+    RECT box;
+    RECT row;
+    RECT track;
+    RECT thumb;
+    HGDIOBJ old_font;
+    int count;
+    int start;
+    int max_scroll;
+    int scroll;
+    int visible;
+    int first;
+    int i;
+
+    zero_memory_local(entries, sizeof(entries));
+    lock_drop_log();
+    count = g_drop_log_count;
+    start = g_drop_log_next - count;
+    while (start < 0) start += OVERLAY_LOG_LINE_COUNT;
+    for (i = 0; i < count && i < OVERLAY_LOG_LINE_COUNT; ++i) {
+        int index = (start + i) % OVERLAY_LOG_LINE_COUNT;
+        entries[i] = g_drop_log_entries[index];
+    }
+    max_scroll = count > OVERLAY_LOG_VISIBLE_LINES ?
+                 count - OVERLAY_LOG_VISIBLE_LINES : 0;
+    if (g_drop_log_scroll < 0) g_drop_log_scroll = 0;
+    if (g_drop_log_scroll > max_scroll) g_drop_log_scroll = max_scroll;
+    scroll = g_drop_log_scroll;
+    unlock_drop_log();
+
+    box.left = OVERLAY_LOG_BOX_LEFT;
+    box.top = OVERLAY_LOG_BOX_TOP;
+    box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
+    box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+    FillRect(hdc, &box, g_overlay_panel_brush);
+    FrameRect(hdc, &box, g_overlay_border_brush);
+
+    SetBkMode(hdc, TRANSPARENT);
+    old_font = SelectObject(hdc, g_overlay_font);
+    visible = count < OVERLAY_LOG_VISIBLE_LINES ? count : OVERLAY_LOG_VISIBLE_LINES;
+    first = count - visible - scroll;
+    if (first < 0) first = 0;
+    for (i = 0; i < visible; ++i) {
+        OverlayLogEntry entry = entries[first + i];
+        if (!entry.line[0]) continue;
+        row.left = box.left + 8;
+        row.top = box.top + 5 + i * 13;
+        row.right = box.right - (max_scroll > 0 ? 16 : 8);
+        row.bottom = row.top + 14;
+        SetTextColor(hdc, entry.grade >= 0 ? auto_item_lock_grade_color(entry.grade) : OVERLAY_COLOR_MUTED);
+        draw_overlay_log_text_utf8(hdc, entry.line, &row);
+    }
+    if (max_scroll > 0) {
+        int track_height;
+        int thumb_height;
+        int thumb_top;
+
+        track.left = box.right - 9;
+        track.top = box.top + 5;
+        track.right = box.right - 5;
+        track.bottom = box.bottom - 5;
+        FillRect(hdc, &track, g_overlay_border_brush);
+        track_height = track.bottom - track.top;
+        thumb_height = (track_height * OVERLAY_LOG_VISIBLE_LINES) / count;
+        if (thumb_height < 14) thumb_height = 14;
+        if (thumb_height > track_height) thumb_height = track_height;
+        thumb_top = track.top;
+        if (max_scroll > 0 && track_height > thumb_height) {
+            thumb_top = track.top +
+                        ((max_scroll - scroll) * (track_height - thumb_height)) /
+                        max_scroll;
+        }
+        thumb.left = track.left;
+        thumb.top = thumb_top;
+        thumb.right = track.right;
+        thumb.bottom = thumb_top + thumb_height;
+        FillRect(hdc, &thumb, g_overlay_accent_brush);
+    }
+    SelectObject(hdc, old_font);
+}
+
 static void paint_overlay_chrome(HWND hwnd, HDC hdc)
 {
     RECT rc;
@@ -5086,10 +7740,14 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     label.top = 182;
     label.bottom = 206;
-    DrawTextA(hdc, "Reset", -1, &label,
+    DrawTextA(hdc, "Item Lock", -1, &label,
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     label.top = 218;
     label.bottom = 242;
+    DrawTextA(hdc, "Reset", -1, &label,
+              DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    label.top = 254;
+    label.bottom = 278;
     DrawTextA(hdc, "Drops", -1, &label,
               DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     SelectObject(hdc, old_font);
@@ -5111,6 +7769,14 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
     separator.top = 212;
     separator.bottom = 213;
     FillRect(hdc, &separator, g_overlay_border_brush);
+    separator.top = 248;
+    separator.bottom = 249;
+    FillRect(hdc, &separator, g_overlay_border_brush);
+    separator.top = 300;
+    separator.bottom = 301;
+    FillRect(hdc, &separator, g_overlay_border_brush);
+
+    draw_overlay_drop_log(hdc);
 
     SelectObject(hdc, old_pen);
     SelectObject(hdc, old_brush);
@@ -5120,7 +7786,7 @@ static void draw_overlay_button(const DRAWITEMSTRUCT *item)
 {
     RECT rc;
     RECT top;
-    char text[64];
+    WCHAR text[64];
     int id;
     int active = 0;
     int pressed;
@@ -5141,6 +7807,19 @@ static void draw_overlay_button(const DRAWITEMSTRUCT *item)
     if (id == OVERLAY_BUTTON_LOCK_STAGE && g_auto_restart_locked) active = 1;
     if (id == OVERLAY_BUTTON_SYNTH_TOGGLE && g_auto_synthesis_enabled) active = 1;
     if (id == OVERLAY_BUTTON_SYNTH_STORAGE && g_auto_synthesis_use_storage) active = 1;
+    if (id == OVERLAY_BUTTON_ITEM_LOCK_HIGH_GRADE &&
+        g_item_lock_condition_high_grade) active = 1;
+    if (id == OVERLAY_BUTTON_ITEM_LOCK_COIN &&
+        g_item_lock_condition_coin) active = 1;
+    if (id == OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP &&
+        g_item_lock_condition_market_top &&
+        g_auto_item_lock_market_top_count > 0) active = 1;
+    if (id == OVERLAY_BUTTON_ITEM_LOCK_MANUAL &&
+        InterlockedCompareExchange(&g_manual_item_lock_pending, 0, 0)) {
+        active = 1;
+    }
+    if (id == OVERLAY_BUTTON_ITEM_LOCK_LIST &&
+        g_auto_item_lock_selected_count > 0) active = 1;
 
     fill = active ? g_overlay_button_active_brush :
            (pressed ? g_overlay_button_hot_brush : g_overlay_button_brush);
@@ -5154,14 +7833,15 @@ static void draw_overlay_button(const DRAWITEMSTRUCT *item)
     FillRect(item->hDC, &top, active ? g_overlay_accent_brush : g_overlay_panel_brush);
 
     text[0] = 0;
-    GetWindowTextA(item->hwndItem, text, sizeof(text));
-    text[sizeof(text) - 1] = 0;
+    GetWindowTextW(item->hwndItem, text,
+                   (int)(sizeof(text) / sizeof(text[0])));
+    text[(sizeof(text) / sizeof(text[0])) - 1] = 0;
 
     SetBkMode(item->hDC, TRANSPARENT);
     SetTextColor(item->hDC, text_color);
     old_font = SelectObject(item->hDC,
                             active ? g_overlay_font_bold : g_overlay_font);
-    DrawTextA(item->hDC, text, -1, &rc,
+    DrawTextW(item->hDC, text, -1, &rc,
               DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     SelectObject(item->hDC, old_font);
 }
@@ -5193,9 +7873,12 @@ static void apply_overlay_fonts(HWND hwnd)
         OVERLAY_BUTTON_ACTBOSS,
         OVERLAY_BUTTON_AUTO_SWITCH,
         OVERLAY_BUTTON_SYNTH_TOGGLE,
-        OVERLAY_BUTTON_SYNTH_GRADE_MINUS,
-        OVERLAY_BUTTON_SYNTH_GRADE_PLUS,
         OVERLAY_BUTTON_SYNTH_STORAGE,
+        OVERLAY_BUTTON_ITEM_LOCK_HIGH_GRADE,
+        OVERLAY_BUTTON_ITEM_LOCK_COIN,
+        OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP,
+        OVERLAY_BUTTON_ITEM_LOCK_MANUAL,
+        OVERLAY_BUTTON_ITEM_LOCK_LIST,
         OVERLAY_BUTTON_LOCK_STAGE,
         OVERLAY_BUTTON_LOCK_MINUS30,
         OVERLAY_BUTTON_LOCK_MINUS10,
@@ -5218,10 +7901,6 @@ static void apply_overlay_fonts(HWND hwnd)
     }
     if (g_overlay_cube_multiplier_label) {
         SendMessageA(g_overlay_cube_multiplier_label, WM_SETFONT,
-                     (WPARAM)g_overlay_font_bold, TRUE);
-    }
-    if (g_overlay_synth_grade_label) {
-        SendMessageA(g_overlay_synth_grade_label, WM_SETFONT,
                      (WPARAM)g_overlay_font_bold, TRUE);
     }
     if (g_overlay_lock_interval_label) {
@@ -5401,66 +8080,6 @@ static HWND find_game_window(void)
     return g_game_hwnd;
 }
 
-static void enforce_game_title_bar(void)
-{
-    HWND game;
-    RECT rc;
-    UnityRefreshRate refresh_rate;
-    int width = 0;
-    int height = 0;
-    DWORD now;
-
-    if (!g_force_game_title_bar_enabled) return;
-    if (!g_game_thread_id || GetCurrentThreadId() != g_game_thread_id) return;
-    if (!g_screen_set_fullscreen && !g_screen_set_fullscreen_mode &&
-        !g_screen_set_resolution_injected && !g_screen_set_resolution_bool3 &&
-        !g_screen_set_resolution_bool4 && !g_screen_set_resolution_mode4) {
-        return;
-    }
-
-    now = GetTickCount();
-    if (g_last_windowed_apply_tick &&
-        (DWORD)(now - g_last_windowed_apply_tick) < 2000) {
-        return;
-    }
-    g_last_windowed_apply_tick = now;
-
-    game = find_game_window();
-    if (!game) return;
-
-    if (g_screen_get_width) width = g_screen_get_width();
-    if (g_screen_get_height) height = g_screen_get_height();
-    if ((width <= 0 || height <= 0) && GetClientRect(game, &rc)) {
-        width = rc.right - rc.left;
-        height = rc.bottom - rc.top;
-    }
-    if (width <= 0 || height <= 0) return;
-
-    if (g_screen_set_fullscreen_mode) {
-        g_screen_set_fullscreen_mode(3);
-    }
-    if (g_screen_set_fullscreen) {
-        g_screen_set_fullscreen(0);
-    }
-    if (g_screen_set_resolution_injected) {
-        refresh_rate.numerator = 0;
-        refresh_rate.denominator = 1;
-        g_screen_set_resolution_injected(width, height, 3, &refresh_rate);
-    } else if (g_screen_set_resolution_mode4) {
-        g_screen_set_resolution_mode4(width, height, 3, 0);
-    } else if (g_screen_set_resolution_bool4) {
-        g_screen_set_resolution_bool4(width, height, 0, 0);
-    } else if (g_screen_set_resolution_bool3) {
-        g_screen_set_resolution_bool3(width, height, 0);
-    }
-
-    if (!g_windowed_logged) {
-        g_windowed_logged = 1;
-        log_line("game windowed mode requested for macOS title bar: hwnd=%p size=%dx%d",
-                 game, width, height);
-    }
-}
-
 static void position_overlay(HWND hwnd)
 {
     HWND game = find_game_window();
@@ -5496,6 +8115,1021 @@ static void persist_overlay_position(HWND hwnd)
         g_overlay_y = overlay_rc.top;
     }
     save_config();
+}
+
+static int combo_current_item_data(HWND combo, int fallback)
+{
+    LRESULT sel;
+    LRESULT data;
+
+    if (!combo) return fallback;
+    sel = SendMessageA(combo, CB_GETCURSEL, 0, 0);
+    if (sel == CB_ERR) return fallback;
+    data = SendMessageA(combo, CB_GETITEMDATA, (WPARAM)sel, 0);
+    if (data == CB_ERR) return fallback;
+    return (int)data;
+}
+
+static void set_window_text_utf8(HWND hwnd, const char *text)
+{
+    WCHAR wbuf[512];
+    int written;
+
+    if (!hwnd) return;
+    if (!text) text = "";
+    written = MultiByteToWideChar(CP_UTF8, 0, text, -1,
+                                  wbuf, (int)(sizeof(wbuf) / sizeof(wbuf[0])));
+    if (written > 0) {
+        SetWindowTextW(hwnd, wbuf);
+    } else {
+        SetWindowTextA(hwnd, text);
+    }
+}
+
+static LRESULT listbox_add_utf8(HWND listbox, const char *text)
+{
+    WCHAR wbuf[512];
+    int written;
+
+    if (!listbox) return LB_ERR;
+    if (!text) text = "";
+    written = MultiByteToWideChar(CP_UTF8, 0, text, -1,
+                                  wbuf, (int)(sizeof(wbuf) / sizeof(wbuf[0])));
+    if (written > 0) {
+        return SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)wbuf);
+    }
+    return SendMessageA(listbox, LB_ADDSTRING, 0, (LPARAM)text);
+}
+
+static WCHAR item_lock_ascii_upper_w(WCHAR ch)
+{
+    if (ch >= L'a' && ch <= L'z') return (WCHAR)(ch - (L'a' - L'A'));
+    return ch;
+}
+
+static void item_lock_trim_wide(WCHAR *text)
+{
+    int start = 0;
+    int end;
+    int out = 0;
+
+    if (!text) return;
+    while (text[start] == L' ' || text[start] == L'\t') start++;
+    end = lstrlenW(text);
+    while (end > start &&
+           (text[end - 1] == L' ' || text[end - 1] == L'\t')) {
+        end--;
+    }
+    while (start < end) {
+        text[out++] = text[start++];
+    }
+    text[out] = 0;
+}
+
+static int item_lock_wide_contains_i(const WCHAR *text, const WCHAR *needle)
+{
+    int i;
+    int j;
+
+    if (!needle || !needle[0]) return 1;
+    if (!text) return 0;
+    for (i = 0; text[i]; ++i) {
+        for (j = 0; needle[j]; ++j) {
+            if (!text[i + j]) return 0;
+            if (item_lock_ascii_upper_w(text[i + j]) !=
+                item_lock_ascii_upper_w(needle[j])) {
+                break;
+            }
+        }
+        if (!needle[j]) return 1;
+    }
+    return 0;
+}
+
+static int item_lock_catalog_matches_search(const AutoItemLockInfo *info)
+{
+    WCHAR query[96];
+    WCHAR id_text[32];
+    WCHAR label_text[512];
+    char label[256];
+    int written;
+
+    if (!info) return 0;
+    if (!g_item_lock_search_edit || !IsWindow(g_item_lock_search_edit)) return 1;
+    query[0] = 0;
+    GetWindowTextW(g_item_lock_search_edit,
+                   query,
+                   (int)(sizeof(query) / sizeof(query[0])));
+    query[(sizeof(query) / sizeof(query[0])) - 1] = 0;
+    item_lock_trim_wide(query);
+    if (!query[0]) return 1;
+
+    wsprintfW(id_text, L"%u", info->item_id);
+    id_text[(sizeof(id_text) / sizeof(id_text[0])) - 1] = 0;
+    if (item_lock_wide_contains_i(id_text, query)) return 1;
+
+    auto_item_lock_format_item_label(info, label, sizeof(label));
+    written = MultiByteToWideChar(CP_UTF8,
+                                  0,
+                                  label,
+                                  -1,
+                                  label_text,
+                                  (int)(sizeof(label_text) /
+                                        sizeof(label_text[0])));
+    if (written <= 0) {
+        written = MultiByteToWideChar(CP_ACP,
+                                      0,
+                                      label,
+                                      -1,
+                                      label_text,
+                                      (int)(sizeof(label_text) /
+                                            sizeof(label_text[0])));
+    }
+    if (written <= 0) return 0;
+    label_text[(sizeof(label_text) / sizeof(label_text[0])) - 1] = 0;
+    return item_lock_wide_contains_i(label_text, query);
+}
+
+static int item_lock_catalog_is_highest_rarity(const AutoItemLockInfo *info)
+{
+    if (!info) return 0;
+    return info->grade == EGRADE_DIVINE || info->grade == EGRADE_COSMIC;
+}
+
+static const char *auto_item_lock_class_name(int equip_class)
+{
+    switch (equip_class) {
+    case EEQUIP_CLASS_ALL: return "通用";
+    case EEQUIP_CLASS_KNIGHT: return "骑士";
+    case EEQUIP_CLASS_RANGER: return "游侠";
+    case EEQUIP_CLASS_SORCERER: return "法师";
+    case EEQUIP_CLASS_PRIEST: return "牧师";
+    case EEQUIP_CLASS_HUNTER: return "猎人";
+    case EEQUIP_CLASS_SLAYER: return "杀手";
+    default: return "未知";
+    }
+}
+
+static int auto_item_lock_catalog_class_from_gear_type(int gear_type)
+{
+    switch (gear_type) {
+    case EGEAR_TYPE_SWORD:
+    case EGEAR_TYPE_SHIELD:
+        return EEQUIP_CLASS_KNIGHT;
+    case EGEAR_TYPE_BOW:
+    case EGEAR_TYPE_ARROW:
+        return EEQUIP_CLASS_RANGER;
+    case EGEAR_TYPE_STAFF:
+    case EGEAR_TYPE_ORB:
+        return EEQUIP_CLASS_SORCERER;
+    case EGEAR_TYPE_SCEPTER:
+    case EGEAR_TYPE_TOME:
+        return EEQUIP_CLASS_PRIEST;
+    case EGEAR_TYPE_CROSSBOW:
+    case EGEAR_TYPE_BOLT:
+        return EEQUIP_CLASS_HUNTER;
+    case EGEAR_TYPE_AXE:
+    case EGEAR_TYPE_HATCHET:
+        return EEQUIP_CLASS_SLAYER;
+    default:
+        return EEQUIP_CLASS_ALL;
+    }
+}
+
+static int item_lock_catalog_selectable(const AutoItemLockInfo *info)
+{
+    if (!info) return 0;
+    if (info->item_type == EITEM_TYPE_MATERIAL) return 1;
+    if (info->item_type == EITEM_TYPE_GEAR &&
+        (info->grade == EGRADE_CELESTIAL ||
+         item_lock_catalog_is_highest_rarity(info))) {
+        return 1;
+    }
+    return 0;
+}
+
+static int item_lock_catalog_matches_filter(const AutoItemLockInfo *info,
+                                            int type_filter,
+                                            int grade_filter,
+                                            int class_filter)
+{
+    if (!info) return 0;
+    if (!item_lock_catalog_selectable(info)) return 0;
+    if (type_filter == -2) {
+        if (info->item_type == EITEM_TYPE_STAGEBOX ||
+            info->item_type == EITEM_TYPE_MATERIAL ||
+            info->item_type == EITEM_TYPE_GEAR) {
+            return 0;
+        }
+    } else if (type_filter >= 0 && info->item_type != type_filter) {
+        return 0;
+    }
+    if (grade_filter >= 0 && info->grade != grade_filter) return 0;
+    if (class_filter >= 0 && info->item_type == EITEM_TYPE_GEAR) {
+        if (info->equip_class != class_filter &&
+            info->equip_class != EEQUIP_CLASS_ALL) {
+            return 0;
+        }
+    }
+    if (!item_lock_catalog_matches_search(info)) return 0;
+    return 1;
+}
+
+static void populate_item_lock_listbox(void);
+static void update_item_lock_list_status(void);
+
+static int item_lock_temp_selected(unsigned int item_id)
+{
+    return auto_item_lock_id_index(g_auto_item_lock_temp_ids,
+                                   g_auto_item_lock_temp_count,
+                                   item_id) >= 0;
+}
+
+static void item_lock_invalidate_row(int row)
+{
+    RECT rc;
+
+    if (!g_item_lock_listbox || row < 0) return;
+    if (SendMessageA(g_item_lock_listbox, LB_GETITEMRECT,
+                     (WPARAM)row, (LPARAM)&rc) != LB_ERR) {
+        InvalidateRect(g_item_lock_listbox, &rc, TRUE);
+    }
+}
+
+static void item_lock_toggle_catalog_index(int catalog_index)
+{
+    AutoItemLockInfo *info;
+    int selected;
+
+    if (catalog_index < 0 ||
+        catalog_index >= g_auto_item_lock_catalog_count) {
+        return;
+    }
+    info = &g_auto_item_lock_catalog[catalog_index];
+    selected = item_lock_temp_selected(info->item_id) ? 0 : 1;
+    auto_item_lock_set_id(g_auto_item_lock_temp_ids,
+                          &g_auto_item_lock_temp_count,
+                          info->item_id,
+                          selected);
+    update_item_lock_list_status();
+}
+
+static void item_lock_toggle_row(int row)
+{
+    LRESULT data;
+
+    if (!g_item_lock_listbox || row < 0) return;
+    data = SendMessageA(g_item_lock_listbox, LB_GETITEMDATA,
+                        (WPARAM)row, 0);
+    if (data == LB_ERR) return;
+    item_lock_toggle_catalog_index((int)data);
+    item_lock_invalidate_row(row);
+}
+
+static void clear_item_lock_temp_selection(void)
+{
+    g_auto_item_lock_temp_count = 0;
+    update_item_lock_list_status();
+}
+
+static void sync_visible_item_lock_selection_to_temp(void)
+{
+    update_item_lock_list_status();
+}
+
+static LRESULT CALLBACK item_lock_listbox_proc(HWND hwnd,
+                                               UINT msg,
+                                               WPARAM wp,
+                                               LPARAM lp)
+{
+    if (msg == WM_LBUTTONDOWN) {
+        LRESULT hit = SendMessageA(hwnd, LB_ITEMFROMPOINT, 0, lp);
+        int row = (short)LOWORD(hit);
+        int outside = HIWORD(hit) ? 1 : 0;
+
+        if (!outside && row >= 0) {
+            SendMessageA(hwnd, LB_SETCURSEL, (WPARAM)row, 0);
+            item_lock_toggle_row(row);
+            return 0;
+        }
+    } else if (msg == WM_KEYDOWN && wp == VK_SPACE) {
+        int row = (int)SendMessageA(hwnd, LB_GETCURSEL, 0, 0);
+        if (row >= 0 && row != LB_ERR) {
+            item_lock_toggle_row(row);
+            return 0;
+        }
+    }
+
+    if (g_item_lock_listbox_old_proc) {
+        return CallWindowProcA(g_item_lock_listbox_old_proc,
+                               hwnd, msg, wp, lp);
+    }
+    return DefWindowProcA(hwnd, msg, wp, lp);
+}
+
+static void sanitize_item_lock_icon_component(const char *src,
+                                              char *dst,
+                                              int dst_size)
+{
+    int out = 0;
+    int i;
+
+    if (!dst || dst_size <= 0) return;
+    for (i = 0; src && src[i] && out < dst_size - 1; ++i) {
+        char c = src[i];
+        if ((c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') ||
+            c == '.' || c == '_' || c == '-') {
+            dst[out++] = c;
+        } else {
+            dst[out++] = '_';
+        }
+    }
+    if (!out) {
+        lstrcpynA(dst, "Item_unknown", dst_size);
+        return;
+    }
+    dst[out] = 0;
+}
+
+static HBITMAP load_item_lock_icon_bitmap_from_dir(const char *dir,
+                                                   const char *filename)
+{
+    char path[MAX_PATH];
+
+    if (!dir || !dir[0] || !filename || !filename[0]) return NULL;
+    wsprintfA(path, "%s\\%s\\%s.bmp",
+              dir, ITEM_LOCK_ICON_DIR_NAME, filename);
+    path[sizeof(path) - 1] = 0;
+    return (HBITMAP)LoadImageA(NULL, path, IMAGE_BITMAP, 0, 0,
+                               LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+}
+
+static HBITMAP load_item_lock_icon_bitmap(AutoItemLockInfo *info)
+{
+    char filename[192];
+    HBITMAP bitmap;
+
+    if (!info) return NULL;
+    if (info->icon_bitmap_status > 0) return info->icon_bitmap;
+    if (info->icon_bitmap_status < 0) return NULL;
+    info->icon_bitmap_status = -1;
+    if (!info->icon_path[0]) return NULL;
+
+    sanitize_item_lock_icon_component(info->icon_path,
+                                      filename,
+                                      sizeof(filename));
+    bitmap = load_item_lock_icon_bitmap_from_dir(g_base_dir, filename);
+    if (!bitmap && g_game_dir[0] &&
+        lstrcmpiA(g_game_dir, g_base_dir) != 0) {
+        bitmap = load_item_lock_icon_bitmap_from_dir(g_game_dir, filename);
+    }
+    if (!bitmap) return NULL;
+
+    info->icon_bitmap = bitmap;
+    info->icon_bitmap_status = 1;
+    return info->icon_bitmap;
+}
+
+static transparent_blt_t get_transparent_blt_proc(void)
+{
+    if (!g_transparent_blt_checked) {
+        g_transparent_blt_checked = 1;
+        g_msimg32 = LoadLibraryA("msimg32.dll");
+        if (g_msimg32) {
+            g_transparent_blt =
+                (transparent_blt_t)GetProcAddress(g_msimg32,
+                                                  "TransparentBlt");
+        }
+    }
+    return g_transparent_blt;
+}
+
+static int draw_item_lock_icon_bitmap(HDC hdc,
+                                      const RECT *icon,
+                                      AutoItemLockInfo *info,
+                                      int selected)
+{
+    HBITMAP bitmap;
+    HDC mem_dc;
+    HGDIOBJ old_bitmap;
+    BITMAP bm;
+    HBRUSH fill;
+    transparent_blt_t transparent_blt;
+    BOOL drawn = FALSE;
+
+    if (!hdc || !icon || !info) return 0;
+    bitmap = load_item_lock_icon_bitmap(info);
+    if (!bitmap) return 0;
+    if (!GetObjectA(bitmap, sizeof(bm), &bm) ||
+        bm.bmWidth <= 0 || bm.bmHeight <= 0) {
+        return 0;
+    }
+
+    fill = CreateSolidBrush(auto_item_lock_grade_color(info->grade));
+    FillRect(hdc, icon, fill);
+    DeleteObject(fill);
+
+    mem_dc = CreateCompatibleDC(hdc);
+    if (!mem_dc) return 0;
+    old_bitmap = SelectObject(mem_dc, bitmap);
+    SetStretchBltMode(hdc, COLORONCOLOR);
+
+    transparent_blt = get_transparent_blt_proc();
+    if (transparent_blt) {
+        drawn = transparent_blt(hdc,
+                                icon->left,
+                                icon->top,
+                                icon->right - icon->left,
+                                icon->bottom - icon->top,
+                                mem_dc,
+                                0,
+                                0,
+                                bm.bmWidth,
+                                bm.bmHeight,
+                                ITEM_LOCK_ICON_TRANSPARENT_KEY);
+    }
+    if (!drawn) {
+        drawn = StretchBlt(hdc,
+                           icon->left,
+                           icon->top,
+                           icon->right - icon->left,
+                           icon->bottom - icon->top,
+                           mem_dc,
+                           0,
+                           0,
+                           bm.bmWidth,
+                           bm.bmHeight,
+                           SRCCOPY);
+    }
+
+    SelectObject(mem_dc, old_bitmap);
+    DeleteDC(mem_dc);
+    FrameRect(hdc, icon,
+              selected ? g_overlay_accent_brush : g_overlay_border_brush);
+    return drawn ? 1 : 0;
+}
+
+static void draw_item_lock_icon_cue(HDC hdc,
+                                    const RECT *icon,
+                                    const AutoItemLockInfo *info,
+                                    int selected)
+{
+    HBRUSH fill;
+    char cue[4];
+    COLORREF grade_color;
+    COLORREF text_color;
+    RECT text_rc;
+
+    if (!hdc || !icon || !info) return;
+    grade_color = auto_item_lock_grade_color(info->grade);
+    fill = CreateSolidBrush(grade_color);
+    FillRect(hdc, icon, fill);
+    DeleteObject(fill);
+    FrameRect(hdc, icon,
+              selected ? g_overlay_accent_brush : g_overlay_border_brush);
+
+    auto_item_lock_icon_cue_text(info, cue, sizeof(cue));
+    text_rc = *icon;
+    SetBkMode(hdc, TRANSPARENT);
+    text_color = selected ? RGB(18, 16, 12) : RGB(28, 24, 20);
+    SetTextColor(hdc, text_color);
+    DrawTextA(hdc, cue, -1, &text_rc,
+              DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+}
+
+static void draw_item_lock_checkbox_row(const DRAWITEMSTRUCT *draw)
+{
+    RECT rc;
+    RECT check;
+    RECT icon;
+    RECT text_rc;
+    AutoItemLockInfo *info;
+    char label[256];
+    WCHAR wlabel[256];
+    int catalog_index;
+    int checked;
+    HBRUSH fill;
+    HPEN pen;
+    HGDIOBJ old_pen;
+    HGDIOBJ old_font;
+
+    if (!draw || draw->itemID == (UINT)-1) return;
+    if (draw->CtlID != ITEM_LOCK_LIST_CONTROL_LIST) return;
+    if ((int)draw->itemData < 0 ||
+        (int)draw->itemData >= g_auto_item_lock_catalog_count) {
+        return;
+    }
+
+    init_overlay_style();
+    rc = draw->rcItem;
+    catalog_index = (int)draw->itemData;
+    info = &g_auto_item_lock_catalog[catalog_index];
+    checked = item_lock_temp_selected(info->item_id);
+    fill = (draw->itemState & ODS_SELECTED) ?
+           g_overlay_button_hot_brush : g_overlay_panel_brush;
+    FillRect(draw->hDC, &rc, fill);
+
+    check.left = rc.left + 8;
+    check.top = rc.top + ((rc.bottom - rc.top) - 16) / 2;
+    check.right = check.left + 16;
+    check.bottom = check.top + 16;
+    FillRect(draw->hDC, &check, g_overlay_panel_2_brush);
+    FrameRect(draw->hDC, &check,
+              checked ? g_overlay_accent_brush : g_overlay_border_brush);
+    if (checked) {
+        pen = CreatePen(PS_SOLID, 2, OVERLAY_COLOR_ACCENT);
+        old_pen = SelectObject(draw->hDC, pen);
+        MoveToEx(draw->hDC, check.left + 3, check.top + 8, NULL);
+        LineTo(draw->hDC, check.left + 7, check.bottom - 4);
+        LineTo(draw->hDC, check.right - 3, check.top + 4);
+        SelectObject(draw->hDC, old_pen);
+        DeleteObject(pen);
+    }
+
+    icon.left = check.right + 8;
+    icon.top = rc.top + ((rc.bottom - rc.top) - ITEM_LOCK_LIST_ICON_SIZE) / 2;
+    icon.right = icon.left + ITEM_LOCK_LIST_ICON_SIZE;
+    icon.bottom = icon.top + ITEM_LOCK_LIST_ICON_SIZE;
+    if (!draw_item_lock_icon_bitmap(draw->hDC, &icon, info, checked)) {
+        draw_item_lock_icon_cue(draw->hDC, &icon, info, checked);
+    }
+
+    auto_item_lock_format_item_label(info, label, sizeof(label));
+    wlabel[0] = 0;
+    if (MultiByteToWideChar(CP_UTF8, 0, label, -1,
+                            wlabel,
+                            (int)(sizeof(wlabel) / sizeof(wlabel[0]))) <= 0) {
+        MultiByteToWideChar(CP_ACP, 0, label, -1,
+                            wlabel,
+                            (int)(sizeof(wlabel) / sizeof(wlabel[0])));
+    }
+    wlabel[(sizeof(wlabel) / sizeof(wlabel[0])) - 1] = 0;
+
+    text_rc = rc;
+    text_rc.left = icon.right + 10;
+    text_rc.right -= 6;
+    SetBkMode(draw->hDC, TRANSPARENT);
+    SetTextColor(draw->hDC,
+                 checked ? RGB(246, 237, 190) : OVERLAY_COLOR_TEXT);
+    old_font = SelectObject(draw->hDC,
+                            checked ? g_overlay_font_bold : g_overlay_font);
+    DrawTextW(draw->hDC, wlabel, -1, &text_rc,
+              DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    SelectObject(draw->hDC, old_font);
+
+    if (draw->itemState & ODS_FOCUS) {
+        DrawFocusRect(draw->hDC, &rc);
+    }
+}
+
+static void update_item_lock_list_status(void)
+{
+    char text[160];
+
+    if (!g_item_lock_status_label) return;
+    if (g_auto_item_lock_catalog_count <= 0) {
+        wsprintfA(text, "items:loading selected:%d", g_auto_item_lock_temp_count);
+    } else {
+        wsprintfA(text, "items:%d selected:%d",
+                  g_auto_item_lock_catalog_count,
+                  g_auto_item_lock_temp_count);
+    }
+    text[sizeof(text) - 1] = 0;
+    set_window_text_utf8(g_item_lock_status_label, text);
+}
+
+static int item_lock_filter_dropdown_open(void)
+{
+    if (g_item_lock_type_combo && IsWindow(g_item_lock_type_combo) &&
+        SendMessageA(g_item_lock_type_combo, CB_GETDROPPEDSTATE, 0, 0)) {
+        return 1;
+    }
+    if (g_item_lock_grade_combo && IsWindow(g_item_lock_grade_combo) &&
+        SendMessageA(g_item_lock_grade_combo, CB_GETDROPPEDSTATE, 0, 0)) {
+        return 1;
+    }
+    if (g_item_lock_class_combo && IsWindow(g_item_lock_class_combo) &&
+        SendMessageA(g_item_lock_class_combo, CB_GETDROPPEDSTATE, 0, 0)) {
+        return 1;
+    }
+    return 0;
+}
+
+static void update_item_lock_class_filter_visibility(void)
+{
+    int type_filter;
+    int show_class;
+
+    if (!g_item_lock_class_combo) return;
+    type_filter = combo_current_item_data(g_item_lock_type_combo, -1);
+    show_class = type_filter == EITEM_TYPE_GEAR ? 1 : 0;
+    ShowWindow(g_item_lock_class_combo, show_class ? SW_SHOW : SW_HIDE);
+    EnableWindow(g_item_lock_class_combo, show_class);
+    if (g_item_lock_class_label) {
+        ShowWindow(g_item_lock_class_label, show_class ? SW_SHOW : SW_HIDE);
+    }
+    if (!show_class) {
+        SendMessageA(g_item_lock_class_combo, CB_SETCURSEL, 0, 0);
+    }
+}
+
+static void refresh_item_lock_list_if_catalog_changed(HWND hwnd)
+{
+    LONG version;
+
+    if (item_lock_filter_dropdown_open()) return;
+    version = InterlockedCompareExchange(&g_auto_item_lock_catalog_version, 0, 0);
+    if (version != g_item_lock_list_catalog_version_seen) {
+        sync_visible_item_lock_selection_to_temp();
+        g_item_lock_list_catalog_version_seen = version;
+        populate_item_lock_listbox();
+    } else {
+        update_item_lock_list_status();
+    }
+    if (g_auto_item_lock_catalog_count > 0) {
+        KillTimer(hwnd, ITEM_LOCK_LIST_TIMER_REFRESH);
+    }
+}
+
+static void populate_item_lock_listbox(void)
+{
+    int type_filter;
+    int grade_filter;
+    int class_filter;
+    int i;
+
+    if (!g_item_lock_listbox) return;
+    type_filter = combo_current_item_data(g_item_lock_type_combo, -1);
+    grade_filter = combo_current_item_data(g_item_lock_grade_combo, -1);
+    update_item_lock_class_filter_visibility();
+    class_filter = combo_current_item_data(g_item_lock_class_combo, -1);
+
+    SendMessageA(g_item_lock_listbox, WM_SETREDRAW, FALSE, 0);
+    SendMessageA(g_item_lock_listbox, LB_RESETCONTENT, 0, 0);
+    for (i = 0; i < g_auto_item_lock_catalog_count; ++i) {
+        char label[256];
+        LRESULT row;
+        AutoItemLockInfo *info = &g_auto_item_lock_catalog[i];
+
+        if (!item_lock_catalog_matches_filter(info,
+                                              type_filter,
+                                              grade_filter,
+                                              class_filter)) {
+            continue;
+        }
+        auto_item_lock_format_item_label(info, label, sizeof(label));
+        row = listbox_add_utf8(g_item_lock_listbox, label);
+        if (row != LB_ERR) {
+            SendMessageA(g_item_lock_listbox, LB_SETITEMDATA,
+                         (WPARAM)row, (LPARAM)i);
+        }
+    }
+    if (SendMessageA(g_item_lock_listbox, LB_GETCOUNT, 0, 0) > 0) {
+        SendMessageA(g_item_lock_listbox, LB_SETCURSEL, 0, 0);
+    }
+    SendMessageA(g_item_lock_listbox, WM_SETREDRAW, TRUE, 0);
+    InvalidateRect(g_item_lock_listbox, NULL, TRUE);
+    update_item_lock_list_status();
+}
+
+static int item_lock_combo_add_utf8(HWND combo, const char *label, int data)
+{
+    WCHAR wbuf[128];
+    LRESULT index;
+    int written;
+
+    if (!combo) return -1;
+    if (!label) label = "";
+    written = MultiByteToWideChar(CP_UTF8, 0, label, -1,
+                                  wbuf, (int)(sizeof(wbuf) / sizeof(wbuf[0])));
+    if (written > 0) {
+        index = SendMessageW(combo, CB_ADDSTRING, 0, (LPARAM)wbuf);
+    } else {
+        index = SendMessageA(combo, CB_ADDSTRING, 0, (LPARAM)label);
+    }
+    if (index == CB_ERR || index == CB_ERRSPACE) return -1;
+    SendMessageA(combo, CB_SETITEMDATA, (WPARAM)index, (LPARAM)data);
+    return (int)index;
+}
+
+static void init_item_lock_filter_combo(HWND combo, int is_type)
+{
+    int i;
+
+    if (!combo) return;
+    SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+    item_lock_combo_add_utf8(combo, "all", -1);
+    if (is_type == 1) {
+        item_lock_combo_add_utf8(combo, "material", EITEM_TYPE_MATERIAL);
+        item_lock_combo_add_utf8(combo, "gear", EITEM_TYPE_GEAR);
+        item_lock_combo_add_utf8(combo, "other", -2);
+    } else if (is_type == 2) {
+        item_lock_combo_add_utf8(combo, "common", EEQUIP_CLASS_ALL);
+        item_lock_combo_add_utf8(combo, "knight", EEQUIP_CLASS_KNIGHT);
+        item_lock_combo_add_utf8(combo, "ranger", EEQUIP_CLASS_RANGER);
+        item_lock_combo_add_utf8(combo, "sorcerer", EEQUIP_CLASS_SORCERER);
+        item_lock_combo_add_utf8(combo, "priest", EEQUIP_CLASS_PRIEST);
+        item_lock_combo_add_utf8(combo, "hunter", EEQUIP_CLASS_HUNTER);
+        item_lock_combo_add_utf8(combo, "slayer", EEQUIP_CLASS_SLAYER);
+    } else {
+        for (i = 0; i <= EGRADE_NONE; ++i) {
+            char label[32];
+            wsprintfA(label, "g%d %s", i, auto_item_lock_grade_name(i));
+            label[sizeof(label) - 1] = 0;
+            item_lock_combo_add_utf8(combo, label, i);
+        }
+    }
+    SendMessageA(combo, CB_SETCURSEL, 0, 0);
+}
+
+static void commit_item_lock_temp_selection(void)
+{
+    int bytes = g_auto_item_lock_temp_count * (int)sizeof(unsigned int);
+
+    if (g_auto_item_lock_temp_count < 0) g_auto_item_lock_temp_count = 0;
+    if (g_auto_item_lock_temp_count > AUTO_ITEM_LOCK_MAX_SELECTED) {
+        g_auto_item_lock_temp_count = AUTO_ITEM_LOCK_MAX_SELECTED;
+    }
+    if (bytes > 0) {
+        mem_copy_local(g_auto_item_lock_selected_ids,
+                       g_auto_item_lock_temp_ids,
+                       (SIZE_T)bytes);
+    }
+    g_auto_item_lock_selected_count = g_auto_item_lock_temp_count;
+    save_config();
+    update_item_lock_list_button();
+    log_line("auto item lock selection saved: ids=%d",
+             g_auto_item_lock_selected_count);
+    append_overlay_event("LOCK LIST saved %d",
+                         g_auto_item_lock_selected_count);
+}
+
+static LRESULT CALLBACK item_lock_list_wnd_proc(HWND hwnd,
+                                                UINT msg,
+                                                WPARAM wp,
+                                                LPARAM lp)
+{
+    switch (msg) {
+    case WM_CREATE: {
+        int bytes;
+
+        init_overlay_style();
+        g_auto_item_lock_temp_count = g_auto_item_lock_selected_count;
+        bytes = g_auto_item_lock_temp_count * (int)sizeof(unsigned int);
+        if (bytes > 0) {
+            mem_copy_local(g_auto_item_lock_temp_ids,
+                           g_auto_item_lock_selected_ids,
+                           (SIZE_T)bytes);
+        }
+
+        CreateWindowExA(0, "STATIC", "type",
+                        WS_CHILD | WS_VISIBLE | SS_LEFT,
+                        14, 14, 48, 22, hwnd, NULL, g_self_module, NULL);
+        g_item_lock_type_combo = CreateWindowExA(
+                        0, "COMBOBOX", "",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP |
+                        CBS_DROPDOWNLIST | WS_VSCROLL,
+                        62, 10, 150, 220, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_TYPE,
+                        g_self_module, NULL);
+        CreateWindowExA(0, "STATIC", "grade",
+                        WS_CHILD | WS_VISIBLE | SS_LEFT,
+                        226, 14, 52, 22, hwnd, NULL, g_self_module, NULL);
+        g_item_lock_grade_combo = CreateWindowExA(
+                        0, "COMBOBOX", "",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP |
+                        CBS_DROPDOWNLIST | WS_VSCROLL,
+                        282, 10, 150, 260, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_GRADE,
+                        g_self_module, NULL);
+        g_item_lock_class_label = CreateWindowExA(0, "STATIC", "class",
+                        WS_CHILD | WS_VISIBLE | SS_LEFT,
+                        446, 14, 48, 22, hwnd, NULL, g_self_module, NULL);
+        g_item_lock_class_combo = CreateWindowExA(
+                        0, "COMBOBOX", "",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP |
+                        CBS_DROPDOWNLIST | WS_VSCROLL,
+                        496, 10, 120, 220, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_CLASS,
+                        g_self_module, NULL);
+        CreateWindowExA(0, "STATIC", "filter",
+                        WS_CHILD | WS_VISIBLE | SS_LEFT,
+                        630, 14, 46, 22, hwnd, NULL, g_self_module, NULL);
+        g_item_lock_search_edit = CreateWindowExA(
+                        WS_EX_CLIENTEDGE, "EDIT", "",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
+                        676, 10, 128, 24, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_SEARCH,
+                        g_self_module, NULL);
+        g_item_lock_listbox = CreateWindowExA(
+                        WS_EX_CLIENTEDGE, "LISTBOX", "",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL |
+                        LBS_NOTIFY | LBS_OWNERDRAWFIXED |
+                        LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+                        14, 44, 790, 320, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_LIST,
+                        g_self_module, NULL);
+        g_item_lock_status_label = CreateWindowExA(
+                        0, "STATIC", "",
+                        WS_CHILD | WS_VISIBLE | SS_LEFT,
+                        14, 374, 360, 26, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_STATUS,
+                        g_self_module, NULL);
+        CreateWindowExW(0, L"BUTTON", L"\x786E\x5B9A",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+                        604, 374, 92, 30, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_OK,
+                        g_self_module, NULL);
+        CreateWindowExW(0, L"BUTTON", L"\x6E05\x7A7A",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+                        496, 374, 92, 30, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_CLEAR,
+                        g_self_module, NULL);
+        CreateWindowExW(0, L"BUTTON", L"\x53D6\x6D88",
+                        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+                        712, 374, 92, 30, hwnd,
+                        (HMENU)(uintptr_t)ITEM_LOCK_LIST_CONTROL_CANCEL,
+                        g_self_module, NULL);
+
+        SendMessageA(g_item_lock_type_combo, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        SendMessageA(g_item_lock_grade_combo, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        SendMessageA(g_item_lock_class_combo, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        SendMessageA(g_item_lock_search_edit, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        SendMessageA(g_item_lock_listbox, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        SendMessageA(g_item_lock_listbox, LB_SETITEMHEIGHT, 0,
+                     ITEM_LOCK_LIST_ROW_HEIGHT);
+        g_item_lock_listbox_old_proc =
+            (WNDPROC)SetWindowLongPtrA(g_item_lock_listbox, GWLP_WNDPROC,
+                                       (LONG_PTR)item_lock_listbox_proc);
+        SendMessageA(g_item_lock_status_label, WM_SETFONT,
+                     (WPARAM)g_overlay_font, TRUE);
+        if (g_item_lock_class_label) {
+            SendMessageA(g_item_lock_class_label, WM_SETFONT,
+                         (WPARAM)g_overlay_font, TRUE);
+        }
+
+        init_item_lock_filter_combo(g_item_lock_type_combo, 1);
+        init_item_lock_filter_combo(g_item_lock_grade_combo, 0);
+        init_item_lock_filter_combo(g_item_lock_class_combo, 2);
+        update_item_lock_class_filter_visibility();
+        g_item_lock_list_catalog_version_seen =
+            InterlockedCompareExchange(&g_auto_item_lock_catalog_version, 0, 0);
+        populate_item_lock_listbox();
+        if (g_auto_item_lock_catalog_count <= 0) {
+            SetTimer(hwnd, ITEM_LOCK_LIST_TIMER_REFRESH, 500, NULL);
+        }
+        return 0;
+    }
+    case WM_TIMER:
+        if (wp == ITEM_LOCK_LIST_TIMER_REFRESH) {
+            refresh_item_lock_list_if_catalog_changed(hwnd);
+            return 0;
+        }
+        break;
+    case WM_MEASUREITEM:
+        if (((MEASUREITEMSTRUCT *)lp)->CtlID == ITEM_LOCK_LIST_CONTROL_LIST) {
+            ((MEASUREITEMSTRUCT *)lp)->itemHeight = ITEM_LOCK_LIST_ROW_HEIGHT;
+            return TRUE;
+        }
+        break;
+    case WM_DRAWITEM:
+        if (((DRAWITEMSTRUCT *)lp)->CtlID == ITEM_LOCK_LIST_CONTROL_LIST) {
+            draw_item_lock_checkbox_row((const DRAWITEMSTRUCT *)lp);
+            return TRUE;
+        }
+        break;
+    case WM_COMMAND:
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_TYPE ||
+            LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_GRADE ||
+            LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_CLASS) {
+            if (HIWORD(wp) == CBN_DROPDOWN) {
+                KillTimer(hwnd, ITEM_LOCK_LIST_TIMER_REFRESH);
+                return 0;
+            }
+            if (HIWORD(wp) == CBN_CLOSEUP) {
+                if (g_auto_item_lock_catalog_count <= 0) {
+                    SetTimer(hwnd, ITEM_LOCK_LIST_TIMER_REFRESH, 500, NULL);
+                }
+                return 0;
+            }
+            if (HIWORD(wp) == CBN_SELCHANGE) {
+                sync_visible_item_lock_selection_to_temp();
+                populate_item_lock_listbox();
+                return 0;
+            }
+        }
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_LIST) {
+            if (HIWORD(wp) == LBN_SELCHANGE) {
+                sync_visible_item_lock_selection_to_temp();
+                update_item_lock_list_status();
+                return 0;
+            }
+        }
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_SEARCH) {
+            if (HIWORD(wp) == EN_CHANGE) {
+                sync_visible_item_lock_selection_to_temp();
+                populate_item_lock_listbox();
+                return 0;
+            }
+        }
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_OK) {
+            sync_visible_item_lock_selection_to_temp();
+            commit_item_lock_temp_selection();
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_CLEAR) {
+            clear_item_lock_temp_selection();
+            populate_item_lock_listbox();
+            append_overlay_event("LOCK LIST clear");
+            return 0;
+        }
+        if (LOWORD(wp) == ITEM_LOCK_LIST_CONTROL_CANCEL) {
+            DestroyWindow(hwnd);
+            return 0;
+        }
+        break;
+    case WM_CLOSE:
+        DestroyWindow(hwnd);
+        return 0;
+    case WM_DESTROY:
+        KillTimer(hwnd, ITEM_LOCK_LIST_TIMER_REFRESH);
+        g_item_lock_list_catalog_version_seen = 0;
+        if (g_item_lock_list_hwnd == hwnd) {
+            if (g_item_lock_listbox && g_item_lock_listbox_old_proc) {
+                SetWindowLongPtrA(g_item_lock_listbox, GWLP_WNDPROC,
+                                  (LONG_PTR)g_item_lock_listbox_old_proc);
+            }
+            g_item_lock_list_hwnd = NULL;
+            g_item_lock_type_combo = NULL;
+            g_item_lock_grade_combo = NULL;
+            g_item_lock_class_label = NULL;
+            g_item_lock_class_combo = NULL;
+            g_item_lock_search_edit = NULL;
+            g_item_lock_listbox = NULL;
+            g_item_lock_status_label = NULL;
+            g_item_lock_listbox_old_proc = NULL;
+        }
+        return 0;
+    default:
+        break;
+    }
+    return DefWindowProcA(hwnd, msg, wp, lp);
+}
+
+static void open_item_lock_list_window(void)
+{
+    WNDCLASSA wc;
+    char class_name[96];
+    unsigned char *wc_bytes = (unsigned char *)&wc;
+    int x = g_overlay_x + 80;
+    int y = g_overlay_y + 80;
+
+    if (g_item_lock_list_hwnd && IsWindow(g_item_lock_list_hwnd)) {
+        ShowWindow(g_item_lock_list_hwnd, SW_SHOWNORMAL);
+        SetForegroundWindow(g_item_lock_list_hwnd);
+        return;
+    }
+
+    for (SIZE_T i = 0; i < sizeof(wc); ++i) wc_bytes[i] = 0;
+    wsprintfA(class_name, "%s%p", ITEM_LOCK_LIST_CLASS_PREFIX, g_self_module);
+    wc.lpfnWndProc = item_lock_list_wnd_proc;
+    wc.hInstance = g_self_module;
+    wc.lpszClassName = class_name;
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hCursor = LoadCursorA(NULL, IDC_ARROW);
+    RegisterClassA(&wc);
+
+    if (g_overlay_hwnd) {
+        RECT rc;
+        if (GetWindowRect(g_overlay_hwnd, &rc)) {
+            x = rc.left + 28;
+            y = rc.top + 28;
+        }
+    }
+
+    g_item_lock_list_hwnd = CreateWindowExA(
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
+        class_name,
+        "Item Lock List",
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
+        x, y, 830, 455,
+        g_overlay_hwnd, NULL, g_self_module, NULL);
+    if (!g_item_lock_list_hwnd) {
+        log_line("CreateWindowEx item lock list failed, error=%lu",
+                 GetLastError());
+        return;
+    }
+    SetWindowTextW(g_item_lock_list_hwnd, L"\x9501\x5B9A\x6E05\x5355");
+    ShowWindow(g_item_lock_list_hwnd, SW_SHOWNORMAL);
+    UpdateWindow(g_item_lock_list_hwnd);
 }
 
 static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -5558,48 +9192,52 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
                         302, 108, 104, 26, OVERLAY_BUTTON_AUTO_SWITCH);
         g_overlay_synth_button = create_overlay_button(hwnd, "synth:off",
                         76, 144, 102, 26, OVERLAY_BUTTON_SYNTH_TOGGLE);
-        create_overlay_button(hwnd, "g-", 184, 144, 42, 26,
-                              OVERLAY_BUTTON_SYNTH_GRADE_MINUS);
-        g_overlay_synth_grade_label = CreateWindowExA(
-                        0, "STATIC", "g6",
-                        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
-                        SS_CENTER | SS_CENTERIMAGE,
-                        230, 144, 56, 26, hwnd,
-                        (HMENU)(uintptr_t)OVERLAY_LABEL_SYNTH_GRADE,
-                        g_self_module, NULL);
-        create_overlay_button(hwnd, "g+", 290, 144, 42, 26,
-                              OVERLAY_BUTTON_SYNTH_GRADE_PLUS);
         g_overlay_synth_storage_button = create_overlay_button(hwnd, "store:on",
-                        338, 144, 92, 26, OVERLAY_BUTTON_SYNTH_STORAGE);
-        create_overlay_button(hwnd, "-30s", 76, 180, 42, 26,
+                        184, 144, 102, 26, OVERLAY_BUTTON_SYNTH_STORAGE);
+        g_overlay_item_lock_high_grade_button = create_overlay_button(hwnd, "",
+                        76, 180, 132, 26,
+                        OVERLAY_BUTTON_ITEM_LOCK_HIGH_GRADE);
+        g_overlay_item_lock_coin_button = create_overlay_button(hwnd, "",
+                        214, 180, 66, 26,
+                        OVERLAY_BUTTON_ITEM_LOCK_COIN);
+        g_overlay_item_lock_market_top_button = create_overlay_button(hwnd, "",
+                        286, 180, 124, 26,
+                        OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP);
+        g_overlay_item_lock_list_button = create_overlay_button(hwnd, "",
+                        416, 180, 116, 26,
+                        OVERLAY_BUTTON_ITEM_LOCK_LIST);
+        g_overlay_item_lock_manual_button = create_overlay_button(hwnd, "",
+                        538, 180, 126, 26,
+                        OVERLAY_BUTTON_ITEM_LOCK_MANUAL);
+        create_overlay_button(hwnd, "-30s", 76, 216, 42, 26,
                               OVERLAY_BUTTON_LOCK_MINUS30);
-        create_overlay_button(hwnd, "-10s", 122, 180, 42, 26,
+        create_overlay_button(hwnd, "-10s", 122, 216, 42, 26,
                               OVERLAY_BUTTON_LOCK_MINUS10);
         g_overlay_lock_interval_label = CreateWindowExA(
                         0, "STATIC", "60s(--s)",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_CENTER | SS_CENTERIMAGE,
-                        168, 180, 82, 26, hwnd,
+                        168, 216, 82, 26, hwnd,
                         (HMENU)(uintptr_t)OVERLAY_LABEL_LOCK_INTERVAL,
                         g_self_module, NULL);
-        create_overlay_button(hwnd, "+10s", 254, 180, 42, 26,
+        create_overlay_button(hwnd, "+10s", 254, 216, 42, 26,
                               OVERLAY_BUTTON_LOCK_PLUS10);
-        create_overlay_button(hwnd, "+30s", 300, 180, 42, 26,
+        create_overlay_button(hwnd, "+30s", 300, 216, 42, 26,
                               OVERLAY_BUTTON_LOCK_PLUS30);
         g_overlay_lock_button = create_overlay_button(hwnd, "lock",
-                        346, 180, 80, 26, OVERLAY_BUTTON_LOCK_STAGE);
+                        346, 216, 80, 26, OVERLAY_BUTTON_LOCK_STAGE);
         g_overlay_lock_stage_label = CreateWindowExA(
                         0, "STATIC", "--",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_LEFT | SS_CENTERIMAGE,
-                        434, 180, 90, 26, hwnd,
+                        434, 216, 90, 26, hwnd,
                         (HMENU)(uintptr_t)OVERLAY_LABEL_LOCK_STAGE,
                         g_self_module, NULL);
         g_overlay_chest_intervals_label = CreateWindowExA(
                         0, "STATIC", "N count 0 last -- best --/-- next --\r\nB count 0 last -- best --/-- next --",
                         WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS |
                         SS_LEFT,
-                        76, 218, 590, 44,
+                        76, 254, 590, 44,
                         hwnd, (HMENU)(uintptr_t)OVERLAY_LABEL_CHEST_INTERVALS,
                         g_self_module, NULL);
         apply_overlay_fonts(hwnd);
@@ -5609,6 +9247,8 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         update_actboss_button();
         update_auto_switch_button();
         update_auto_synthesis_buttons();
+        update_item_lock_list_button();
+        update_item_lock_condition_buttons();
         update_lock_button(hwnd);
         update_lock_stage_label();
         update_lock_interval_label();
@@ -5637,8 +9277,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         init_overlay_style();
         if (child == g_overlay_label ||
             child == g_overlay_exp_multiplier_label ||
-            child == g_overlay_cube_multiplier_label ||
-            child == g_overlay_synth_grade_label) {
+            child == g_overlay_cube_multiplier_label) {
             SetBkMode(hdc, OPAQUE);
             SetBkColor(hdc, OVERLAY_COLOR_PANEL);
             SetTextColor(hdc, OVERLAY_COLOR_ACCENT);
@@ -5682,15 +9321,33 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         persist_overlay_position(hwnd);
         return 0;
     case WM_TIMER:
-        position_overlay(hwnd);
+        if (!item_lock_filter_dropdown_open()) {
+            position_overlay(hwnd);
+        }
         update_lock_button(hwnd);
         update_lock_stage_label();
         update_lock_interval_label();
         update_auto_switch_button();
         update_auto_synthesis_buttons();
+        update_item_lock_list_button();
+        update_item_lock_condition_buttons();
         update_exp_multiplier_labels();
         update_chest_interval_label();
         return 0;
+    case WM_MOUSEWHEEL: {
+        POINT pt;
+        int delta = (short)HIWORD(wp);
+        int steps;
+
+        pt.x = (short)LOWORD(lp);
+        pt.y = (short)HIWORD(lp);
+        ScreenToClient(hwnd, &pt);
+        if (!point_in_drop_log_box(pt)) break;
+        steps = delta / WHEEL_DELTA;
+        if (!steps) steps = delta > 0 ? 1 : -1;
+        adjust_drop_log_scroll(steps);
+        return 0;
+    }
     case WM_COMMAND:
         if (LOWORD(wp) == OVERLAY_BUTTON_MIN) {
             set_speed_value(g_speed_min);
@@ -5758,19 +9415,30 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
             update_auto_synthesis_buttons();
             return 0;
         }
-        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_GRADE_MINUS) {
-            adjust_auto_synthesis_grade(-1);
-            update_auto_synthesis_buttons();
-            return 0;
-        }
-        if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_GRADE_PLUS) {
-            adjust_auto_synthesis_grade(1);
-            update_auto_synthesis_buttons();
-            return 0;
-        }
         if (LOWORD(wp) == OVERLAY_BUTTON_SYNTH_STORAGE) {
             set_auto_synthesis_use_storage(!g_auto_synthesis_use_storage);
             update_auto_synthesis_buttons();
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_ITEM_LOCK_HIGH_GRADE) {
+            set_item_lock_condition_high_grade(!g_item_lock_condition_high_grade);
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_ITEM_LOCK_COIN) {
+            set_item_lock_condition_coin(!g_item_lock_condition_coin);
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP) {
+            set_item_lock_condition_market_top(!g_item_lock_condition_market_top);
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_ITEM_LOCK_LIST) {
+            open_item_lock_list_window();
+            update_item_lock_list_button();
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_ITEM_LOCK_MANUAL) {
+            queue_manual_item_lock_request();
             return 0;
         }
         if (LOWORD(wp) == OVERLAY_BUTTON_LOCK_MINUS30) {
@@ -5817,12 +9485,19 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         g_overlay_actboss_button = NULL;
         g_overlay_auto_switch_button = NULL;
         g_overlay_synth_button = NULL;
-        g_overlay_synth_grade_label = NULL;
         g_overlay_synth_storage_button = NULL;
+        g_overlay_item_lock_high_grade_button = NULL;
+        g_overlay_item_lock_coin_button = NULL;
+        g_overlay_item_lock_market_top_button = NULL;
+        g_overlay_item_lock_manual_button = NULL;
+        g_overlay_item_lock_list_button = NULL;
         g_overlay_lock_button = NULL;
         g_overlay_lock_interval_label = NULL;
         g_overlay_lock_stage_label = NULL;
         g_overlay_chest_intervals_label = NULL;
+        if (g_item_lock_list_hwnd && IsWindow(g_item_lock_list_hwnd)) {
+            DestroyWindow(g_item_lock_list_hwnd);
+        }
         destroy_overlay_style();
         PostQuitMessage(0);
         return 0;
@@ -5920,60 +9595,6 @@ static int resolve_unity_time_calls(HMODULE game_assembly)
     return g_real_get_delta_time && g_real_set_time_scale;
 }
 
-static int resolve_unity_screen_calls(void)
-{
-    static const char *get_width_names[] = {
-        "UnityEngine.Screen::get_width()",
-        "UnityEngine.Screen::get_width"
-    };
-    static const char *get_height_names[] = {
-        "UnityEngine.Screen::get_height()",
-        "UnityEngine.Screen::get_height"
-    };
-    static const char *set_fullscreen_names[] = {
-        "UnityEngine.Screen::set_fullScreen(System.Boolean)",
-        "UnityEngine.Screen::set_fullScreen"
-    };
-    static const char *set_fullscreen_mode_names[] = {
-        "UnityEngine.Screen::set_fullScreenMode(UnityEngine.FullScreenMode)",
-        "UnityEngine.Screen::set_fullScreenMode"
-    };
-    static const char *set_resolution_injected_names[] = {
-        "UnityEngine.Screen::SetResolution_Injected(System.Int32,System.Int32,UnityEngine.FullScreenMode,UnityEngine.RefreshRate&)"
-    };
-    static const char *set_resolution_bool3_names[] = {
-        "UnityEngine.Screen::SetResolution(System.Int32,System.Int32,System.Boolean)",
-        "UnityEngine.Screen::SetResolution"
-    };
-    static const char *set_resolution_bool4_names[] = {
-        "UnityEngine.Screen::SetResolution(System.Int32,System.Int32,System.Boolean,System.Int32)"
-    };
-    static const char *set_resolution_mode4_names[] = {
-        "UnityEngine.Screen::SetResolution(System.Int32,System.Int32,UnityEngine.FullScreenMode,System.Int32)"
-    };
-
-    g_screen_get_width = (unity_screen_get_int_t)resolve_time_icall(get_width_names, 2);
-    g_screen_get_height = (unity_screen_get_int_t)resolve_time_icall(get_height_names, 2);
-    g_screen_set_fullscreen = (unity_screen_set_bool_t)resolve_time_icall(set_fullscreen_names, 2);
-    g_screen_set_fullscreen_mode = (unity_screen_set_int_t)resolve_time_icall(set_fullscreen_mode_names, 2);
-    g_screen_set_resolution_injected =
-        (unity_screen_set_resolution_injected_t)resolve_time_icall(set_resolution_injected_names, 1);
-    g_screen_set_resolution_mode4 =
-        (unity_screen_set_resolution_mode4_t)resolve_time_icall(set_resolution_mode4_names, 1);
-    g_screen_set_resolution_bool4 =
-        (unity_screen_set_resolution_bool4_t)resolve_time_icall(set_resolution_bool4_names, 1);
-    g_screen_set_resolution_bool3 =
-        (unity_screen_set_resolution_bool3_t)resolve_time_icall(set_resolution_bool3_names, 2);
-
-    if (!g_screen_set_fullscreen && !g_screen_set_fullscreen_mode &&
-        !g_screen_set_resolution_injected && !g_screen_set_resolution_bool3 &&
-        !g_screen_set_resolution_bool4 && !g_screen_set_resolution_mode4) {
-        log_line("Unity Screen windowed icalls not resolved");
-        return 0;
-    }
-    return 1;
-}
-
 static int install_unity_time_hooks(HMODULE game_assembly)
 {
     uintptr_t base = (uintptr_t)game_assembly;
@@ -6055,6 +9676,9 @@ static DWORD WINAPI speed_thread(LPVOID arg)
 {
     (void)arg;
     init_paths();
+    ensure_auto_item_lock_localized_names_loaded();
+    load_item_log_history();
+    load_auto_item_lock_market_top_ids();
     load_config();
     if (!validate_runtime_versions()) {
         return 0;
@@ -6088,8 +9712,6 @@ static DWORD WINAPI speed_thread(LPVOID arg)
         log_line("failed to resolve Unity Time icalls");
         return 0;
     }
-
-    resolve_unity_screen_calls();
 
     if (!install_unity_time_hooks(game_assembly)) {
         log_line("failed to install hooks");
@@ -6136,13 +9758,6 @@ static DWORD WINAPI speed_thread(LPVOID arg)
         } else {
             restore_box_count_hook(game_assembly);
         }
-        if (g_reward_trace_hooks_enabled ||
-            g_force_box_reward_select_enabled ||
-            g_keep_boxdata_after_select_enabled) {
-            install_box_reward_select_hook(game_assembly);
-        } else {
-            restore_box_reward_select_hook(game_assembly);
-        }
         if (!g_reward_trace_hooks_enabled) log_line("reward trace hooks disabled");
         if (g_force_box_reward_select_enabled) log_line("force box reward select enabled");
         if (g_keep_boxdata_after_select_enabled) log_line("keep boxdata after select enabled");
@@ -6151,7 +9766,7 @@ static DWORD WINAPI speed_thread(LPVOID arg)
         restore_drop_related_patches(game_assembly);
         log_line("drop hooks disabled");
     }
-    enforce_game_title_bar();
+    update_box_reward_select_hook(game_assembly);
 
     InterlockedExchange(&g_initialized, 1);
 
@@ -6161,7 +9776,6 @@ static DWORD WINAPI speed_thread(LPVOID arg)
     }
 
     while (1) {
-        enforce_game_title_bar();
         if (g_background_apply && g_real_set_time_scale) {
             g_real_set_time_scale(g_speed);
         }
@@ -6221,6 +9835,9 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved)
         DisableThreadLibraryCalls(hinst);
         HANDLE thread = CreateThread(NULL, 0, speed_thread, NULL, 0, NULL);
         if (thread) CloseHandle(thread);
+    } else if (reason == DLL_PROCESS_DETACH) {
+        release_auto_item_lock_icon_bitmaps();
+        destroy_overlay_style();
     }
     return TRUE;
 }

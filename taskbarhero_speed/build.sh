@@ -3,65 +3,94 @@ set -eu
 
 cd "$(dirname "$0")/.."
 ROOT="$(pwd)"
+MINGW_CC="${TBH_MINGW_CC:-x86_64-w64-mingw32-gcc}"
+TARGETS="${TBH_BUILD_TARGETS:-windows-x64}"
 
-x86_64-w64-mingw32-gcc \
-  -shared \
-  -O2 \
-  -Wall \
-  -Wextra \
-  -Wno-cast-function-type \
-  -ffreestanding \
-  -fno-builtin \
-  -nostdlib \
-  -Wl,--entry,DllMainCRTStartup \
-  -Wl,--subsystem,windows \
-  -o winhttp.dll \
-  taskbarhero_speed/winhttp_proxy.c \
-  -lgcc \
-  -lkernel32 \
-  -luser32 \
-  -lgdi32
+if ! command -v "$MINGW_CC" >/dev/null 2>&1; then
+  echo "missing MinGW cross compiler: $MINGW_CC" >&2
+  echo "Set TBH_MINGW_CC=/path/to/x86_64-w64-mingw32-gcc or install mingw-w64-gcc." >&2
+  exit 127
+fi
 
-echo "built winhttp.dll"
+build_windows_x64() {
+  "$MINGW_CC" \
+    -shared \
+    -O2 \
+    -Wall \
+    -Wextra \
+    -Wno-cast-function-type \
+    -ffreestanding \
+    -fno-builtin \
+    -nostdlib \
+    -Wl,--entry,DllMainCRTStartup \
+    -Wl,--subsystem,windows \
+    -o winhttp.dll \
+    taskbarhero_speed/winhttp_proxy.c \
+    -lgcc \
+    -lkernel32 \
+    -luser32 \
+    -lgdi32
 
-x86_64-w64-mingw32-gcc \
-  -shared \
-  -O2 \
-  -Wall \
-  -Wextra \
-  -Wno-cast-function-type \
-  -ffreestanding \
-  -fno-builtin \
-  -nostdlib \
-  -DTBHS_STANDALONE_DLL \
-  -Wl,--entry,DllMainCRTStartup \
-  -Wl,--subsystem,windows \
-  -o TaskBarHeroSpeed.dll \
-  taskbarhero_speed/winhttp_proxy.c \
-  -lgcc \
-  -lkernel32 \
-  -luser32 \
-  -lgdi32
+  echo "built winhttp.dll"
 
-echo "built TaskBarHeroSpeed.dll"
+  "$MINGW_CC" \
+    -shared \
+    -O2 \
+    -Wall \
+    -Wextra \
+    -Wno-cast-function-type \
+    -ffreestanding \
+    -fno-builtin \
+    -nostdlib \
+    -DTBHS_STANDALONE_DLL \
+    -Wl,--entry,DllMainCRTStartup \
+    -Wl,--subsystem,windows \
+    -o TaskBarHeroSpeed.dll \
+    taskbarhero_speed/winhttp_proxy.c \
+    -lgcc \
+    -lkernel32 \
+    -luser32 \
+    -lgdi32
 
-x86_64-w64-mingw32-gcc \
-  -O2 \
-  -Wall \
-  -Wextra \
-  -Wno-cast-function-type \
-  -ffreestanding \
-  -fno-builtin \
-  -nostdlib \
-  -Wl,--entry,WinMainCRTStartup \
-  -Wl,--subsystem,console \
-  -o TaskBarHeroSpeedInject.exe \
-  taskbarhero_speed/injector.c \
-  -lgcc \
-  -lkernel32 \
-  -luser32
+  echo "built TaskBarHeroSpeed.dll"
 
-echo "built TaskBarHeroSpeedInject.exe"
+  "$MINGW_CC" \
+    -O2 \
+    -Wall \
+    -Wextra \
+    -Wno-cast-function-type \
+    -ffreestanding \
+    -fno-builtin \
+    -nostdlib \
+    -Wl,--entry,WinMainCRTStartup \
+    -Wl,--subsystem,console \
+    -o TaskBarHeroSpeedInject.exe \
+    taskbarhero_speed/injector.c \
+    -lgcc \
+    -lkernel32 \
+    -luser32
+
+  echo "built TaskBarHeroSpeedInject.exe"
+}
+
+for target in $TARGETS; do
+  case "$target" in
+    windows-x64)
+      echo "building target: windows-x64 (Windows PE for Windows, CrossOver, Proton, Steam Deck)"
+      build_windows_x64
+      TARGET_OUT_DIR="$ROOT/dist/build/$target"
+      mkdir -p "$TARGET_OUT_DIR"
+      cp -p winhttp.dll "$TARGET_OUT_DIR/winhttp.dll"
+      cp -p TaskBarHeroSpeed.dll "$TARGET_OUT_DIR/TaskBarHeroSpeed.dll"
+      cp -p TaskBarHeroSpeedInject.exe "$TARGET_OUT_DIR/TaskBarHeroSpeedInject.exe"
+      echo "copied target files: dist/build/$target"
+      ;;
+    *)
+      echo "unknown build target: $target" >&2
+      exit 2
+      ;;
+  esac
+done
 
 STAMP="$(date +%Y%m%d%H%M%S)"
 GAME_VERSION="${TBH_GAME_VERSION:-}"
