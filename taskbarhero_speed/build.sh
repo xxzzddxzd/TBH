@@ -120,3 +120,12 @@ if [ -f "$ROOT/Version.txt" ] && [ ! -f "$DLL_ARCHIVE_DIR/Version.txt" ]; then
   cp -p "$ROOT/Version.txt" "$DLL_ARCHIVE_DIR/Version.txt"
 fi
 echo "archived DLLs for game $GAME_VERSION: $DLL_ARCHIVE_DIR"
+
+PLUGIN_VERSION_DIR="$ROOT/taskbarhero_speed/versions/$GAME_VERSION"
+mkdir -p "$PLUGIN_VERSION_DIR"
+cp -p TaskBarHeroSpeed.dll "$PLUGIN_VERSION_DIR/TaskBarHeroSpeed.dll"
+cp -p winhttp.dll "$PLUGIN_VERSION_DIR/winhttp.dll"
+if [ -f "$ROOT/Version.txt" ]; then
+  cp -p "$ROOT/Version.txt" "$PLUGIN_VERSION_DIR/Version.txt"
+fi
+echo "updated injectable DLLs: taskbarhero_speed/versions/$GAME_VERSION"

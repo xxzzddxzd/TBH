@@ -5,8 +5,8 @@
 
 #define TBHS_SUPPORTED_GAME_VERSION "1.00.21"
 #define TBHS_PLUGIN_VERSION "1.00.21"
-#define TBHS_PLUGIN_SUBVERSION "404"
-#define TBHS_PLUGIN_DISPLAY_VERSION "1.00.21.404"
+#define TBHS_PLUGIN_SUBVERSION "405"
+#define TBHS_PLUGIN_DISPLAY_VERSION "1.00.21.405"
 #define SPEED_DEFAULT 5.0f
 #define EXP_MULTIPLIER_DEFAULT 1.0f
 #define CUBE_EXP_MULTIPLIER_DEFAULT 10.0f
@@ -55,14 +55,25 @@
 #define RVA_UI_CUBE_ON_DESTROY 0xA20D60ULL
 #define RVA_UI_CUBE_AUTOFILL 0xA22150ULL /* UI_Cube auto-fill current recipe */
 #define RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL /* UI_RemakeStash inventory -> stash batch button */
+#define RVA_UI_MANAGER_SHOW_UI_BASE 0xC391A0ULL /* UIManager.hhf shows a UI_Base main tab */
+#define RVA_UI_MAIN_OPEN_STASH 0x82E470ULL /* UI_Main stash tab button handler */
+#define RVA_UI_MAIN_OPEN_CUBE 0x82E6B0ULL /* UI_Main cube tab button handler */
 #define RVA_CUBE_TYPEINFO 0x5DC88E0ULL /* uz.Cube_TypeInfo */
 #define RVA_CUBE_SELECT_RECIPE_TYPE 0x8A0950ULL /* uz.Cube.imr(ERecipeType) selects current recipe */
 #define RVA_UI_MANAGER_TYPEINFO 0x5E3D880ULL /* np<UIManager>_TypeInfo */
+#define RVA_SLOT_MANAGER_TYPEINFO 0x5E40D28ULL /* np<rd>_TypeInfo; item slot move manager */
+#define RVA_SLOT_MANAGER_MOVE_REQUEST 0x8847B0ULL /* rd.ktp(MoveRequest, Action<MoveResult>) */
+#define RVA_SLOT_MANAGER_MOVE_TO_TARGET 0x883C60ULL /* rd.kit(targetType, sourceIndex, callback, targetIndex) */
+#define RVA_INVENTORY_TYPEINFO 0x5DC90A0ULL /* uz.ty_TypeInfo; backend inventory slot dictionary */
 #define RVA_MASTER_DATA_SINGLETON_TYPEINFO 0x5E40568ULL /* np<bam>_TypeInfo; bam holds itemInfoData */
 #define RVA_ITEM_CACHE_BY_UNIQUE_ID 0x909D00ULL /* uz.uc.izf(ulong) returns uz.uc.ua item cache */
 #define RVA_ITEM_CACHE_STORE_TYPEINFO 0x5DC9198ULL /* uz.uc_TypeInfo owns live item cache dictionary */
 #define RVA_ITEM_CACHE_GET_MANUAL_LOCK 0x901180ULL /* uz.uc.ua.iws() manual lock flag */
 #define RVA_ITEM_CACHE_SET_MANUAL_LOCK 0x903480ULL /* uz.uc.ua.iyj/klu(bool) sets manual lock */
+#define RVA_STASH_CACHE_BY_INDEX 0x935B70ULL /* uz.Stash.jjd(index) */
+#define RVA_STASH_MAX_SLOT_COUNT 0x9366A0ULL /* uz.Stash.jjk() */
+#define RVA_SLOT_CACHE_GET_UNIQUE_ID 0x933000ULL /* ve/StashCache.jjs() */
+#define RVA_STASH_CACHE_GET_UNIQUE_ID RVA_SLOT_CACHE_GET_UNIQUE_ID /* legacy name */
 #define RVA_CUBE_SET_USE_STORAGE 0x8A3050ULL
 #define RVA_CUBE_SET_SYNTHESIS_TYPE 0x89F690ULL
 #define RVA_CUBE_CLEAR_CURRENT_RECIPE 0x8AD760ULL /* Cube clear current recipe slots */
@@ -90,6 +101,8 @@
 
 #define STAGE_DATA_STAGE_LIST_OFFSET 56
 #define STAGE_DATA_CURRENT_CACHE_OFFSET 136
+#define UI_MANAGER_CURRENT_MAIN_TAB_OFFSET 0x54
+#define UI_MANAGER_UI_MAIN_OFFSET 0xA8
 #define UI_MANAGER_UI_HERO_OFFSET 0xB0
 #define UI_MANAGER_UI_CUBE_OFFSET 0xD8
 #define UI_MANAGER_UI_NEW_STASH_OFFSET 0xE8
@@ -104,6 +117,7 @@
 #define UI_HERO_INVENTORY_SLOTS_OFFSET 0x78
 #define UI_REMAKE_STASH_SLOT_LIST_OFFSET 0x60
 #define ITEM_SLOT_ITEM_CACHE_OFFSET 0xB8
+#define STASH_CACHE_SAVE_DATA_OFFSET 0x18
 #define ITEM_CACHE_ITEM_INFO_OFFSET 0x10
 #define ITEM_CACHE_EQUIP_CLASS_OFFSET 0x30
 #define IL2CPP_STRING_LENGTH_OFFSET 0x10
@@ -126,6 +140,11 @@
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_KEY_OFFSET 8
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_VALUE_OFFSET 16
 #define IL2CPP_DICT_U64_OBJECT_ENTRY_SIZE 24
+#define IL2CPP_DICT_INT_OBJECT_ENTRY_HASH_OFFSET 0
+#define IL2CPP_DICT_INT_OBJECT_ENTRY_KEY_OFFSET 8
+#define IL2CPP_DICT_INT_OBJECT_ENTRY_VALUE_OFFSET 16
+#define IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE 24
+#define INVENTORY_STATIC_SLOT_DICT_OFFSET 0x0
 #define ESTAGE_TYPE_NORMAL 0
 #define ESTAGE_TYPE_ACTBOSS 1
 
@@ -135,6 +154,15 @@
 #define OVERLAY_OLD_WINDOW_TITLE "TaskBarHero Speed"
 #define OVERLAY_WIDTH 684
 #define OVERLAY_HEIGHT 430
+#define OVERLAY_LOG_ONLY_HEIGHT 166
+#define OVERLAY_MINIMIZED_HEIGHT 34
+#define OVERLAY_VIEW_BUTTON_SIZE 24
+#define OVERLAY_VIEW_BUTTON_GAP 4
+#define OVERLAY_VIEW_BUTTON_TOP 4
+#define OVERLAY_VIEW_BUTTON_EXPANDED_X (OVERLAY_WIDTH - 12 - (OVERLAY_VIEW_BUTTON_SIZE * 3 + OVERLAY_VIEW_BUTTON_GAP * 2))
+#define OVERLAY_VIEW_BUTTON_LOG_ONLY_X (OVERLAY_VIEW_BUTTON_EXPANDED_X + OVERLAY_VIEW_BUTTON_SIZE + OVERLAY_VIEW_BUTTON_GAP)
+#define OVERLAY_VIEW_BUTTON_MINIMIZED_X (OVERLAY_VIEW_BUTTON_LOG_ONLY_X + OVERLAY_VIEW_BUTTON_SIZE + OVERLAY_VIEW_BUTTON_GAP)
+#define OVERLAY_LOG_ONLY_BOX_TOP 42
 #define OVERLAY_LOG_LINE_COUNT 128
 #define OVERLAY_LOG_VISIBLE_LINES 8
 #define OVERLAY_LOG_LINE_SIZE 220
@@ -173,6 +201,12 @@
 #define OVERLAY_BUTTON_ITEM_LOCK_COIN 1032
 #define OVERLAY_BUTTON_ITEM_LOCK_MANUAL 1033
 #define OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP 1034
+#define OVERLAY_BUTTON_VIEW_EXPANDED 1035
+#define OVERLAY_BUTTON_VIEW_LOG_ONLY 1036
+#define OVERLAY_BUTTON_VIEW_MINIMIZED 1037
+#define OVERLAY_VIEW_MODE_EXPANDED 0
+#define OVERLAY_VIEW_MODE_LOG_ONLY 1
+#define OVERLAY_VIEW_MODE_MINIMIZED 2
 #define ITEM_LOCK_LIST_CLASS_PREFIX "TaskBarHeroItemLockList_"
 #define ITEM_LOCK_LIST_CONTROL_TYPE 2001
 #define ITEM_LOCK_LIST_CONTROL_GRADE 2002
@@ -198,8 +232,13 @@
 #define AUTO_SYNTHESIS_INTERVAL_MS 3000
 #define AUTO_SYNTHESIS_BOX_OPEN_DELAY_MS 2000
 #define AUTO_SYNTHESIS_STASH_DELAY_MS 3000
+#define AUTO_SYNTHESIS_PAGE_DELAY_MS 1000
+#define AUTO_SYNTHESIS_STASH_RETRY_MAX 3
+#define AUTO_SYNTHESIS_BACKEND_STASH_MAX_MOVES 96
+#define AUTO_SYNTHESIS_STASH_SCAN_MAX 1024
 #define AUTO_SYNTHESIS_FILL_DELAY_MS 3000
 #define AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000
+#define AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS 1000
 #define AUTO_SYNTHESIS_RESULT_WATCH_MS 5000
 #define BOX_REWARD_RESULT_WATCH_MS 4000
 #define ACTBOSS_BOX_ITEM_KEY 930801
@@ -211,6 +250,7 @@
 #define AUTO_SYNTHESIS_PHASE_WAIT_STASH 1
 #define AUTO_SYNTHESIS_PHASE_WAIT_FILL 2
 #define AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER 3
+#define AUTO_SYNTHESIS_PHASE_WAIT_CLEAR 4
 #define AUTO_RESTART_REQUEST_NONE 0
 #define AUTO_RESTART_REQUEST_LOCK 1
 #define AUTO_RESTART_REQUEST_UNLOCK 2
@@ -218,6 +258,11 @@
 #define AUTO_SWITCH_WAIT_NORMAL_DROP 1
 #define AUTO_SWITCH_WAIT_BOSS_DROP 2
 #define ERECIPE_SYNTHESIS 1
+#define EMAIN_TAB_NEW_STASH 2
+#define EMAIN_TAB_CUBE 4
+#define ESLOT_TYPE_INVENTORY 1
+#define ESLOT_TYPE_STASH 2
+#define EMOVE_TYPE_EXPLICIT_SLOT 0
 #define EITEM_SYNTHESIS_GEAR 0
 #define EGRADE_BEYOND 6
 #define EGRADE_CELESTIAL 7
@@ -274,6 +319,13 @@ typedef void *(*resolve_icall_t)(const char *name);
 typedef float (*unity_time_get_t)(void);
 typedef void (*unity_time_set_t)(float value);
 typedef void *(__fastcall *singleton_get_instance_t)(void *type_info);
+typedef struct TaskbarHeroMoveRequest {
+    int source_type;
+    int source_index;
+    int target_type;
+    int target_index;
+    int move_type;
+} TaskbarHeroMoveRequest;
 typedef int (__fastcall *stagecache_get_int_t)(void *stage_cache);
 typedef int (__fastcall *stage_enter_exact_key_t)(void *stage_manager, unsigned int stage_key, void *method);
 typedef __int64 (__fastcall *stage_set_current_cache_t)(void *stage_cache);
@@ -295,6 +347,14 @@ typedef float (__fastcall *exp_reward_calc_t)(void *reward_owner, float base_exp
 typedef void (__fastcall *cube_add_exp_t)(float amount, void *method);
 typedef __int64 (__fastcall *ui_cube_instance_t)(void *ui_cube, void *method);
 typedef __int64 (__fastcall *ui_remake_stash_action_t)(void *ui_stash, void *method);
+typedef void (__fastcall *ui_manager_show_base_t)(void *ui_manager, void *ui_base, void *method);
+typedef void (__fastcall *ui_main_action_t)(void *ui_main, void *method);
+typedef void (__fastcall *slot_manager_move_request_t)(void *slot_manager, TaskbarHeroMoveRequest *request, void *callback, void *method);
+typedef void (__fastcall *slot_manager_move_to_target_t)(void *slot_manager, int target_type, int source_index, void *callback, int target_index, void *method);
+typedef void *(__fastcall *stash_cache_by_index_t)(int index, void *method);
+typedef int (__fastcall *stash_max_slot_count_t)(void *method);
+typedef unsigned __int64 (__fastcall *slot_cache_get_unique_id_t)(void *slot_cache, void *method);
+typedef slot_cache_get_unique_id_t stash_cache_get_unique_id_t;
 typedef __int64 (__fastcall *cube_set_bool_t)(char value, void *method);
 typedef __int64 (__fastcall *cube_set_int_t)(int value, void *method);
 typedef __int64 (__fastcall *cube_clear_current_recipe_t)(void *method);
@@ -411,6 +471,7 @@ static int g_background_apply = 0;
 static int g_overlay_enabled = 1;
 static int g_overlay_x = 20;
 static int g_overlay_y = 80;
+static int g_overlay_view_mode = OVERLAY_VIEW_MODE_EXPANDED;
 static DWORD g_apply_interval_ms = 1000;
 static int g_auto_portal_enabled = 1;
 static DWORD g_auto_portal_interval_ms = 60000;
@@ -563,6 +624,7 @@ static DWORD g_auto_synthesis_next_tick;
 static DWORD g_auto_synthesis_step_tick;
 static DWORD g_auto_synthesis_result_watch_until;
 static int g_auto_synthesis_phase;
+static int g_auto_synthesis_stash_retry_count;
 static volatile LONG g_auto_synthesis_pending;
 static volatile LONG g_auto_synthesis_result_pending;
 static DWORD g_last_auto_synthesis_log_tick;
@@ -1027,6 +1089,7 @@ static void reset_auto_synthesis_state(void)
     g_auto_synthesis_next_tick = 0;
     g_auto_synthesis_step_tick = 0;
     g_auto_synthesis_result_watch_until = 0;
+    g_auto_synthesis_stash_retry_count = 0;
     InterlockedExchange(&g_auto_synthesis_pending, 0);
     InterlockedExchange(&g_auto_synthesis_result_pending, 0);
 }
@@ -1847,14 +1910,33 @@ static void load_item_log_history(void)
     InterlockedIncrement(&g_drop_log_version);
 }
 
-static int point_in_drop_log_box(POINT pt)
+static int overlay_current_height(void)
+{
+    if (g_overlay_view_mode == OVERLAY_VIEW_MODE_MINIMIZED) {
+        return OVERLAY_MINIMIZED_HEIGHT;
+    }
+    if (g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY) {
+        return OVERLAY_LOG_ONLY_HEIGHT;
+    }
+    return OVERLAY_HEIGHT;
+}
+
+static RECT overlay_log_box_rect(void)
 {
     RECT box;
 
     box.left = OVERLAY_LOG_BOX_LEFT;
-    box.top = OVERLAY_LOG_BOX_TOP;
+    box.top = g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY ?
+              OVERLAY_LOG_ONLY_BOX_TOP : OVERLAY_LOG_BOX_TOP;
     box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
-    box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+    box.bottom = box.top + OVERLAY_LOG_BOX_HEIGHT;
+    return box;
+}
+
+static int point_in_drop_log_box(POINT pt)
+{
+    RECT box = overlay_log_box_rect();
+
     return PtInRect(&box, pt) ? 1 : 0;
 }
 
@@ -1875,10 +1957,7 @@ static void adjust_drop_log_scroll(int delta)
 
     if (changed && g_overlay_hwnd) {
         RECT box;
-        box.left = OVERLAY_LOG_BOX_LEFT;
-        box.top = OVERLAY_LOG_BOX_TOP;
-        box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
-        box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+        box = overlay_log_box_rect();
         InvalidateRect(g_overlay_hwnd, &box, FALSE);
     }
 }
@@ -1991,7 +2070,6 @@ static int find_stage_enter_key_for_stage_key(uintptr_t base,
         if (get_difficulty(candidate) != difficulty) continue;
         if (get_type(candidate) != stage_type) continue;
         if (get_key(candidate) != stage_key) continue;
-        if (get_act(previous) != act) continue;
         if (get_difficulty(previous) != difficulty) continue;
         if (get_type(previous) != stage_type) continue;
 
@@ -6236,10 +6314,10 @@ static COLORREF auto_item_lock_grade_color(int grade)
     case 0: return RGB(178, 188, 196);
     case 1: return RGB(112, 201, 132);
     case 2: return RGB(90, 166, 234);
-    case 3: return RGB(180, 118, 230);
-    case 4: return RGB(236, 130, 92);
-    case 5: return RGB(231, 101, 157);
-    case EGRADE_BEYOND: return RGB(88, 206, 214);
+    case 3: return RGB(242, 157, 67);
+    case 4: return RGB(235, 77, 79);
+    case 5: return RGB(178, 105, 242);
+    case EGRADE_BEYOND: return RGB(238, 90, 171);
     case EGRADE_CELESTIAL: return RGB(124, 203, 255);
     case EGRADE_DIVINE: return RGB(226, 180, 72);
     case EGRADE_COSMIC: return RGB(134, 162, 235);
@@ -6530,6 +6608,64 @@ static void *get_ui_manager_instance(uintptr_t base)
     return ui_manager;
 }
 
+static void *get_slot_manager_instance(uintptr_t base)
+{
+    void **type_slot = (void **)(base + RVA_SLOT_MANAGER_TYPEINFO);
+    void *slot_manager_type;
+    void *static_fields;
+    void *slot_manager;
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
+    slot_manager_type = *type_slot;
+    if (!slot_manager_type ||
+        !memory_range_readable(slot_manager_type,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)slot_manager_type +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (!static_fields || !memory_range_readable(static_fields, sizeof(void *))) {
+        return NULL;
+    }
+    slot_manager = *(void **)static_fields;
+    if (!slot_manager || !memory_range_readable(slot_manager, sizeof(void *) * 4)) {
+        return NULL;
+    }
+    return slot_manager;
+}
+
+static void *get_inventory_slot_dictionary(uintptr_t base)
+{
+    void **type_slot = (void **)(base + RVA_INVENTORY_TYPEINFO);
+    void *inventory_type;
+    void *static_fields;
+    void *dict;
+
+    if (!memory_range_readable(type_slot, sizeof(void *))) return NULL;
+    inventory_type = *type_slot;
+    if (!inventory_type ||
+        !memory_range_readable(inventory_type,
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET + sizeof(void *))) {
+        return NULL;
+    }
+    static_fields = *(void **)((unsigned char *)inventory_type +
+                               IL2CPP_TYPE_STATIC_FIELDS_OFFSET);
+    if (!static_fields ||
+        !memory_range_readable((unsigned char *)static_fields +
+                                   INVENTORY_STATIC_SLOT_DICT_OFFSET,
+                               sizeof(void *))) {
+        return NULL;
+    }
+    dict = *(void **)((unsigned char *)static_fields +
+                      INVENTORY_STATIC_SLOT_DICT_OFFSET);
+    if (!dict ||
+        !memory_range_readable(dict,
+                               IL2CPP_DICT_COUNT_OFFSET + sizeof(int))) {
+        return NULL;
+    }
+    return dict;
+}
+
 static void *get_cube_static_fields(uintptr_t base)
 {
     void **type_slot = (void **)(base + RVA_CUBE_TYPEINFO);
@@ -6624,6 +6760,108 @@ static void *get_ui_hero_instance(uintptr_t base)
     return ui_hero;
 }
 
+static int move_inventory_slots_to_stash_from_backend(uintptr_t base)
+{
+    void *slot_manager;
+    void *inventory_dict;
+    void *entries;
+    slot_manager_move_to_target_t move_to_target;
+    slot_cache_get_unique_id_t slot_get_unique_id;
+    int inventory_count;
+    int array_len;
+    int sent = 0;
+    int i;
+
+    slot_manager = get_slot_manager_instance(base);
+    move_to_target =
+        (slot_manager_move_to_target_t)(base + RVA_SLOT_MANAGER_MOVE_TO_TARGET);
+    slot_get_unique_id =
+        (slot_cache_get_unique_id_t)(base + RVA_SLOT_CACHE_GET_UNIQUE_ID);
+    inventory_dict = get_inventory_slot_dictionary(base);
+    if (!slot_manager ||
+        !memory_range_readable((void *)move_to_target, 12) ||
+        !memory_range_readable((void *)slot_get_unique_id, 12) ||
+        !inventory_dict) {
+        log_line("auto synthesis stash backend unavailable: slot_manager=%p move_to_target=%d uid_fn=%d inventory_dict=%p",
+                 slot_manager,
+                 memory_range_readable((void *)move_to_target, 12) ? 1 : 0,
+                 memory_range_readable((void *)slot_get_unique_id, 12) ? 1 : 0,
+                 inventory_dict);
+        return 0;
+    }
+
+    inventory_count = *(int *)((unsigned char *)inventory_dict +
+                               IL2CPP_DICT_COUNT_OFFSET);
+    if (inventory_count <= 0 || inventory_count > 200000) {
+        log_line("auto synthesis stash backend unavailable: inventory_dict=%p count=%d",
+                 inventory_dict,
+                 inventory_count);
+        return 0;
+    }
+    entries = *(void **)((unsigned char *)inventory_dict +
+                         IL2CPP_DICT_ENTRIES_OFFSET);
+    if (!entries ||
+        !memory_range_readable(entries,
+                               IL2CPP_ARRAY_DATA_OFFSET + sizeof(void *))) {
+        log_line("auto synthesis stash backend unavailable: inventory entries missing dict=%p count=%d",
+                 inventory_dict,
+                 inventory_count);
+        return 0;
+    }
+    array_len = *(int *)((unsigned char *)entries +
+                         IL2CPP_ARRAY_LENGTH_OFFSET);
+    if (array_len <= 0 || array_len > 200000 ||
+        inventory_count > array_len) {
+        log_line("auto synthesis stash backend unavailable: invalid entries len=%d count=%d",
+                 array_len,
+                 inventory_count);
+        return 0;
+    }
+
+    for (i = 0; i < array_len && sent < AUTO_SYNTHESIS_BACKEND_STASH_MAX_MOVES; ++i) {
+        unsigned char *entry = (unsigned char *)entries +
+                               IL2CPP_ARRAY_DATA_OFFSET +
+                               ((SIZE_T)i *
+                                IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE);
+        int hash_code;
+        int source_index;
+        void *slot;
+        unsigned __int64 unique_id;
+
+        if (!memory_range_readable(entry,
+                                   IL2CPP_DICT_INT_OBJECT_ENTRY_SIZE)) {
+            break;
+        }
+        hash_code = *(int *)(entry +
+                             IL2CPP_DICT_INT_OBJECT_ENTRY_HASH_OFFSET);
+        if (hash_code < 0) {
+            continue;
+        }
+        source_index = *(int *)(entry +
+                                IL2CPP_DICT_INT_OBJECT_ENTRY_KEY_OFFSET);
+        slot = *(void **)(entry +
+                          IL2CPP_DICT_INT_OBJECT_ENTRY_VALUE_OFFSET);
+        if (source_index < 0 ||
+            !slot ||
+            !memory_range_readable(slot, sizeof(void *) * 4)) {
+            continue;
+        }
+        unique_id = slot_get_unique_id(slot, NULL);
+        if (!unique_id) {
+            continue;
+        }
+
+        move_to_target(slot_manager, ESLOT_TYPE_STASH, source_index, NULL, 0, NULL);
+        sent++;
+    }
+    if (!sent) {
+        log_line("auto synthesis stash backend unavailable: no inventory item slots inventory_count=%d entries=%d",
+                 inventory_count,
+                 array_len);
+    }
+    return sent;
+}
+
 static void *get_ui_new_stash_instance(uintptr_t base)
 {
     void *ui_manager = get_ui_manager_instance(base);
@@ -6639,6 +6877,87 @@ static void *get_ui_new_stash_instance(uintptr_t base)
         return NULL;
     }
     return ui_stash;
+}
+
+static int main_tab_target_ready(uintptr_t base, int tab)
+{
+    if (tab == EMAIN_TAB_CUBE) {
+        return get_ui_cube_instance(base) != NULL;
+    }
+    if (tab == EMAIN_TAB_NEW_STASH) {
+        return get_ui_new_stash_instance(base) != NULL;
+    }
+    return 1;
+}
+
+static int ensure_main_tab_open(uintptr_t base, int tab)
+{
+    void *ui_manager;
+    void *ui_main;
+    void *target_ui = NULL;
+    ui_manager_show_base_t show_ui_base;
+    ui_main_action_t open_tab = NULL;
+    int current_tab;
+
+    ui_manager = get_ui_manager_instance(base);
+    if (!ui_manager ||
+        !memory_range_readable(ui_manager,
+                               UI_MANAGER_UI_NEW_STASH_OFFSET + sizeof(void *))) {
+        return 0;
+    }
+
+    current_tab = 0;
+    if (memory_range_readable((unsigned char *)ui_manager +
+                                  UI_MANAGER_CURRENT_MAIN_TAB_OFFSET,
+                              sizeof(int))) {
+        current_tab = *(int *)((unsigned char *)ui_manager +
+                               UI_MANAGER_CURRENT_MAIN_TAB_OFFSET);
+    }
+    if (current_tab == tab && main_tab_target_ready(base, tab)) {
+        return 1;
+    }
+
+    if (tab == EMAIN_TAB_CUBE &&
+        memory_range_readable(ui_manager,
+                              UI_MANAGER_UI_CUBE_OFFSET + sizeof(void *))) {
+        target_ui = *(void **)((unsigned char *)ui_manager +
+                               UI_MANAGER_UI_CUBE_OFFSET);
+    } else if (tab == EMAIN_TAB_NEW_STASH &&
+               memory_range_readable(ui_manager,
+                                     UI_MANAGER_UI_NEW_STASH_OFFSET +
+                                         sizeof(void *))) {
+        target_ui = *(void **)((unsigned char *)ui_manager +
+                               UI_MANAGER_UI_NEW_STASH_OFFSET);
+    }
+
+    show_ui_base = (ui_manager_show_base_t)(base + RVA_UI_MANAGER_SHOW_UI_BASE);
+    if (target_ui &&
+        memory_range_readable(target_ui, sizeof(void *) * 4) &&
+        memory_range_readable((void *)show_ui_base, 12)) {
+        show_ui_base(ui_manager, target_ui, NULL);
+        return 1;
+    }
+
+    if (!memory_range_readable(ui_manager,
+                               UI_MANAGER_UI_MAIN_OFFSET + sizeof(void *))) {
+        return 0;
+    }
+    ui_main = *(void **)((unsigned char *)ui_manager + UI_MANAGER_UI_MAIN_OFFSET);
+    if (!ui_main || !memory_range_readable(ui_main, sizeof(void *) * 4)) {
+        return 0;
+    }
+
+    if (tab == EMAIN_TAB_CUBE) {
+        open_tab = (ui_main_action_t)(base + RVA_UI_MAIN_OPEN_CUBE);
+    } else if (tab == EMAIN_TAB_NEW_STASH) {
+        open_tab = (ui_main_action_t)(base + RVA_UI_MAIN_OPEN_STASH);
+    }
+    if (!open_tab || !memory_range_readable((void *)open_tab, 12)) {
+        return 0;
+    }
+
+    open_tab(ui_main, NULL);
+    return 0;
 }
 
 static void *find_actboss_stage_for_stage(uintptr_t base,
@@ -6887,9 +7206,10 @@ static int lock_auto_restart_stage_from_current(void)
     find_stage_enter_key_for_stage_key(base, act, difficulty,
                                        ESTAGE_TYPE_NORMAL, stage_key,
                                        &enter_key, &previous_stage_no);
-    if (enter_key <= 0 && stage_key > 1) {
-        enter_key = stage_key - 1;
-        previous_stage_no = stage_no - 1;
+    if (enter_key <= 0) {
+        log_line("auto restart lock failed: previous stage key unavailable: act=%d difficulty=%d type=%d stage_no=%d stage_key=%d",
+                 act, difficulty, stage_type, stage_no, stage_key);
+        return 0;
     }
 
     g_auto_restart_stage_key = stage_key;
@@ -7323,23 +7643,56 @@ static void maybe_auto_synthesis_from_game_thread(void)
     now = GetTickCount();
     base = (uintptr_t)g_game_assembly;
 
-    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_STASH) {
-        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
-
-        ui_stash = get_ui_new_stash_instance(base);
-        inventory_to_stash =
-            (ui_remake_stash_action_t)(base + RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH);
-        if (ui_stash && memory_range_readable((void *)inventory_to_stash, 12)) {
-            inventory_to_stash(ui_stash, NULL);
-            log_line("auto synthesis stash move sent: ui_stash=%p fill_delay=%lu",
-                     ui_stash,
-                     (unsigned long)AUTO_SYNTHESIS_FILL_DELAY_MS);
-        } else {
-            log_line("auto synthesis stash move skipped: UI_NewStash or function unavailable");
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_IDLE) {
+        if (g_auto_synthesis_next_tick &&
+            (LONG)(now - g_auto_synthesis_next_tick) < 0) {
+            return;
         }
+        if (!g_auto_synthesis_pending ||
+            InterlockedExchange(&g_auto_synthesis_pending, 0) == 0) {
+            g_auto_synthesis_next_tick = 0;
+            return;
+        }
+
+        ensure_main_tab_open(base, EMAIN_TAB_CUBE);
+        log_line("auto synthesis Cube page open requested");
+
+        current_recipe = ensure_cube_current_recipe(base);
+        if (!current_recipe) {
+            if (!g_last_auto_synthesis_log_tick ||
+                (DWORD)(now - g_last_auto_synthesis_log_tick) >= 10000) {
+                log_line("auto synthesis waiting: Cube current recipe unavailable");
+                g_last_auto_synthesis_log_tick = now;
+            }
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            InterlockedExchange(&g_auto_synthesis_pending, 1);
+            return;
+        }
+
+        set_use_storage = (cube_set_bool_t)(base + RVA_CUBE_SET_USE_STORAGE);
+        set_synthesis_type = (cube_set_int_t)(base + RVA_CUBE_SET_SYNTHESIS_TYPE);
+        clear_current_recipe =
+            (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
+
+        if (!memory_range_readable((void *)set_use_storage, 12) ||
+            !memory_range_readable((void *)set_synthesis_type, 12) ||
+            !memory_range_readable((void *)clear_current_recipe, 12)) {
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            log_line("auto synthesis skipped: synthesis functions unavailable");
+            return;
+        }
+
+        set_use_storage((char)(g_auto_synthesis_use_storage ? 1 : 0), NULL);
+        set_synthesis_type(EITEM_SYNTHESIS_GEAR, NULL);
+        clear_current_recipe(NULL);
+
         g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;
         g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;
         g_auto_synthesis_next_tick = 0;
+        log_line("auto synthesis clear sent: recipe=%p storage=%d next_delay=%lu",
+                 current_recipe,
+                 g_auto_synthesis_use_storage,
+                 (unsigned long)AUTO_SYNTHESIS_FILL_DELAY_MS);
         return;
     }
 
@@ -7384,69 +7737,114 @@ static void maybe_auto_synthesis_from_game_thread(void)
             return;
         }
         trigger_current_recipe(NULL);
-        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
-        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_CLEAR;
+        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS;
+        g_auto_synthesis_next_tick = 0;
         g_auto_synthesis_result_watch_until =
             now + AUTO_SYNTHESIS_RESULT_WATCH_MS;
         InterlockedExchange(&g_auto_synthesis_result_pending, 1);
-        log_line("auto synthesis trigger sent: storage=%d",
-                 g_auto_synthesis_use_storage);
+        log_line("auto synthesis trigger sent: storage=%d clear_delay=%lu",
+                 g_auto_synthesis_use_storage,
+                 (unsigned long)AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS);
         return;
     }
 
-    if (g_auto_synthesis_next_tick &&
-        (LONG)(now - g_auto_synthesis_next_tick) < 0) {
-        return;
-    }
-    if (!g_auto_synthesis_pending ||
-        InterlockedExchange(&g_auto_synthesis_pending, 0) == 0) {
-        g_auto_synthesis_next_tick = 0;
-        return;
-    }
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_CLEAR) {
+        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
 
-    current_recipe = ensure_cube_current_recipe(base);
-    if (!current_recipe) {
-        if (!g_last_auto_synthesis_log_tick ||
-            (DWORD)(now - g_last_auto_synthesis_log_tick) >= 10000) {
-            log_line("auto synthesis waiting: Cube current recipe unavailable");
-            g_last_auto_synthesis_log_tick = now;
+        current_recipe = ensure_cube_current_recipe(base);
+        clear_current_recipe =
+            (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
+        if (!current_recipe ||
+            !memory_range_readable((void *)clear_current_recipe, 12)) {
+            if (g_auto_synthesis_use_storage) {
+                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
+                g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
+                g_auto_synthesis_next_tick = 0;
+                g_auto_synthesis_stash_retry_count = 0;
+            } else {
+                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+                g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+                g_auto_synthesis_step_tick = 0;
+            }
+            log_line("auto synthesis post-trigger clear skipped: Cube current recipe or function unavailable");
+            return;
         }
-        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-        InterlockedExchange(&g_auto_synthesis_pending, 1);
+        clear_current_recipe(NULL);
+        if (g_auto_synthesis_use_storage) {
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
+            g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
+            g_auto_synthesis_next_tick = 0;
+            g_auto_synthesis_stash_retry_count = 0;
+        } else {
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            g_auto_synthesis_step_tick = 0;
+        }
+        log_line("auto synthesis post-trigger clear sent: recipe=%p storage=%d next_delay=%lu",
+                 current_recipe,
+                 g_auto_synthesis_use_storage,
+                 (unsigned long)(g_auto_synthesis_use_storage ?
+                     AUTO_SYNTHESIS_STASH_DELAY_MS :
+                     AUTO_SYNTHESIS_INTERVAL_MS));
         return;
     }
 
-    set_use_storage = (cube_set_bool_t)(base + RVA_CUBE_SET_USE_STORAGE);
-    set_synthesis_type = (cube_set_int_t)(base + RVA_CUBE_SET_SYNTHESIS_TYPE);
-    clear_current_recipe =
-        (cube_clear_current_recipe_t)(base + RVA_CUBE_CLEAR_CURRENT_RECIPE);
+    if (g_auto_synthesis_phase == AUTO_SYNTHESIS_PHASE_WAIT_STASH) {
+        int backend_moves;
 
-    if (!memory_range_readable((void *)set_use_storage, 12) ||
-        !memory_range_readable((void *)set_synthesis_type, 12) ||
-        !memory_range_readable((void *)clear_current_recipe, 12)) {
+        if ((LONG)(now - g_auto_synthesis_step_tick) < 0) return;
+
+        backend_moves = move_inventory_slots_to_stash_from_backend(base);
+        if (backend_moves > 0) {
+            log_line("auto synthesis stash backend move sent: moves=%d next_delay=%lu",
+                     backend_moves,
+                     (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
+            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+            g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+            g_auto_synthesis_step_tick = 0;
+            g_auto_synthesis_stash_retry_count = 0;
+            return;
+        }
+
+        inventory_to_stash =
+            (ui_remake_stash_action_t)(base + RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH);
+        if (ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)) {
+            ui_stash = get_ui_new_stash_instance(base);
+        } else {
+            ui_stash = NULL;
+        }
+        if (ui_stash && memory_range_readable((void *)inventory_to_stash, 12)) {
+            inventory_to_stash(ui_stash, NULL);
+            log_line("auto synthesis stash move sent: ui_stash=%p next_delay=%lu",
+                     ui_stash,
+                     (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
+        } else {
+            g_auto_synthesis_stash_retry_count++;
+            if (g_auto_synthesis_stash_retry_count >=
+                AUTO_SYNTHESIS_STASH_RETRY_MAX) {
+                log_line("auto synthesis stash move skipped: backend/UI unavailable retries=%d next_delay=%lu",
+                         g_auto_synthesis_stash_retry_count,
+                         (unsigned long)AUTO_SYNTHESIS_INTERVAL_MS);
+                g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
+                g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
+                g_auto_synthesis_step_tick = 0;
+                g_auto_synthesis_stash_retry_count = 0;
+                return;
+            }
+            g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_PAGE_DELAY_MS;
+            log_line("auto synthesis stash page open requested: retry=%d next_delay=%lu",
+                     g_auto_synthesis_stash_retry_count,
+                     (unsigned long)AUTO_SYNTHESIS_PAGE_DELAY_MS);
+            return;
+        }
+        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;
         g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;
-        log_line("auto synthesis skipped: synthesis functions unavailable");
+        g_auto_synthesis_step_tick = 0;
+        g_auto_synthesis_stash_retry_count = 0;
         return;
     }
 
-    set_use_storage((char)(g_auto_synthesis_use_storage ? 1 : 0), NULL);
-    set_synthesis_type(EITEM_SYNTHESIS_GEAR, NULL);
-    clear_current_recipe(NULL);
-
-    if (g_auto_synthesis_use_storage) {
-        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;
-        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_STASH_DELAY_MS;
-    } else {
-        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;
-        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;
-    }
-    g_auto_synthesis_next_tick = 0;
-    log_line("auto synthesis clear sent: recipe=%p storage=%d next_delay=%lu",
-             current_recipe,
-             g_auto_synthesis_use_storage,
-             (unsigned long)(g_auto_synthesis_use_storage ?
-                 AUTO_SYNTHESIS_STASH_DELAY_MS :
-                 AUTO_SYNTHESIS_FILL_DELAY_MS));
 }
 
 static void apply_speed_from_game_thread(void)
@@ -7594,6 +7992,88 @@ static void draw_overlay_log_text_utf8(HDC hdc, const char *text, RECT *row)
               DT_END_ELLIPSIS | DT_NOPREFIX);
 }
 
+static RECT overlay_view_button_rect(int id)
+{
+    RECT rc;
+    int left = OVERLAY_VIEW_BUTTON_MINIMIZED_X;
+
+    if (id == OVERLAY_BUTTON_VIEW_EXPANDED) {
+        left = OVERLAY_VIEW_BUTTON_EXPANDED_X;
+    } else if (id == OVERLAY_BUTTON_VIEW_LOG_ONLY) {
+        left = OVERLAY_VIEW_BUTTON_LOG_ONLY_X;
+    }
+
+    rc.left = left;
+    rc.top = OVERLAY_VIEW_BUTTON_TOP;
+    rc.right = left + OVERLAY_VIEW_BUTTON_SIZE;
+    rc.bottom = OVERLAY_VIEW_BUTTON_TOP + OVERLAY_VIEW_BUTTON_SIZE;
+    return rc;
+}
+
+static int overlay_view_button_active(int id)
+{
+    if (id == OVERLAY_BUTTON_VIEW_EXPANDED) {
+        return g_overlay_view_mode == OVERLAY_VIEW_MODE_EXPANDED;
+    }
+    if (id == OVERLAY_BUTTON_VIEW_LOG_ONLY) {
+        return g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY;
+    }
+    if (id == OVERLAY_BUTTON_VIEW_MINIMIZED) {
+        return g_overlay_view_mode == OVERLAY_VIEW_MODE_MINIMIZED;
+    }
+    return 0;
+}
+
+static void draw_overlay_view_button(HDC hdc, int id, const char *text)
+{
+    RECT rc;
+    RECT top;
+    HBRUSH fill;
+    HBRUSH border;
+    HGDIOBJ old_font;
+    int active;
+
+    if (!hdc || !text) return;
+    init_overlay_style();
+    rc = overlay_view_button_rect(id);
+    active = overlay_view_button_active(id);
+    fill = active ? g_overlay_button_active_brush : g_overlay_button_brush;
+    border = active ? g_overlay_accent_brush : g_overlay_border_brush;
+
+    FillRect(hdc, &rc, fill);
+    FrameRect(hdc, &rc, border);
+    top = rc;
+    top.bottom = top.top + 1;
+    FillRect(hdc, &top, active ? g_overlay_accent_brush : g_overlay_panel_brush);
+
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, active ? RGB(246, 237, 190) : OVERLAY_COLOR_TEXT);
+    old_font = SelectObject(hdc, active ? g_overlay_font_bold : g_overlay_font);
+    DrawTextA(hdc, text, -1, &rc,
+              DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+    SelectObject(hdc, old_font);
+}
+
+static void draw_overlay_view_buttons(HDC hdc)
+{
+    draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_EXPANDED, "A");
+    draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_LOG_ONLY, "L");
+    draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_MINIMIZED, "_");
+}
+
+static int overlay_view_button_hit_test(POINT pt)
+{
+    RECT rc;
+
+    rc = overlay_view_button_rect(OVERLAY_BUTTON_VIEW_EXPANDED);
+    if (PtInRect(&rc, pt)) return OVERLAY_BUTTON_VIEW_EXPANDED;
+    rc = overlay_view_button_rect(OVERLAY_BUTTON_VIEW_LOG_ONLY);
+    if (PtInRect(&rc, pt)) return OVERLAY_BUTTON_VIEW_LOG_ONLY;
+    rc = overlay_view_button_rect(OVERLAY_BUTTON_VIEW_MINIMIZED);
+    if (PtInRect(&rc, pt)) return OVERLAY_BUTTON_VIEW_MINIMIZED;
+    return 0;
+}
+
 static void draw_overlay_drop_log(HDC hdc)
 {
     OverlayLogEntry entries[OVERLAY_LOG_LINE_COUNT];
@@ -7626,10 +8106,7 @@ static void draw_overlay_drop_log(HDC hdc)
     scroll = g_drop_log_scroll;
     unlock_drop_log();
 
-    box.left = OVERLAY_LOG_BOX_LEFT;
-    box.top = OVERLAY_LOG_BOX_TOP;
-    box.right = OVERLAY_LOG_BOX_LEFT + OVERLAY_LOG_BOX_WIDTH;
-    box.bottom = OVERLAY_LOG_BOX_TOP + OVERLAY_LOG_BOX_HEIGHT;
+    box = overlay_log_box_rect();
     FillRect(hdc, &box, g_overlay_panel_brush);
     FrameRect(hdc, &box, g_overlay_border_brush);
 
@@ -7684,6 +8161,7 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
     RECT line;
     RECT label;
     RECT separator;
+    RECT log_box;
     HGDIOBJ old_brush;
     HGDIOBJ old_pen;
     HGDIOBJ old_font;
@@ -7698,7 +8176,7 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
 
     title.left = 12;
     title.top = 5;
-    title.right = OVERLAY_WIDTH - 12;
+    title.right = OVERLAY_VIEW_BUTTON_EXPANDED_X - 8;
     title.bottom = 26;
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, OVERLAY_COLOR_TEXT);
@@ -7717,6 +8195,30 @@ static void paint_overlay_chrome(HWND hwnd, HDC hdc)
     line.right = OVERLAY_WIDTH - 10;
     line.bottom = 30;
     FillRect(hdc, &line, g_overlay_accent_brush);
+    draw_overlay_view_buttons(hdc);
+
+    if (g_overlay_view_mode == OVERLAY_VIEW_MODE_MINIMIZED) {
+        SelectObject(hdc, old_pen);
+        SelectObject(hdc, old_brush);
+        return;
+    }
+
+    if (g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY) {
+        log_box = overlay_log_box_rect();
+        SetTextColor(hdc, OVERLAY_COLOR_MUTED);
+        old_font = SelectObject(hdc, g_overlay_font_bold);
+        label.left = 12;
+        label.right = 70;
+        label.top = log_box.top;
+        label.bottom = log_box.top + 24;
+        DrawTextA(hdc, "Drops", -1, &label,
+                  DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
+        SelectObject(hdc, old_font);
+        draw_overlay_drop_log(hdc);
+        SelectObject(hdc, old_pen);
+        SelectObject(hdc, old_brush);
+        return;
+    }
 
     SetTextColor(hdc, OVERLAY_COLOR_MUTED);
     old_font = SelectObject(hdc, g_overlay_font_bold);
@@ -7820,6 +8322,12 @@ static void draw_overlay_button(const DRAWITEMSTRUCT *item)
     }
     if (id == OVERLAY_BUTTON_ITEM_LOCK_LIST &&
         g_auto_item_lock_selected_count > 0) active = 1;
+    if (id == OVERLAY_BUTTON_VIEW_EXPANDED &&
+        g_overlay_view_mode == OVERLAY_VIEW_MODE_EXPANDED) active = 1;
+    if (id == OVERLAY_BUTTON_VIEW_LOG_ONLY &&
+        g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY) active = 1;
+    if (id == OVERLAY_BUTTON_VIEW_MINIMIZED &&
+        g_overlay_view_mode == OVERLAY_VIEW_MODE_MINIMIZED) active = 1;
 
     fill = active ? g_overlay_button_active_brush :
            (pressed ? g_overlay_button_hot_brush : g_overlay_button_brush);
@@ -7856,10 +8364,75 @@ static HWND create_overlay_button(HWND hwnd, const char *text, int x, int y,
                            (HMENU)(uintptr_t)id, g_self_module, NULL);
 }
 
+static void apply_overlay_window_region(HWND hwnd)
+{
+    HRGN region;
+
+    if (!hwnd) return;
+    region = CreateRoundRectRgn(0, 0, OVERLAY_WIDTH + 1,
+                                overlay_current_height() + 1, 10, 10);
+    if (region && !SetWindowRgn(hwnd, region, TRUE)) {
+        DeleteObject(region);
+    }
+}
+
+static int overlay_title_button_visible(int child_id)
+{
+    return child_id == OVERLAY_BUTTON_VIEW_EXPANDED ||
+           child_id == OVERLAY_BUTTON_VIEW_LOG_ONLY ||
+           child_id == OVERLAY_BUTTON_VIEW_MINIMIZED;
+}
+
+static BOOL CALLBACK update_overlay_child_visibility_proc(HWND child,
+                                                          LPARAM lparam)
+{
+    int child_id;
+    int visible;
+
+    (void)lparam;
+    child_id = GetDlgCtrlID(child);
+    visible = overlay_title_button_visible(child_id) ||
+              g_overlay_view_mode == OVERLAY_VIEW_MODE_EXPANDED;
+    ShowWindow(child, visible ? SW_SHOW : SW_HIDE);
+    return TRUE;
+}
+
+static void update_overlay_view_layout(HWND hwnd)
+{
+    if (!hwnd) return;
+    EnumChildWindows(hwnd, update_overlay_child_visibility_proc, 0);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0,
+                 OVERLAY_WIDTH, overlay_current_height(),
+                 SWP_NOMOVE | SWP_NOACTIVATE);
+    apply_overlay_window_region(hwnd);
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+static const char *overlay_view_mode_name(int mode)
+{
+    if (mode == OVERLAY_VIEW_MODE_LOG_ONLY) return "log-only";
+    if (mode == OVERLAY_VIEW_MODE_MINIMIZED) return "minimized";
+    return "expanded";
+}
+
+static void set_overlay_view_mode(HWND hwnd, int mode)
+{
+    if (mode < OVERLAY_VIEW_MODE_EXPANDED ||
+        mode > OVERLAY_VIEW_MODE_MINIMIZED) {
+        return;
+    }
+    g_overlay_view_mode = mode;
+    update_overlay_view_layout(hwnd);
+    log_line("overlay view mode: %s", overlay_view_mode_name(mode));
+}
+
 static void apply_overlay_fonts(HWND hwnd)
 {
     int ids[] = {
         OVERLAY_BUTTON_MIN,
+        OVERLAY_BUTTON_VIEW_EXPANDED,
+        OVERLAY_BUTTON_VIEW_LOG_ONLY,
+        OVERLAY_BUTTON_VIEW_MINIMIZED,
         OVERLAY_BUTTON_MINUS5,
         OVERLAY_BUTTON_MINUS1,
         OVERLAY_BUTTON_PLUS1,
@@ -8086,8 +8659,9 @@ static void position_overlay(HWND hwnd)
     RECT rc;
     int x = g_overlay_x;
     int y = g_overlay_y;
+    int height = overlay_current_height();
     if (g_overlay_user_moved || g_overlay_dragging) {
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, OVERLAY_WIDTH, OVERLAY_HEIGHT,
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, OVERLAY_WIDTH, height,
                      SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
         return;
     }
@@ -8095,7 +8669,7 @@ static void position_overlay(HWND hwnd)
         x = rc.left + g_overlay_x;
         y = rc.top + g_overlay_y;
     }
-    SetWindowPos(hwnd, HWND_TOPMOST, x, y, OVERLAY_WIDTH, OVERLAY_HEIGHT,
+    SetWindowPos(hwnd, HWND_TOPMOST, x, y, OVERLAY_WIDTH, height,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
@@ -9136,13 +9710,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
 {
     switch (msg) {
     case WM_CREATE:
-        {
-            HRGN region = CreateRoundRectRgn(0, 0, OVERLAY_WIDTH + 1,
-                                            OVERLAY_HEIGHT + 1, 10, 10);
-            if (region && !SetWindowRgn(hwnd, region, TRUE)) {
-                DeleteObject(region);
-            }
-        }
+        apply_overlay_window_region(hwnd);
         init_overlay_style();
         create_overlay_button(hwnd, "min", 76, 36, 42, 26,
                               OVERLAY_BUTTON_MIN);
@@ -9253,6 +9821,7 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         update_lock_stage_label();
         update_lock_interval_label();
         update_chest_interval_label();
+        update_overlay_view_layout(hwnd);
         SetTimer(hwnd, 1, 500, NULL);
         return 0;
     case WM_ERASEBKGND:
@@ -9308,8 +9877,35 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         return (LRESULT)g_overlay_button_brush;
     case WM_NCHITTEST: {
         LRESULT hit = DefWindowProcA(hwnd, msg, wp, lp);
-        if (hit == HTCLIENT) return HTCAPTION;
-        return hit;
+        POINT pt;
+
+        if (hit != HTCLIENT) return hit;
+        pt.x = (short)LOWORD(lp);
+        pt.y = (short)HIWORD(lp);
+        ScreenToClient(hwnd, &pt);
+        if (overlay_view_button_hit_test(pt)) return HTCLIENT;
+        return HTCAPTION;
+    }
+    case WM_LBUTTONDOWN: {
+        POINT pt;
+        int button_id;
+
+        pt.x = (short)LOWORD(lp);
+        pt.y = (short)HIWORD(lp);
+        button_id = overlay_view_button_hit_test(pt);
+        if (button_id == OVERLAY_BUTTON_VIEW_EXPANDED) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_EXPANDED);
+            return 0;
+        }
+        if (button_id == OVERLAY_BUTTON_VIEW_LOG_ONLY) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_LOG_ONLY);
+            return 0;
+        }
+        if (button_id == OVERLAY_BUTTON_VIEW_MINIMIZED) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_MINIMIZED);
+            return 0;
+        }
+        break;
     }
     case WM_ENTERSIZEMOVE:
         g_overlay_dragging = 1;
@@ -9349,6 +9945,18 @@ static LRESULT CALLBACK overlay_wnd_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         return 0;
     }
     case WM_COMMAND:
+        if (LOWORD(wp) == OVERLAY_BUTTON_VIEW_EXPANDED) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_EXPANDED);
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_VIEW_LOG_ONLY) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_LOG_ONLY);
+            return 0;
+        }
+        if (LOWORD(wp) == OVERLAY_BUTTON_VIEW_MINIMIZED) {
+            set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_MINIMIZED);
+            return 0;
+        }
         if (LOWORD(wp) == OVERLAY_BUTTON_MIN) {
             set_speed_value(g_speed_min);
             update_overlay_label();

@@ -97,6 +97,20 @@ def main():
         ("load_auto_item_lock_market_top_ids", src),
         ("TaskBarHeroSpeedMarketTop100.tsv", src),
         ("OVERLAY_BUTTON_ITEM_LOCK_MARKET_TOP", src),
+        ("OVERLAY_BUTTON_VIEW_EXPANDED", src),
+        ("OVERLAY_BUTTON_VIEW_LOG_ONLY", src),
+        ("OVERLAY_BUTTON_VIEW_MINIMIZED", src),
+        ("OVERLAY_VIEW_MODE_EXPANDED", src),
+        ("OVERLAY_VIEW_MODE_LOG_ONLY", src),
+        ("OVERLAY_VIEW_MODE_MINIMIZED", src),
+        ("OVERLAY_LOG_ONLY_HEIGHT", src),
+        ("OVERLAY_MINIMIZED_HEIGHT", src),
+        ("OVERLAY_VIEW_BUTTON_SIZE 24", src),
+        ("g_overlay_view_mode", src),
+        ("overlay_current_height", src),
+        ("overlay_log_box_rect", src),
+        ("update_overlay_view_layout", src),
+        ("set_overlay_view_mode", src),
         ("queue_manual_item_lock_request", src),
         ("manual_item_lock_from_game_thread", src),
         ("UI_MANAGER_UI_HERO_OFFSET 0xB0", src),
@@ -163,9 +177,11 @@ def main():
         ("AUTO_SYNTHESIS_STASH_DELAY_MS 3000", src),
         ("AUTO_SYNTHESIS_FILL_DELAY_MS 3000", src),
         ("AUTO_SYNTHESIS_TRIGGER_DELAY_MS 2000", src),
+        ("AUTO_SYNTHESIS_POST_TRIGGER_CLEAR_DELAY_MS", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_STASH", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_FILL", src),
         ("AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER", src),
+        ("AUTO_SYNTHESIS_PHASE_WAIT_CLEAR", src),
         ("install_exp_reward_calc_hook", src),
         ("install_ui_cube_hooks", src),
         ("request_auto_synthesis_after_box_open", src),
@@ -183,9 +199,20 @@ def main():
         ("ensure_cube_current_recipe", src),
         ("RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH", src),
         ("RVA_UI_REMAKE_STASH_INVENTORY_TO_STASH 0xA3B120ULL", src),
+        ("RVA_UI_MANAGER_SHOW_UI_BASE 0xC391A0ULL", src),
+        ("RVA_UI_MAIN_OPEN_STASH 0x82E470ULL", src),
+        ("RVA_UI_MAIN_OPEN_CUBE 0x82E6B0ULL", src),
         ("RVA_CUBE_CLEAR_CURRENT_RECIPE", src),
         ("RVA_CUBE_TRIGGER_CURRENT_RECIPE", src),
+        ("UI_MANAGER_UI_MAIN_OFFSET 0xA8", src),
+        ("UI_MANAGER_CURRENT_MAIN_TAB_OFFSET 0x54", src),
         ("UI_MANAGER_UI_NEW_STASH_OFFSET", src),
+        ("EMAIN_TAB_NEW_STASH 2", src),
+        ("EMAIN_TAB_CUBE 4", src),
+        ("AUTO_SYNTHESIS_PAGE_DELAY_MS", src),
+        ("ensure_main_tab_open", src),
+        ("ui_manager_show_base_t", src),
+        ("show_ui_base(ui_manager, target_ui, NULL);", src),
         ("RVA_OPEN_BOX_STATS", src),
         ("RVA_STAGE_BOX_REFRESH_AUTO_OPEN", src),
         ("RVA_AUTO_CHEST_OPEN_MOVE_NEXT", src),
@@ -225,7 +252,7 @@ def main():
         ("validate_runtime_versions", src),
         ("target_game_version=1.00.21", ini),
         ("plugin_version=1.00.21", ini),
-        ("plugin_subversion=404", ini),
+        ("plugin_subversion=405", ini),
         ("exp_multiplier=", ini),
         ("cube_exp_multiplier=", ini),
         ("auto_synthesis=", ini),
@@ -245,7 +272,7 @@ def main():
         ("MIN_VALID_REMOTE_MODULE", injector),
         ("LoadLibraryA returned suspicious module", injector),
         ("versions.json", package_script),
-        ('PLUGIN_VERSION="1.00.21.404"', package_script),
+        ('PLUGIN_VERSION="1.00.21.405"', package_script),
         ("versions/$VERSION/TaskBarHeroSpeed.dll", package_script),
         ("TaskBarHeroSpeedIcons", package_script),
         ("TaskBarHeroSpeedItemNames.zh-Hans.tsv", package_script),
@@ -262,6 +289,9 @@ def main():
         ("TARGETS=\"${TBH_BUILD_TARGETS:-windows-x64}\"", build_script),
         ("build_windows_x64()", build_script),
         ("dist/build/$target", build_script),
+        ("taskbarhero_speed/versions/$GAME_VERSION", build_script),
+        ("cp -p TaskBarHeroSpeed.dll \"$PLUGIN_VERSION_DIR/TaskBarHeroSpeed.dll\"", build_script),
+        ("cp -p winhttp.dll \"$PLUGIN_VERSION_DIR/winhttp.dll\"", build_script),
         ("Steam Deck", dev_readme),
         ("Proton", dev_readme),
         ("Windows PE", dev_readme),
@@ -348,6 +378,16 @@ def main():
                         "overlay item lock row title must render as Item Lock")
     failures += require("entry.grade >= 0 ? auto_item_lock_grade_color(entry.grade)" in src,
                         "overlay drop log must color each item line by item grade")
+    failures += require("case 2: return RGB(90, 166, 234);" in src,
+                        "rare grade must render blue")
+    failures += require("case 3: return RGB(242, 157, 67);" in src,
+                        "legendary grade must render orange")
+    failures += require("case 4: return RGB(235, 77, 79);" in src,
+                        "immortal grade must render red")
+    failures += require("case 5: return RGB(178, 105, 242);" in src,
+                        "treasure grade must render purple")
+    failures += require("case EGRADE_BEYOND: return RGB(238, 90, 171);" in src,
+                        "beyond grade must render pink")
     failures += require("draw_overlay_log_text_utf8" in src,
                         "overlay drop log must render UTF-8 Chinese through a wide-text helper")
     failures += require("DrawTextW(hdc, wide" in src,
@@ -388,6 +428,28 @@ def main():
     failures += require("OVERLAY_LOG_VISIBLE_LINES" in src and
                         "OVERLAY_LOG_LINE_COUNT 128" in src,
                         "Drops item log must keep more history than the visible rows")
+    failures += require("draw_overlay_view_buttons(hdc);" in src and
+                        "draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_EXPANDED, \"A\");" in src and
+                        "draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_LOG_ONLY, \"L\");" in src and
+                        "draw_overlay_view_button(hdc, OVERLAY_BUTTON_VIEW_MINIMIZED, \"_\");" in src,
+                        "overlay title bar must directly draw square view mode buttons")
+    failures += require("overlay_view_button_hit_test(pt)" in src and
+                        "case WM_LBUTTONDOWN:" in src and
+                        "return HTCLIENT;" in src,
+                        "overlay view buttons must be clickable through parent hit-testing")
+    failures += require("overlay_view_button_active(id)" in src,
+                        "overlay view buttons must show active state for the current mode")
+    failures += require("ShowWindow(child, visible ? SW_SHOW : SW_HIDE);" in src,
+                        "overlay view layout must hide non-title controls outside expanded mode")
+    failures += require("set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_EXPANDED);" in src and
+                        "set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_LOG_ONLY);" in src and
+                        "set_overlay_view_mode(hwnd, OVERLAY_VIEW_MODE_MINIMIZED);" in src,
+                        "overlay view buttons must switch between expanded, log-only, and minimized modes")
+    failures += require("if (g_overlay_view_mode == OVERLAY_VIEW_MODE_MINIMIZED)" in src and
+                        "if (g_overlay_view_mode == OVERLAY_VIEW_MODE_LOG_ONLY)" in src,
+                        "overlay paint path must handle minimized and log-only modes explicitly")
+    failures += require("box = overlay_log_box_rect();" in src,
+                        "Drops log hit-testing and painting must use the mode-aware log box")
     for reset_event in (
         'append_overlay_event("LOCK REQUESTED',
         'append_overlay_event("UNLOCK REQUESTED',
@@ -515,10 +577,10 @@ def main():
         failures += require(plugin_version_match.group(1) == version_match.group(1),
                             "plugin base version must match the supported game version")
     if plugin_subversion_match:
-        failures += require(plugin_subversion_match.group(1) == "404",
-                            "plugin subversion should be 404 for this change set")
+        failures += require(plugin_subversion_match.group(1) == "405",
+                            "plugin subversion should be 405 for this change set")
     if plugin_display_match:
-        failures += require(plugin_display_match.group(1) == "1.00.21.404",
+        failures += require(plugin_display_match.group(1) == "1.00.21.405",
                             "plugin display version should be game version plus subversion")
 
     for key in ("exp_multiplier", "cube_exp_multiplier"):
@@ -577,9 +639,12 @@ def main():
         clear_index = body.find("clear_current_recipe(NULL);")
         fill_index = body.find("autofill_current_recipe(current_recipe, NULL);")
         trigger_index = body.find("trigger_current_recipe(NULL);")
+        post_trigger_clear_index = body.find("clear_current_recipe(NULL);", clear_index + 1)
         failures += require(clear_index >= 0, "auto synthesis must clear current recipe before filling")
         failures += require(fill_index >= 0, "auto synthesis must auto-fill the current recipe without UI_Cube")
         failures += require(trigger_index >= 0, "auto synthesis must still trigger synthesis")
+        failures += require(post_trigger_clear_index >= 0,
+                            "auto synthesis must clear the Cube again after triggering synthesis")
         failures += require("get_ui_cube_instance(base)" not in body,
                             "auto synthesis must not wait on UI_Cube before running")
         failures += require("UI_Cube unavailable" not in body,
@@ -596,39 +661,96 @@ def main():
                             "auto synthesis must let auto-fill choose the recipe instead of forcing grade")
         failures += require("g_auto_synthesis_grade" not in body,
                             "auto synthesis flow must not depend on a configured grade")
+        cube_page_index = body.find("ensure_main_tab_open(base, EMAIN_TAB_CUBE);")
+        failures += require(cube_page_index >= 0,
+                            "auto synthesis must request the Cube page before clearing/filling")
         stash_index = body.find("inventory_to_stash(ui_stash, NULL);")
+        stash_page_index = body.find("ensure_main_tab_open(base, EMAIN_TAB_NEW_STASH)")
+        failures += require(stash_page_index >= 0,
+                            "auto synthesis must open the stash page before moving inventory to stash")
         failures += require(stash_index >= 0,
-                            "auto synthesis must call inventory-to-stash before filling when storage is enabled")
+                            "auto synthesis must call inventory-to-stash after synthesis when storage is enabled")
+        if cube_page_index >= 0 and clear_index >= 0:
+            failures += require(cube_page_index < clear_index,
+                                "auto synthesis must request the Cube page before the first clear")
+        if clear_index >= 0 and fill_index >= 0:
+            failures += require(clear_index < fill_index,
+                                "auto synthesis first clear must happen before autofill")
+        if stash_page_index >= 0 and stash_index >= 0:
+            failures += require(stash_page_index < stash_index,
+                                "auto synthesis must open stash before moving items")
         if stash_index >= 0 and fill_index >= 0:
-            failures += require(stash_index < fill_index,
-                                "auto synthesis stash move must happen before autofill")
+            failures += require(fill_index < stash_index,
+                                "auto synthesis stash move must happen after autofill")
         if fill_index >= 0 and trigger_index >= 0:
             failures += require(fill_index < trigger_index,
                                 "auto synthesis autofill must happen before trigger")
-        failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;" in body,
-                            "auto synthesis must wait after clearing before stash move")
-        failures += require("if (g_auto_synthesis_use_storage) {\n        g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;" in body,
-                            "auto synthesis must enter stash phase after clear when storage is enabled")
+        if trigger_index >= 0 and post_trigger_clear_index >= 0:
+            failures += require(trigger_index < post_trigger_clear_index,
+                                "auto synthesis second clear must happen after trigger")
+        if post_trigger_clear_index >= 0 and stash_index >= 0:
+            failures += require(post_trigger_clear_index < stash_index,
+                                "auto synthesis stash move must happen after the second clear")
+        failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_CLEAR;" in body,
+                            "auto synthesis must wait for a post-trigger Cube clear phase")
+        failures += require("if (g_auto_synthesis_use_storage) {\n            g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_STASH;" in body,
+                            "auto synthesis must enter stash phase after the post-trigger clear when storage is enabled")
         failures += require("inventory_to_stash(ui_stash, NULL);\n            log_line(\"auto synthesis stash move sent" in body,
                             "auto synthesis stash phase must execute the stash move")
-        failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;\n        g_auto_synthesis_step_tick = now + AUTO_SYNTHESIS_FILL_DELAY_MS;" in body,
-                            "auto synthesis stash phase must enter wait-fill after moving to stash")
+        failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_IDLE;\n        g_auto_synthesis_next_tick = now + AUTO_SYNTHESIS_INTERVAL_MS;" in body,
+                            "auto synthesis stash phase must finish the post-box flow")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_FILL;" in body,
-                            "auto synthesis must enter wait-fill phase after clearing")
+                            "auto synthesis must enter wait-fill phase immediately after the first clear")
         failures += require("g_auto_synthesis_phase = AUTO_SYNTHESIS_PHASE_WAIT_TRIGGER;" in body,
                             "auto synthesis must enter wait-trigger phase after autofill")
         failures += require("auto synthesis stash move sent" in body,
                             "auto synthesis must log the stash move step")
+        failures += require("auto synthesis post-trigger clear sent" in body,
+                            "auto synthesis must log the second clear step")
         failures += require("auto synthesis clear sent" in body,
                             "auto synthesis must log a separate clear step")
         failures += require("auto synthesis autofill sent" in body,
                             "auto synthesis must log a separate autofill step")
+        failures += require("auto synthesis Cube page open requested" in body,
+                            "auto synthesis must log Cube page open requests")
+        failures += require("auto synthesis stash page open requested" in body,
+                            "auto synthesis must log stash page open requests")
         failures += require("InterlockedExchange(&g_auto_synthesis_pending, 0)" in body,
                             "auto synthesis must consume a pending box-open request before starting")
         failures += require("if (!g_auto_synthesis_pending ||" in body,
                             "auto synthesis must not start without a pending box-open request")
         failures += require("clear+fill" not in body,
                             "auto synthesis must not clear and fill in the same visible step")
+
+    stage_enter_key_match = re.search(
+        r"static int find_stage_enter_key_for_stage_key\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(stage_enter_key_match), "stage enter key lookup helper missing")
+    if stage_enter_key_match:
+        body = stage_enter_key_match.group("body")
+        failures += require("if (get_act(previous) != act) continue;" not in body,
+                            "stage enter key lookup must allow first stage of a later act to use the previous act's last stage")
+        failures += require("if (get_difficulty(previous) != difficulty) continue;" in body,
+                            "stage enter key lookup must still keep previous stage in the same difficulty")
+        failures += require("if (get_type(previous) != stage_type) continue;" in body,
+                            "stage enter key lookup must still keep previous stage in the same stage type")
+
+    auto_restart_lock_match = re.search(
+        r"static int lock_auto_restart_stage_from_current\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(auto_restart_lock_match), "auto restart lock helper missing")
+    if auto_restart_lock_match:
+        body = auto_restart_lock_match.group("body")
+        failures += require("stage_key - 1" not in body,
+                            "auto restart lock must not synthesize previous stage keys arithmetically")
+        failures += require("previous stage key unavailable" in body,
+                            "auto restart lock must refuse unsafe locks when the real previous stage key is unavailable")
+        failures += require("if (enter_key <= 0)" in body,
+                            "auto restart lock must validate the resolved enter key before enabling lock")
 
     core_hook_match = re.search(
         r"static DWORD WINAPI speed_thread\(LPVOID arg\)\s*\{(?P<body>.*?)\n\}",
@@ -1025,6 +1147,45 @@ def main():
         body = apply_speed_match.group("body")
         failures += require("maybe_handle_actboss_cache_watch_from_game_thread();" in body,
                             "act boss cache watch must be polled from the game thread")
+
+    failures += require("RVA_SLOT_MANAGER_MOVE_REQUEST" in src,
+                        "auto synthesis storage must use rd.ktp MoveRequest backend path")
+    failures += require("RVA_SLOT_MANAGER_MOVE_TO_TARGET" in src,
+                        "auto synthesis storage must use rd.kit to let the game choose stash slots")
+    failures += require("RVA_INVENTORY_TYPEINFO" in src,
+                        "auto synthesis storage must locate backend inventory slot dictionary")
+    failures += require("TaskbarHeroMoveRequest" in src,
+                        "auto synthesis storage must define the MoveRequest ABI struct")
+    failures += require("move_inventory_slots_to_stash_from_backend" in src,
+                        "auto synthesis storage must try backend inventory->stash moves")
+    backend_storage_match = re.search(
+        r"static int move_inventory_slots_to_stash_from_backend\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(backend_storage_match), "backend inventory->stash function missing")
+    if backend_storage_match:
+        body = backend_storage_match.group("body")
+        failures += require("get_inventory_slot_dictionary(base)" in body,
+                            "backend stash moves must enumerate the inventory slot dictionary")
+        failures += require("get_ui_hero_instance(base)" not in body,
+                            "backend stash moves must not depend on UI_Hero being loaded")
+        failures += require("move_to_target(slot_manager, ESLOT_TYPE_STASH, source_index, NULL, 0, NULL)" in body,
+                            "backend stash moves must delegate target slot selection to rd.kit")
+    auto_synthesis_match = re.search(
+        r"static void maybe_auto_synthesis_from_game_thread\(.*?\)\s*\{(?P<body>.*?)\n\}",
+        src,
+        re.DOTALL,
+    )
+    failures += require(bool(auto_synthesis_match), "auto synthesis game-thread body missing")
+    if auto_synthesis_match:
+        body = auto_synthesis_match.group("body")
+        failures += require("move_inventory_slots_to_stash_from_backend(base)" in body,
+                            "auto synthesis stash phase must try backend stash moves")
+        failures += require("auto synthesis stash backend move sent" in body,
+                            "auto synthesis stash phase must log backend move attempts")
+        failures += require("AUTO_SYNTHESIS_STASH_RETRY_MAX" in body,
+                            "auto synthesis stash phase must not wait forever for the stash UI")
 
     for version in ("1.00.19", "1.00.20", "1.00.21"):
         failures += require((VERSIONS_DIR / version / "TaskBarHeroSpeed.dll").is_file(),
